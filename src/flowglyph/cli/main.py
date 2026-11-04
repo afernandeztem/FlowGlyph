@@ -311,6 +311,7 @@ def plan(
         Path, typer.Argument(help="Requirements in plain language (text or Markdown).")
     ],
     catalog_dir: Annotated[Path, typer.Argument(help="Catalog directory or project to plan with.")],
+    *,
     out: Annotated[Path, typer.Option("--out", "-o", help="Where to write the plan.")] = Path(),
     model: Annotated[
         str, typer.Option(help="Claude model that proposes the plan.")
@@ -318,11 +319,23 @@ def plan(
     effort: Annotated[
         Literal["low", "medium", "high", "xhigh", "max"], typer.Option(help="Reasoning effort.")
     ] = "high",
+    via: Annotated[
+        Literal["api", "claude-code"],
+        typer.Option(
+            help="`api` calls the Anthropic API with an API key; `claude-code` runs the local "
+            "Claude Code CLI with the account it is signed in with."
+        ),
+    ] = "api",
 ) -> None:
     """Design a workflow from REQUIREMENTS using only capabilities in the catalog."""
+    planner = importlib.import_module("flowglyph.planner")
     try:
-        planner = importlib.import_module("flowglyph.planner")
-        claude = importlib.import_module("flowglyph.planner.claude")
+        if via == "claude-code":
+            backend = importlib.import_module("flowglyph.planner.claude_code")
+            model_class = backend.ClaudeCodePlanModel
+        else:
+            backend = importlib.import_module("flowglyph.planner.claude")
+            model_class = backend.ClaudePlanModel
     except ModuleNotFoundError as error:
         if error.name != "anthropic":
             raise
@@ -333,7 +346,7 @@ def plan(
         report = planner.plan(
             requirements.read_text(encoding="utf-8"),
             catalog,
-            claude.ClaudePlanModel(model, effort=effort),
+            model_class(model, effort=effort),
         )
     except FlowGlyphError as error:
         errors.print(f"[bold red]error:[/] {error}")

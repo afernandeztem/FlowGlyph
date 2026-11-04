@@ -137,6 +137,9 @@ pip install "flowglyph[llm]"
 flowglyph plan requirements.md catalog -o plan
 ```
 
+Pass `--via claude-code` to plan through the Claude Code CLI with the account it is signed in
+with, instead of an API key.
+
 Describe what you need in plain language and FlowGlyph designs the workflow with the
 capabilities you already have. Claude proposes the plan; a deterministic resolver then checks
 every capability, argument and reference against the catalog. A step that nothing in the

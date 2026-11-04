@@ -1,5 +1,10 @@
-"""Planner quality against a real model. Run with `pytest -m llm`; every run is billed."""
+"""Planner quality against a real model. Run with `pytest -m llm`.
 
+Set `FLOWGLYPH_PLANNER=claude-code` to plan through the signed-in Claude Code CLI instead of
+the API; either way every run uses real model capacity.
+"""
+
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -7,7 +12,7 @@ import pytest
 
 import flowglyph
 from flowglyph.catalog import Catalog
-from flowglyph.planner import plan
+from flowglyph.planner import PlanModel, plan
 
 pytestmark = pytest.mark.llm
 
@@ -67,9 +72,20 @@ def catalog() -> Catalog:
     return merged
 
 
+@pytest.fixture(scope="module")
+def model() -> PlanModel:
+    if os.environ.get("FLOWGLYPH_PLANNER") == "claude-code":
+        from flowglyph.planner.claude_code import ClaudeCodePlanModel  # noqa: PLC0415
+
+        return ClaudeCodePlanModel()
+    from flowglyph.planner.claude import ClaudePlanModel  # noqa: PLC0415
+
+    return ClaudePlanModel()
+
+
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.requirements[:40])
-def test_planner_case(case: Case, catalog: Catalog):
-    report = plan(case.requirements, catalog)
+def test_planner_case(case: Case, catalog: Catalog, model: PlanModel):
+    report = plan(case.requirements, catalog, model)
     chosen = {c.rsplit("/", 1)[-1] for c in report.workflow.calls}
     assert not [p for p in report.problems if "not in the catalog" in p], "invented a capability"
     assert case.expected <= chosen, f"chose {sorted(chosen)}"
