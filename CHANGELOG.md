@@ -19,3 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenAPI 3.0 and 3.1 adapter: parameters and bodies as one input schema, local `$ref`
   resolution with recursion cut-off, effects and idempotency from HTTP semantics and
   `Idempotency-Key` headers, OAuth scopes and error responses.
+- MCP gateway (`flowglyph serve`): L0/L1/L2 discovery tools, one tool per capability or
+  search-only exposure, JSON Schema validation, YAML policies with allow, deny and approval,
+  an SQLite idempotency ledger with atomic claims and TTL, an audit log without argument
+  values, and `flowglyph approve` / `approvals` for people.

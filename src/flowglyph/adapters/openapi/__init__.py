@@ -27,9 +27,10 @@ _JSON_MEDIA_TYPE = re.compile(r"^application/([\w.+-]+\+)?json")
 class OpenAPIAdapter:
     """Turns every operation of an OpenAPI 3.x document into an invocable capability.
 
-    Effects and idempotency follow HTTP semantics (RFC 9110): safe methods only read,
-    `PUT` and `DELETE` are idempotent, and `POST` or `PATCH` are only retry-safe when the
-    operation accepts an `Idempotency-Key` header.
+    Effects and idempotency follow HTTP semantics (RFC 9110): safe methods only read, `POST`
+    creates without destroying, `PUT` and `PATCH` may overwrite, `DELETE` destroys. `PUT` and
+    `DELETE` are idempotent; `POST` and `PATCH` are only retry-safe when the operation accepts
+    an `Idempotency-Key` header.
     """
 
     name: ClassVar[str] = "openapi"
@@ -211,6 +212,10 @@ def _effects(method: str) -> Effects:
         return Effects(reads=Tri.YES, mutates_state=Tri.NO, destructive=Tri.NO, external=Tri.YES)
     if method == "delete":
         return Effects(reads=Tri.NO, mutates_state=Tri.YES, destructive=Tri.YES, external=Tri.YES)
+    if method == "post":
+        return Effects(
+            reads=Tri.UNKNOWN, mutates_state=Tri.YES, destructive=Tri.NO, external=Tri.YES
+        )
     return Effects(
         reads=Tri.UNKNOWN, mutates_state=Tri.YES, destructive=Tri.UNKNOWN, external=Tri.YES
     )

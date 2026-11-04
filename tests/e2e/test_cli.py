@@ -101,3 +101,25 @@ def test_strict_fails_on_parse_errors(synthetic: Path, tmp_path: Path):
     shutil.copy(synthetic / "doctype.xaml", source)
     code, _ = invoke("extract", source, "-o", tmp_path / "out", "--strict")
     assert code == 1
+
+
+def test_people_approve_held_runs_from_the_command_line(synthetic: Path, tmp_path: Path):
+    from flowglyph.gateway import Gateway  # noqa: PLC0415
+
+    out = tmp_path / "out"
+    invoke("extract", synthetic.parent / "openapi" / "payments.yaml", "-o", out)
+    gateway = Gateway(out)
+    held = gateway.run("deleteInvoice", {"invoiceId": "7"}, idempotency_key="cleanup-7")
+    assert held.idempotency_key is not None
+
+    code, output = invoke("approvals", out)
+    assert code == 0
+    assert held.idempotency_key in output
+
+    code, output = invoke("approve", out, held.idempotency_key)
+    assert code == 0, output
+    assert gateway.run("deleteInvoice", {"invoiceId": "7"}, idempotency_key="cleanup-7").ok
+
+    code, output = invoke("approve", out, held.idempotency_key)
+    assert code == 1
+    assert "no run is waiting" in output

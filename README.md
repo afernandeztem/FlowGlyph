@@ -98,6 +98,38 @@ catalog.save("catalog")
 catalog = flowglyph.load_catalog("catalog")
 ```
 
+### As an MCP server for agents
+
+```bash
+pip install "flowglyph[mcp]"
+flowglyph serve catalog
+```
+
+Register it with any MCP client, for example Claude Code:
+
+```bash
+claude mcp add flowglyph -- flowglyph serve /path/to/catalog
+```
+
+The gateway validates every call against the capability's schema, applies your policy, runs
+anything with side effects at most once per idempotency key, and writes an audit log without
+argument values. Steps that may destroy data wait for a person:
+
+```bash
+flowglyph approvals catalog                  # what is waiting
+flowglyph approve catalog '<idempotency key>'
+```
+
+Execution is a dry run in this release: the agent gets exactly what would have been sent, with
+every guarantee enforced. Policies are plain YAML:
+
+```yaml
+default: allow
+rules:
+  - {capabilities: "openapi/*/executePayment", action: deny, reason: payments are manual}
+  - {capabilities: "uipath/*", if_effects: [destructive], action: require_approval}
+```
+
 ## How it works
 
 1. **Adapters parse, deterministically.** An adapter turns one source format into IR. It never
@@ -156,7 +188,8 @@ catalog = flowglyph.load_catalog("catalog")
 
 - [x] Automation IR, UiPath adapter, versioned catalog, CLI
 - [x] OpenAPI 3.0 and 3.1 adapter
-- [ ] MCP gateway with policy, idempotency ledger and audit log
+- [x] MCP gateway with policy, idempotency ledger and audit log (dry-run executor)
+- [ ] Executors that run against UiPath Orchestrator and HTTP APIs
 - [ ] Planner: requirements in plain language to workflow IR
 - [ ] LLM enrichment cached by source hash, more adapters (BPMN, SAP), compilers back to BPMN and XAML
 

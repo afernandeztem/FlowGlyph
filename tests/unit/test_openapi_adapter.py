@@ -35,8 +35,8 @@ def test_detection(openapi: Path, reframework: Path):
         ("getInvoice", "natural", "RX"),
         ("replaceInvoice", "natural", "rWdX"),
         ("deleteInvoice", "natural", "WDX"),
-        ("createInvoice", "key", "rWdX"),
-        ("executePayment", "none", "rWdX"),
+        ("createInvoice", "key", "rWX"),
+        ("executePayment", "none", "rWX"),
     ],
 )
 def test_http_semantics(payments: dict[str, Capability], operation: str, mode: str, effects: str):

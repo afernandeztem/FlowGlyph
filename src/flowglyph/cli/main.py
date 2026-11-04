@@ -1,4 +1,7 @@
+import asyncio
+import importlib
 from pathlib import Path
+from types import ModuleType
 from typing import Annotated, Literal
 
 import typer
@@ -228,3 +231,75 @@ def search(
             capability.description.split("\n", 1)[0][:70],
         )
     console.print(table if results else "No matches.")
+
+
+def _gateway_module() -> ModuleType:
+    try:
+        return importlib.import_module("flowglyph.gateway")
+    except ModuleNotFoundError as error:
+        if error.name not in {"mcp", "mcp_types", "jsonschema"}:
+            raise
+        errors.print("[bold red]error:[/] the gateway needs: pip install 'flowglyph[mcp]'")
+        raise typer.Exit(2) from error
+
+
+@app.command()
+def serve(
+    catalog_dir: Annotated[Path, typer.Argument(help="A directory written by `extract`.")],
+    policy: Annotated[
+        Path | None, typer.Option(help="Policy YAML. Defaults to approval for destructive steps.")
+    ] = None,
+    state: Annotated[
+        Path | None, typer.Option(help="Where to keep the ledger and audit log.")
+    ] = None,
+    expose: Annotated[
+        Literal["auto", "all", "meta"],
+        typer.Option(help="One MCP tool per capability (`all`), search tools only (`meta`)."),
+    ] = "auto",
+) -> None:
+    """Serve the catalog to agents as an MCP server over stdio, with dry-run execution."""
+    gateway = _gateway_module()
+    server = importlib.import_module("flowglyph.gateway.server")
+    if not (catalog_dir / "catalog.jsonl").is_file():
+        errors.print(f"[bold red]error:[/] {catalog_dir} has no catalog; run `flowglyph extract`")
+        raise typer.Exit(2)
+    rules = gateway.Policy.load(policy) if policy else gateway.DEFAULT_POLICY
+    instance = gateway.Gateway(catalog_dir, policy=rules, state_dir=state)
+    errors.print(f"flowglyph gateway serving {catalog_dir} over stdio (dry-run executor)")
+    asyncio.run(server.serve_stdio(instance, expose))
+
+
+@app.command()
+def approve(
+    catalog_dir: Annotated[Path, typer.Argument(help="The catalog the gateway serves.")],
+    key: Annotated[str, typer.Argument(help="Idempotency key of the run to approve.")],
+    state: Annotated[Path | None, typer.Option(help="The gateway's state directory.")] = None,
+) -> None:
+    """Approve a run that a policy held back, so the agent's next attempt executes it."""
+    gateway = _gateway_module()
+    ledger = gateway.Ledger((state or catalog_dir / ".flowglyph") / "ledger.sqlite")
+    if not ledger.approve(key):
+        errors.print(f"[bold red]error:[/] no run is waiting for approval under {key!r}")
+        raise typer.Exit(1)
+    console.print(f"[bold green]Approved[/] {key}")
+
+
+@app.command()
+def approvals(
+    catalog_dir: Annotated[Path, typer.Argument(help="The catalog the gateway serves.")],
+    state: Annotated[Path | None, typer.Option(help="The gateway's state directory.")] = None,
+) -> None:
+    """List runs waiting for a person to approve them."""
+    gateway = _gateway_module()
+    ledger = gateway.Ledger((state or catalog_dir / ".flowglyph") / "ledger.sqlite")
+    pending = ledger.pending_approvals()
+    if not pending:
+        console.print("Nothing is waiting for approval.")
+        return
+    table = Table(box=None)
+    table.add_column("Key", overflow="fold")
+    table.add_column("Capability", overflow="fold")
+    table.add_column("Version", no_wrap=True)
+    for run in pending:
+        table.add_row(run.key, run.capability, run.version)
+    console.print(table)
