@@ -1,0 +1,131 @@
+[build-system]
+requires = ["hatchling>=1.33.0", "hatch-vcs>=0.5.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "flowglyph"
+description = "Turn enterprise automations into a vendor-neutral IR that agents can discover, plan with and run safely."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Angel Fernandez", email = "a.fernandez.tem@gmail.com" }]
+requires-python = ">=3.12"
+dynamic = ["version"]
+keywords = ["automation", "rpa", "uipath", "openapi", "mcp", "agents", "llm", "workflow", "ir"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.14.2",
+    "pyyaml>=6.0.3",
+]
+
+[project.optional-dependencies]
+cli = ["typer>=0.27.3", "rich>=15.0.0"]
+mcp = ["flowglyph[cli]", "mcp>=2.3.0", "jsonschema>=4.26.0"]
+llm = ["anthropic>=2.4.0", "rank-bm25>=0.2.2"]
+all = ["flowglyph[cli,mcp,llm]"]
+
+[project.scripts]
+flowglyph = "flowglyph.cli.main:run"
+
+[project.entry-points."flowglyph.adapters"]
+uipath = "flowglyph.adapters.uipath:UiPathAdapter"
+openapi = "flowglyph.adapters.openapi:OpenAPIAdapter"
+
+[project.urls]
+Homepage = "https://github.com/flowglyph/flowglyph"
+Documentation = "https://github.com/flowglyph/flowglyph/tree/main/docs"
+Issues = "https://github.com/flowglyph/flowglyph/issues"
+Changelog = "https://github.com/flowglyph/flowglyph/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+    "flowglyph[all]",
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.4.1",
+    "pytest-cov>=7.1.0",
+    "hypothesis>=6.170.14",
+    "ruff>=0.17.3",
+    "pyright>=1.1.414",
+    "pre-commit>=4.7.0",
+    "types-pyyaml",
+    "openapi-spec-validator>=0.9.0",
+]
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "docs", "LICENSE", "NOTICE", "README.md", "CHANGELOG.md"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/flowglyph"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W", "I", "N", "UP", "B", "SIM", "C4", "PTH", "RUF", "ERA", "D", "ANN",
+    "ARG", "PL", "TRY", "BLE", "FBT", "T20", "PIE", "RET", "ISC", "G", "S",
+]
+ignore = ["D100", "D104", "D105", "D107", "D203", "D213", "PLR0913", "ANN401", "TRY003", "S603"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pylint]
+max-branches = 12
+max-statements = 40
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "ANN", "PLR2004", "S101", "S105", "S106", "FBT", "ARG"]
+"src/flowglyph/cli/**" = ["FBT001", "FBT002", "B008"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportPrivateUsage = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "-m", "not llm"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["llm: calls a real LLM provider; run with `pytest -m llm`"]
+xfail_strict = true
+
+[tool.coverage.run]
+source = ["flowglyph"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "@overload"]

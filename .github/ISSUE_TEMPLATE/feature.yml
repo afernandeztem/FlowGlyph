@@ -1,0 +1,23 @@
+name: Feature request
+description: Propose a new capability, adapter or change to the IR.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that FlowGlyph does not support today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How you would like it to work. For IR changes, show the fields you would add or change.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [IR, UiPath adapter, OpenAPI adapter, New adapter, Catalog / CLI, Gateway / MCP, Planner, Docs]
+    validations:
+      required: true
