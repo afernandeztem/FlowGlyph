@@ -215,3 +215,17 @@ def test_idempotency_report_on_its_own(synthetic: Path, tmp_path: Path):
     code, _ = invoke("idempotency", synthetic, "-f", "csv", "-o", target, "--adapter", "uipath")
     assert code == 0
     assert target.read_text().startswith("id,kind,provider")
+
+
+def test_wiki_commands(project: Path, tmp_path: Path):
+    root = tmp_path / "wiki"
+    code, output = invoke("wiki", "build", project, "-o", root)
+    assert code == 0, output
+    assert "ingest |" in output
+    code, output = invoke("wiki", "lint", root)
+    assert code == 0
+    assert "declare its idempotency" in output
+    code, _ = invoke("wiki", "lint", root, "--strict")
+    assert code == 1
+    code, output = invoke("wiki", "lint", tmp_path)
+    assert code == 2

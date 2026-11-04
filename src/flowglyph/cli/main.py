@@ -13,7 +13,7 @@ from rich.table import Table
 from rich.tree import Tree
 
 import flowglyph
-from flowglyph import report
+from flowglyph import report, wiki
 from flowglyph._internal import markdown
 from flowglyph.adapters import available_adapters
 from flowglyph.catalog import LOCK_FILE, Bump, Catalog, Change, Lock, diff_locks
@@ -472,3 +472,68 @@ def idempotency(
     console.print(table)
     pending = sum(1 for row in selected if row.status == "review")
     console.print(f"{len(selected)} capabilities, {pending} to review.")
+
+
+wiki_app = typer.Typer(
+    help="An LLM wiki of the catalog: pages to read, a schema for the LLM that keeps them.",
+    no_args_is_help=True,
+)
+app.add_typer(wiki_app, name="wiki")
+
+
+@wiki_app.command("build")
+def wiki_build(
+    source: Annotated[str, typer.Argument(help=_SOURCE_HELP)],
+    *,
+    out: Annotated[Path, typer.Option("--out", "-o", help="Wiki directory.")] = Path("wiki"),
+    adapter: Annotated[
+        str, typer.Option("--adapter", "-a", help="Only read this kind of source.")
+    ] = "auto",
+    ref: Annotated[
+        str | None, typer.Option(help="Branch, tag or commit when SOURCE is a repository.")
+    ] = None,
+) -> None:
+    """Write or refresh the wiki. Notes written in the pages are kept."""
+    previous = out / wiki.DATA_DIRECTORY / LOCK_FILE
+    try:
+        if (Path(source) / "catalog.jsonl").is_file():
+            catalog = flowglyph.load_catalog(source)
+        else:
+            catalog = flowglyph.extract(
+                source,
+                adapter=adapter,
+                ref=ref,
+                previous=previous if previous.is_file() else None,
+            )
+    except FlowGlyphError as error:
+        errors.print(f"[bold red]error:[/] {error}")
+        raise typer.Exit(2) from error
+    result = wiki.build_wiki(catalog, out, subject=source)
+    console.print(f"[bold green]Wiki[/] {result.pages} pages in [bold]{out}[/]")
+    console.print(result.log_entry.rstrip())
+    console.print(f"Next: [bold]flowglyph wiki lint {out}[/], then read {out}/AGENTS.md")
+
+
+@wiki_app.command("lint")
+def wiki_lint(
+    directory: Annotated[Path, typer.Argument(help="Wiki directory.")] = Path("wiki"),
+    *,
+    strict: Annotated[
+        bool, typer.Option(help="Exit with an error when there are warnings or errors.")
+    ] = False,
+) -> None:
+    """Check the wiki: idempotency to review, gaps, orphans, broken links, retired pages."""
+    if not (directory / wiki.DATA_DIRECTORY / "catalog.jsonl").is_file():
+        errors.print(f"[bold red]error:[/] {directory} is not a wiki; run `flowglyph wiki build`")
+        raise typer.Exit(2)
+    issues = wiki.lint_wiki(directory)
+    styles = {"error": "bold red", "warning": "yellow", "info": "dim"}
+    table = Table(box=None)
+    table.add_column("Level", no_wrap=True)
+    table.add_column("Page", overflow="fold")
+    table.add_column("Issue")
+    for issue in issues:
+        table.add_row(f"[{styles[issue.level]}]{issue.level}[/]", issue.page, issue.message)
+    console.print(table if issues else "No issues.")
+    if strict and any(issue.level != "info" for issue in issues):
+        raise typer.Exit(1)

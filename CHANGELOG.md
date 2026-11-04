@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   idempotency and a status (`safe`, `keyed`, `declared`, `review`), filterable by kind, provider,
   side effects or pending review, as a table, Markdown, CSV or JSON. Also `flowglyph.report`.
 - `flowglyph adapters` lists the source formats available, plugins included.
+- `flowglyph wiki build` and `wiki lint`: an LLM wiki of the catalog in the shape of Karpathy's
+  "LLM Wiki". Generated pages per capability, category and source with backlinks, an index, an
+  overview, an append-only log of ingests and lint passes, an `AGENTS.md` schema for the LLM that
+  maintains it, and Notes sections that survive every rebuild. Lint reports idempotency to
+  review, invocations outside the sources, orphan workflows, broken links and retired pages.
 
 ### Changed
 
