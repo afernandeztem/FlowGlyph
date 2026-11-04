@@ -177,6 +177,36 @@ class Catalog:
             results = [c for c in results if c.invocable is invocable]
         return results[:limit]
 
+    def problems(self) -> list[str]:
+        """Broken references inside the catalog: what `flowglyph validate` reports."""
+        found: list[str] = []
+        for workflow in self.workflows.values():
+            if workflow.capability not in self.capabilities:
+                found.append(f"workflow {workflow.id} belongs to unknown {workflow.capability}")
+            node_ids = {node.id for node in workflow.nodes}
+            found.extend(
+                f"workflow {workflow.id} node {node.id} references unknown {node.capability}"
+                for node in workflow.nodes
+                if node.capability and node.capability not in self.capabilities
+            )
+            found.extend(
+                f"workflow {workflow.id} edge {edge.source} -> {edge.target} leaves the graph"
+                for edge in workflow.edges
+                if edge.source not in node_ids or edge.target not in node_ids
+            )
+        for capability in self.capabilities.values():
+            entry = self.lock.capabilities.get(capability.id)
+            if entry is None:
+                found.append(f"{capability.id} is missing from the lock file")
+            elif entry.version != capability.version:
+                found.append(
+                    f"{capability.id} is {capability.version} but the lock says {entry.version}"
+                )
+            compensation = capability.idempotency.compensation
+            if compensation and compensation not in self.capabilities:
+                found.append(f"{capability.id} is compensated by unknown {compensation}")
+        return found
+
     def merge(self, other: "Catalog") -> "Catalog":
         """A catalog with the contents of both; `other` wins on id collisions."""
         return Catalog(

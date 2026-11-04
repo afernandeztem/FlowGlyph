@@ -37,7 +37,7 @@ llm = ["anthropic>=2.4.0"]
 all = ["flowglyph[cli,mcp,llm]"]
 
 [project.scripts]
-flowglyph = "flowglyph.cli.main:run"
+flowglyph = "flowglyph.cli:run"
 
 [project.entry-points."flowglyph.adapters"]
 uipath = "flowglyph.adapters.uipath:UiPathAdapter"

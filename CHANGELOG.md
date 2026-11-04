@@ -14,3 +14,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tri-state effects, workflow graphs with branches, transitive effects through invocations.
 - Catalog with deterministic `save`/`load_catalog`, BM25 search, L0 cards, Markdown cards and
   an index, a lock file with automatic semver bumps, and `flowglyph.overrides.yaml`.
+- `flowglyph` command line: `extract`, `validate`, `diff`, `inspect` and `search`.
+- README with Excalidraw diagrams rendered to light and dark SVG by `make diagrams`.

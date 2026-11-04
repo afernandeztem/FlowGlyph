@@ -1,0 +1,19 @@
+{
+  "name": "flowglyph-diagrams",
+  "private": true,
+  "description": "Exports docs/assets/*.excalidraw to light and dark SVG with the official Excalidraw renderer.",
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "export": "node export_diagrams.mjs"
+  },
+  "devDependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
+    "esbuild": "0.28.2",
+    "playwright": "1.64.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}
