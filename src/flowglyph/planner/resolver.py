@@ -118,15 +118,25 @@ class _Resolution:
     def check(self) -> None:
         if len(set(self.order)) != len(self.order):
             self.problems.append("step ids must be unique")
+        may_skip: dict[str, bool] = {}
         for position, step in enumerate(self.plan.steps):
             capability = self._capability(step)
-            for dependency in self._dependencies(step, position):
+            dependencies = self._dependencies(step, position)
+            for dependency in dependencies:
                 if dependency not in self.order[:position]:
                     self.problems.append(
                         f"{step.id} runs after {dependency}, which is not an earlier step"
                     )
             if capability is not None:
                 self._check_arguments(step, capability, position)
+            skippable = [may_skip.get(dependency, False) for dependency in dependencies]
+            if step.join == "all" and any(skippable) and not all(skippable):
+                optional = [d for d, skip in zip(dependencies, skippable, strict=True) if skip]
+                self.warnings.append(
+                    f"{step.id} is skipped whenever {', '.join(optional)} is skipped; "
+                    "set join to any if it should run either way"
+                )
+            may_skip[step.id] = step.condition is not None or _inherits_skip(step.join, skippable)
 
     def _capability(self, step: PlannedStep) -> Capability | None:
         if step.capability is None:
@@ -191,6 +201,7 @@ class _Resolution:
             label=step.intent,
             capability=step.capability if resolved else None,
             note=None if resolved else "no capability in the catalog does this yet",
+            join=step.join,
         )
 
     def edges(self) -> list[Edge]:
@@ -200,6 +211,12 @@ class _Resolution:
                 if dependency in self.order[:position]:
                     edges.append(Edge(source=dependency, target=step.id, condition=step.condition))
         return edges
+
+
+def _inherits_skip(join: str, skippable: list[bool]) -> bool:
+    if join == "all":
+        return any(skippable)
+    return bool(skippable) and all(skippable)
 
 
 def _input_schema(plan: Plan) -> JsonSchema:

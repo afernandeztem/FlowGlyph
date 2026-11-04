@@ -32,9 +32,16 @@
       "title": "Edge",
       "type": "object"
     },
+    "Join": {
+      "enum": [
+        "all",
+        "any"
+      ],
+      "type": "string"
+    },
     "Node": {
       "additionalProperties": false,
-      "description": "A step in a workflow graph.",
+      "description": "A step in a workflow graph.\n\nAn incoming edge is *taken* when its source ran and its condition holds. With `join`\nset to `all` the node runs only when every incoming edge is taken; with `any` one is\nenough, which is what a step needs where an optional branch rejoins the main path. A\nnode that does not run is skipped, and the edges leaving it are not taken.",
       "properties": {
         "capability": {
           "anyOf": [
@@ -51,6 +58,10 @@
         "id": {
           "title": "Id",
           "type": "string"
+        },
+        "join": {
+          "$ref": "#/$defs/Join",
+          "default": "all"
         },
         "kind": {
           "$ref": "#/$defs/NodeKind"
@@ -91,7 +102,7 @@
       "type": "string"
     }
   },
-  "$id": "urn:flowglyph:ir:0.1.0:workflow",
+  "$id": "urn:flowglyph:ir:0.2.0:workflow",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "The implementation graph behind a workflow capability.",

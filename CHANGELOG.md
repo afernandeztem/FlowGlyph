@@ -28,3 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   capabilities and broken references and reports missing capabilities as gaps.
 - `flowglyph plan --via claude-code` plans through the signed-in Claude Code CLI in headless
   mode, without tools or MCP servers, as an alternative to an API key.
+
+### Changed
+
+- IR 0.2.0: nodes have a `join` (`all` or `any`) and skipped steps propagate, so a workflow
+  says what runs after an optional step. `Workflow.simulate` evaluates the rules. The UiPath
+  adapter marks branch merges as `any`; the planner chooses a join per step and warns about
+  steps that would be skipped with an optional predecessor.

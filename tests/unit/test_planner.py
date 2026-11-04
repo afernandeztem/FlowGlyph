@@ -270,3 +270,29 @@ def test_claude_failures_become_planner_errors(outcome: object, message: str):
     model, _ = claude_with(outcome)
     with pytest.raises(PlannerError, match=message):
         model.propose("Do things.", [])
+
+
+def test_steps_that_depend_on_an_optional_step_are_flagged(catalog: Catalog):
+    proposal = good_plan()
+    report = plan(REQUIREMENTS, catalog, FakeModel(proposal))
+    assert (
+        "create is skipped whenever approve is skipped; set join to any if it should run either way"
+        not in report.warnings
+    ), "create only depends on approve"
+    proposal.steps[2] = step(
+        "create",
+        CREATE,
+        from_input("Idempotency-Key", "request_id"),
+        from_input("body", "invoice"),
+        after=["check_vendor", "approve"],
+    )
+    report = plan(REQUIREMENTS, catalog, FakeModel(proposal))
+    assert (
+        "create is skipped whenever approve is skipped; set join to any if it should run either way"
+        in report.warnings
+    )
+    proposal.steps[2] = proposal.steps[2].model_copy(update={"join": "any"})
+    report = plan(REQUIREMENTS, catalog, FakeModel(proposal))
+    assert not any("is skipped whenever" in warning for warning in report.warnings)
+    assert report.workflow.nodes[2].join == "any"
+    assert report.workflow.simulate(lambda condition: False) == ["check_vendor", "create"]

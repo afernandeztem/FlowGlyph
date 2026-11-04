@@ -43,6 +43,13 @@ class PlannedStep(_PlanModel):
     condition: str | None = Field(
         description="expression over inputs and earlier outputs that gates this step, or null"
     )
+    join: Literal["all", "any"] = Field(
+        default="all",
+        description=(
+            "all: run only if every step in `after` ran; any: run if at least one did. "
+            "Use any where an optional, conditional step rejoins the main path."
+        ),
+    )
 
 
 class Plan(_PlanModel):

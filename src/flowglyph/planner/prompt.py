@@ -19,7 +19,10 @@ Build the smallest plan that meets the requirements:
   required input. Take values from workflow inputs, from outputs of earlier steps, or from
   literals written as JSON.
 - Declare as workflow inputs the values the requirements say arrive at run time.
-- Put business rules such as thresholds in the condition of the step they gate.
+- Put business rules such as thresholds in the condition of the step they gate. A step whose
+  condition is false is skipped, and so is every step that needs it. Set join to any on a step
+  that must run whether or not an earlier conditional step ran, such as the step after an
+  optional approval.
 - List in assumptions anything the requirements leave open that you had to decide.
 """
 

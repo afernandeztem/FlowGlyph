@@ -6,19 +6,21 @@ capabilities. Adapters produce these models; everything else in FlowGlyph consum
 """
 
 import json
+from collections.abc import Callable
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-IR_VERSION = "0.1.0"
+IR_VERSION = "0.2.0"
 
 type JsonSchema = dict[str, Any]
 type CapabilityKind = Literal["workflow", "activity", "operation"]
 type IdempotencyMode = Literal["none", "natural", "key", "conditional"]
 type Provenance = Literal["declared", "inferred"]
 type NodeKind = Literal["invoke", "activity", "decision", "container", "opaque"]
+type Join = Literal["all", "any"]
 
 
 class Tri(StrEnum):
@@ -186,13 +188,20 @@ class Capability(_Model):
 
 
 class Node(_Model):
-    """A step in a workflow graph."""
+    """A step in a workflow graph.
+
+    An incoming edge is *taken* when its source ran and its condition holds. With `join`
+    set to `all` the node runs only when every incoming edge is taken; with `any` one is
+    enough, which is what a step needs where an optional branch rejoins the main path. A
+    node that does not run is skipped, and the edges leaving it are not taken.
+    """
 
     id: str
     kind: NodeKind
     label: str
     capability: str | None = None
     note: str | None = None
+    join: Join = "all"
 
 
 class Edge(_Model):
@@ -218,6 +227,28 @@ class Workflow(_Model):
         """The first node, the one no edge points to."""
         targets = {edge.target for edge in self.edges}
         return next((node for node in self.nodes if node.id not in targets), None)
+
+    def simulate(self, holds: Callable[[str], bool]) -> list[str]:
+        """Ids of the nodes that run, in order, when `holds(condition)` decides each condition.
+
+        Nodes without incoming edges always run. Failures are not modelled: a failing step
+        aborts the whole workflow.
+        """
+        incoming: dict[str, list[Edge]] = {node.id: [] for node in self.nodes}
+        for edge in self.edges:
+            incoming.setdefault(edge.target, []).append(edge)
+        ran: list[str] = []
+        for node in self.nodes:
+            edges = incoming.get(node.id, [])
+            taken = [
+                edge
+                for edge in edges
+                if edge.source in ran and (edge.condition is None or holds(edge.condition))
+            ]
+            runs = not edges or (len(taken) == len(edges) if node.join == "all" else bool(taken))
+            if runs:
+                ran.append(node.id)
+        return ran
 
 
 def _parameters(schema: JsonSchema) -> list[Parameter]:

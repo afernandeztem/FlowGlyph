@@ -1,5 +1,5 @@
 {
-  "ir_version": "0.1.0",
+  "ir_version": "0.2.0",
   "workflows": [
     {
       "calls": [],
@@ -44,6 +44,7 @@
         {
           "capability": "uipath/activity/GetRobotCredential",
           "id": "GetRobotCredential_2",
+          "join": "all",
           "kind": "activity",
           "label": "Get credentials",
           "note": "Attempt to retrieve credentials from Orchestrator."
@@ -51,6 +52,7 @@
         {
           "capability": null,
           "id": "If_4",
+          "join": "all",
           "kind": "decision",
           "label": "If out_Username Is Nothing Or out_Password Is Nothing",
           "note": "The Private property is used to prevent the generation of logs that might contain information about the credentials."
@@ -58,6 +60,7 @@
         {
           "capability": null,
           "id": "If_3",
+          "join": "all",
           "kind": "decision",
           "label": "If Not CredentialsFound",
           "note": null
@@ -65,6 +68,7 @@
         {
           "capability": "uipath/activity/RequestCredential",
           "id": "RequestCredential_2",
+          "join": "all",
           "kind": "activity",
           "label": "Request credentials",
           "note": "Request credentials from user."
@@ -72,6 +76,7 @@
         {
           "capability": null,
           "id": "If_5",
+          "join": "all",
           "kind": "decision",
           "label": "If Not CredentialsFound",
           "note": "Throw exception in case of no credentials, or add provided credentials to Windows Credential Manager."
@@ -79,6 +84,7 @@
         {
           "capability": "uipath/activity/AddCredential",
           "id": "AddCredential_2",
+          "join": "all",
           "kind": "activity",
           "label": "Add Credential",
           "note": "Add provided credentials to the Windows Credential Manager to avoid requesting them in later executions of the process."
@@ -101,6 +107,7 @@
         {
           "capability": "uipath/activity/GetQueueItem",
           "id": "GetQueueItem_1",
+          "join": "all",
           "kind": "activity",
           "label": "Get transaction item",
           "note": "Get a transaction item from the specified Orchestrator queue.\nIf queues are not used in this process, replace this activity with the appropriated logic to retrieve transaction items.\nFor example, if transactions are rows from a DataTable, the row corresponding to the current transaction is retrieved at this point."
@@ -108,6 +115,7 @@
         {
           "capability": null,
           "id": "If_1",
+          "join": "all",
           "kind": "decision",
           "label": "If out_TransactionItem isNot Nothing",
           "note": "This optional step can be used to include more information about a transaction item and it's used mainly for logging and visualization purposes.\nFor example, if transaction items are invoices, then the out_TransactionID can be the invoice number, out_TransactionField1 can be the invoice date and out_TransactionField2 can be the invoice amount."
@@ -153,6 +161,7 @@
         {
           "capability": "uipath/activity/ReadRange",
           "id": "ReadRange_2",
+          "join": "all",
           "kind": "activity",
           "label": "Read range (Settings and Constants sheets)",
           "note": null
@@ -160,6 +169,7 @@
         {
           "capability": null,
           "id": "If_1",
+          "join": "all",
           "kind": "decision",
           "label": "If Not String.IsNullOrEmpty(row(\"Name\").ToString.Trim)",
           "note": "Read non-empty rows in the sheet."
@@ -167,6 +177,7 @@
         {
           "capability": "uipath/activity/ReadRange",
           "id": "ReadRange_3",
+          "join": "all",
           "kind": "activity",
           "label": "Read range (Assets sheet)",
           "note": null
@@ -174,6 +185,7 @@
         {
           "capability": "uipath/activity/GetRobotAsset",
           "id": "GetRobotAsset_4",
+          "join": "all",
           "kind": "activity",
           "label": "Get Asset",
           "note": null
@@ -181,6 +193,7 @@
         {
           "capability": null,
           "id": "If_5",
+          "join": "all",
           "kind": "decision",
           "label": "If Not String.IsNullOrEmpty(Row(\"Name\").ToString.Trim)",
           "note": "Logs a warn message in case the asset is specified in the Config file, but it could not be loaded from Orchestrator."
@@ -275,6 +288,7 @@
         {
           "capability": null,
           "id": "Flowchart_2",
+          "join": "all",
           "kind": "opaque",
           "label": "Set Transaction Status",
           "note": "Set and log the transaction's status along with extra log fields. \nThere can be three possible statuses: Success, Business Rule Exception and System Error (Application Exception).\n\nBusiness Rule Exception characterizes an irregular situation according to the process's rules and prevents the transaction to be processed. The transaction is not retried in this case, since the result will be the same until the problem that causes the exception is solved.\nFor example, it can be considered a BusinessRuleException if a process expects to read an email's attachment, but the sender didn't attach any file. In this case, immediate retries of the transaction will not yield a different result.\n\nOn the other hand, system errors are characterized by exceptions whose types are different than BusinessRuleException. When this kind of exception happens, the transaction item can be retried after closing and reopening the applications involved in the process. The rationale behind this is that the exception was caused by a problem in the applications, which might be solved by restarting them.\n\nIf Orchestrator queues are the source of transactions, the Set Transaction Status activity is used to update the status. In addition, the retry mechanism is also implemented by Orchestrator.\n\nIf Orchestrator queues are not used, the status can be set, for example, by writing to a specific column in a spreadsheet. In such cases, the retry mechanism is covered by the framework and the number of retries is defined in the configuration file.\n\nAt the end, io_TransactionNumber is incremented, which makes the framework get the next transaction to be processed."
@@ -282,6 +296,7 @@
         {
           "capability": null,
           "id": "If_2",
+          "join": "all",
           "kind": "decision",
           "label": "If in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
           "note": null
@@ -289,6 +304,7 @@
         {
           "capability": "uipath/activity/SetTransactionStatus",
           "id": "node_3",
+          "join": "all",
           "kind": "activity",
           "label": "Set transaction status (Successful)",
           "note": null
@@ -296,6 +312,7 @@
         {
           "capability": null,
           "id": "If_3",
+          "join": "any",
           "kind": "decision",
           "label": "If in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
           "note": null
@@ -303,6 +320,7 @@
         {
           "capability": "uipath/activity/SetTransactionStatus",
           "id": "SetTransactionStatus_2",
+          "join": "all",
           "kind": "activity",
           "label": "Set transaction status (BusinessRuleException status",
           "note": null
@@ -310,6 +328,7 @@
         {
           "capability": null,
           "id": "If_4",
+          "join": "any",
           "kind": "decision",
           "label": "If in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
           "note": null
@@ -317,6 +336,7 @@
         {
           "capability": "uipath/activity/SetTransactionStatus",
           "id": "SetTransactionStatus_3",
+          "join": "all",
           "kind": "activity",
           "label": "Set transaction status (SystemError)",
           "note": null
@@ -324,6 +344,7 @@
         {
           "capability": null,
           "id": "Flowchart_7",
+          "join": "any",
           "kind": "opaque",
           "label": "Retry current transaction",
           "note": null
@@ -331,6 +352,7 @@
         {
           "capability": "uipath/reframework/Framework/TakeScreenshot",
           "id": "InvokeWorkflowFile_4",
+          "join": "all",
           "kind": "invoke",
           "label": "Take Screenshot",
           "note": null
@@ -338,6 +360,7 @@
         {
           "capability": "uipath/reframework/Framework/CloseAllApplications",
           "id": "InvokeWorkflowFile_5",
+          "join": "all",
           "kind": "invoke",
           "label": "Close All Applications",
           "note": null
@@ -345,6 +368,7 @@
         {
           "capability": "uipath/reframework/Framework/KillAllProcesses",
           "id": "InvokeWorkflowFile_6",
+          "join": "all",
           "kind": "invoke",
           "label": "Kill All Processes",
           "note": null
@@ -387,6 +411,7 @@
         {
           "capability": "uipath/activity/TakeScreenshot",
           "id": "TakeScreenshot_1",
+          "join": "all",
           "kind": "activity",
           "label": "Take screenshot",
           "note": "The whole screen is captured."
@@ -394,6 +419,7 @@
         {
           "capability": null,
           "id": "If_3",
+          "join": "all",
           "kind": "decision",
           "label": "If String.IsNullOrEmpty(io_FilePath)",
           "note": null
@@ -401,6 +427,7 @@
         {
           "capability": null,
           "id": "If_2",
+          "join": "all",
           "kind": "decision",
           "label": "If Not Directory.Exists(ScreenshotFileInfo.DirectoryName)",
           "note": null
@@ -408,6 +435,7 @@
         {
           "capability": "uipath/activity/CreateDirectory",
           "id": "CreateDirectory_1",
+          "join": "all",
           "kind": "activity",
           "label": "Create directory",
           "note": null
@@ -415,6 +443,7 @@
         {
           "capability": "uipath/activity/SaveImage",
           "id": "SaveImage_2",
+          "join": "any",
           "kind": "activity",
           "label": "Save screenshot",
           "note": null
@@ -505,6 +534,7 @@
         {
           "capability": null,
           "id": "StateMachine_1",
+          "join": "all",
           "kind": "opaque",
           "label": "General Business Process",
           "note": "[Process title]\n[Process description]\n[Additional information (e.g., author, contact information and applications involved and required external setup)]"
@@ -512,6 +542,7 @@
         {
           "capability": null,
           "id": "If_1",
+          "join": "all",
           "kind": "decision",
           "label": "If Config is Nothing",
           "note": "An uninitialized Config dictionary indicates that this is the first run of the process."
@@ -519,6 +550,7 @@
         {
           "capability": "uipath/reframework/Framework/InitAllSettings",
           "id": "InvokeWorkflowFile_12",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke InitAllSettings workflow",
           "note": null
@@ -526,6 +558,7 @@
         {
           "capability": null,
           "id": "If_10",
+          "join": "all",
           "kind": "decision",
           "label": "If Not string.IsNullOrEmpty(in_OrchestratorQueueName)",
           "note": "Overwrite queue name from in configuration file in case the argument OrchestratorQueueName is specified.\nThis provides backward compatibility with < 2018.3 and allows default values to come from Config.xlsx"
@@ -533,6 +566,7 @@
         {
           "capability": "uipath/reframework/Framework/KillAllProcesses",
           "id": "InvokeWorkflowFile_19",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke KillAllProcesses workflow (first run)",
           "note": "Kills all Windows processes representing applications used in this business process to assure that the execution starts in a clean state.\nSince the applications are assumed to be already closed, CloseAllApplications is skipped and just KillAllProcess is invoked."
@@ -540,6 +574,7 @@
         {
           "capability": "uipath/reframework/Framework/InitAllApplications",
           "id": "InvokeWorkflowFile_5",
+          "join": "any",
           "kind": "invoke",
           "label": "Invoke InitiAllApplications workflow",
           "note": null
@@ -547,6 +582,7 @@
         {
           "capability": null,
           "id": "If_11",
+          "join": "all",
           "kind": "decision",
           "label": "If ShouldStop",
           "note": null
@@ -554,6 +590,7 @@
         {
           "capability": "uipath/reframework/Framework/GetTransactionData",
           "id": "InvokeWorkflowFile_20",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke GetTransactionData workflow",
           "note": null
@@ -561,6 +598,7 @@
         {
           "capability": "uipath/reframework/Process",
           "id": "InvokeWorkflowFile_24",
+          "join": "any",
           "kind": "invoke",
           "label": "Invoke Process workflow",
           "note": null
@@ -568,6 +606,7 @@
         {
           "capability": "uipath/reframework/Framework/SetTransactionStatus",
           "id": "InvokeWorkflowFile_25",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke SetTransactionStatus workflow",
           "note": null
@@ -575,6 +614,7 @@
         {
           "capability": "uipath/reframework/Framework/CloseAllApplications",
           "id": "InvokeWorkflowFile_21",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke CloseAllApplications workflow",
           "note": null
@@ -582,6 +622,7 @@
         {
           "capability": "uipath/reframework/Framework/KillAllProcesses",
           "id": "InvokeWorkflowFile_22",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke KillAllProcesses workflow (End process)",
           "note": null
@@ -659,6 +700,7 @@
         {
           "capability": null,
           "id": "If_4",
+          "join": "all",
           "kind": "decision",
           "label": "If Not File.Exists(in_TestLogFile)",
           "note": null
@@ -666,6 +708,7 @@
         {
           "capability": "uipath/activity/CreateFile",
           "id": "CreateFile_1",
+          "join": "all",
           "kind": "activity",
           "label": "Create Log file",
           "note": null
@@ -673,6 +716,7 @@
         {
           "capability": "uipath/activity/ExcelReadRange",
           "id": "ExcelReadRange_2",
+          "join": "all",
           "kind": "activity",
           "label": "Read Range (Defined tests)",
           "note": null
@@ -680,6 +724,7 @@
         {
           "capability": null,
           "id": "InvokeWorkflowFile_2",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke Test File",
           "note": null
@@ -687,6 +732,7 @@
         {
           "capability": "uipath/reframework/Tests/RunAllTests_Logging",
           "id": "InvokeWorkflowFile_3",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke Test Logging (Success)",
           "note": null
@@ -694,6 +740,7 @@
         {
           "capability": "uipath/reframework/Tests/RunAllTests_Logging",
           "id": "InvokeWorkflowFile_4",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke Test Logging (Application Exception)",
           "note": null
@@ -701,6 +748,7 @@
         {
           "capability": "uipath/reframework/Tests/RunAllTests_Logging",
           "id": "InvokeWorkflowFile_5",
+          "join": "all",
           "kind": "invoke",
           "label": "Invoke Test Logging (BRE)",
           "note": null
@@ -708,6 +756,7 @@
         {
           "capability": "uipath/activity/ExcelWriteRange",
           "id": "ExcelWriteRange_2",
+          "join": "all",
           "kind": "activity",
           "label": "Write Range (Tests results)",
           "note": null
@@ -715,6 +764,7 @@
         {
           "capability": "uipath/activity/OpenApplication",
           "id": "OpenApplication_2",
+          "join": "all",
           "kind": "activity",
           "label": "Open application (Notepad)",
           "note": "Open log file in a Notepad window."
@@ -722,6 +772,7 @@
         {
           "capability": "uipath/activity/ExcelApplicationScope",
           "id": "ExcelApplicationScope_2",
+          "join": "any",
           "kind": "container",
           "label": "Excel application scope",
           "note": null
@@ -740,6 +791,7 @@
         {
           "capability": null,
           "id": "If_1",
+          "join": "all",
           "kind": "decision",
           "label": "If in_ExpectedOutcome = in_ActualOutcome",
           "note": null
@@ -758,6 +810,7 @@
         {
           "capability": "uipath/reframework/Framework/InitAllSettings",
           "id": "node_1",
+          "join": "all",
           "kind": "invoke",
           "label": "Initialize All Settings",
           "note": null

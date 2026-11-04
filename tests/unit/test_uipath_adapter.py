@@ -86,3 +86,15 @@ def test_unresolved_invocations_are_diagnosed(synthetic: Path):
 def test_dynamic_invocations_are_explained(reframework: Path):
     messages = [d.message for d in extract(reframework).diagnostics]
     assert any("chosen at runtime" in message for message in messages)
+
+
+def test_steps_after_a_branch_run_whichever_way_it_goes(synthetic: Path):
+    workflow = next(
+        w for w in extract(synthetic / "invoices").workflows if w.id == "uipath/Invoices/Main"
+    )
+    book = next(node for node in workflow.nodes if node.label == "Book invoice")
+    assert book.join == "any"
+    for approved in (True, False):
+        ran = workflow.simulate(lambda condition, approved=approved: approved)
+        assert "Invoke_3" in ran
+        assert ("Invoke_2" in ran) is approved

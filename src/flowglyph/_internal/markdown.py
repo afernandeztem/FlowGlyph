@@ -82,7 +82,8 @@ def _graph_section(workflow: Workflow, capabilities: Mapping[str, Capability]) -
     for position, node in enumerate(workflow.nodes, start=1):
         target = capabilities.get(node.capability) if node.capability else None
         reference = f" -> [{target.title}]({card_filename(target)})" if target else ""
-        lines.append(f"{position}. **{_cell(node.label)}** ({node.kind}){reference}")
+        join = ", runs if any predecessor ran" if node.join == "any" else ""
+        lines.append(f"{position}. **{_cell(node.label)}** ({node.kind}{join}){reference}")
         if node.note:
             lines.append(f"   {_cell(first_line(node.note, 240))}")
     conditional = [edge for edge in workflow.edges if edge.condition]

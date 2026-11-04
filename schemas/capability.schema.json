@@ -254,7 +254,7 @@
       "type": "string"
     }
   },
-  "$id": "urn:flowglyph:ir:0.1.0:capability",
+  "$id": "urn:flowglyph:ir:0.2.0:capability",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "One operation an agent can discover, reason about and, if invocable, run.",

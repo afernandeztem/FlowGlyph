@@ -1,6 +1,6 @@
 # Automation IR specification
 
-Version 0.1.0. Machine-readable schemas: [`schemas/capability.schema.json`](../schemas/capability.schema.json)
+Version 0.2.0. Machine-readable schemas: [`schemas/capability.schema.json`](../schemas/capability.schema.json)
 and [`schemas/workflow.schema.json`](../schemas/workflow.schema.json).
 
 The IR describes *what an automation does* independently of *how it is implemented* and *how
@@ -93,8 +93,29 @@ The implementation graph of a workflow capability.
 |---|---|
 | `nodes` | Steps: `invoke` (calls another capability), `activity` (a step with effects), `decision` (a branch), `container` (a scope with effects of its own) and `opaque` (a state machine, flowchart or parallel block whose internal control flow is not modelled yet). |
 | `edges` | Control flow. `condition` is set on edges leaving a decision. |
+| `nodes[].join` | `all` or `any`: how many incoming edges must be taken for the node to run. |
 | `calls` | Capability ids this workflow invokes. |
 | `unresolved_calls` | Invocations that could not be matched to a capability, including targets computed at runtime. |
+
+### What runs
+
+An edge is *taken* when its source ran and its condition holds. A node with `join: all`, the
+default, runs only when every incoming edge is taken; a node with `join: any` needs only one.
+Nodes without incoming edges always run. A node that does not run is skipped, and its outgoing
+edges are not taken, so skips propagate. A failing step aborts the workflow.
+`Workflow.simulate(holds)` implements exactly these rules (see
+[ADR-0004](adr/0004-skipped-steps.md)).
+
+```yaml
+nodes:
+  - {id: validate, kind: invoke}
+  - {id: approve, kind: invoke}
+  - {id: create, kind: invoke, join: any}   # runs whether or not approval was needed
+edges:
+  - {source: validate, target: approve, condition: amount > 10000}
+  - {source: validate, target: create}
+  - {source: approve, target: create}
+```
 
 Pure steps (assignments, logging, control flow without branching) are folded away: the graph
 shows what an agent needs to reason about, not every activity. Opaque nodes are followed by

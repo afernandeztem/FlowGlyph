@@ -54,11 +54,22 @@ class GraphBuilder:
         return Workflow(
             id=workflow_id,
             capability=capability_id,
-            nodes=tuple(self.nodes),
+            nodes=tuple(self._with_joins()),
             edges=tuple(self.edges),
             calls=tuple(dict.fromkeys(self.calls)),
             unresolved_calls=tuple(dict.fromkeys(self.unresolved_calls)),
         )
+
+    def _with_joins(self) -> list[Node]:
+        # In a XAML sequence the step after an If runs whichever branch was taken, so every
+        # node where branches meet only needs one of its incoming edges.
+        sources: dict[str, set[str]] = {}
+        for edge in self.edges:
+            sources.setdefault(edge.target, set()).add(edge.source)
+        return [
+            node.model_copy(update={"join": "any"}) if len(sources.get(node.id, ())) > 1 else node
+            for node in self.nodes
+        ]
 
     def _segment(self, element: ET.Element) -> _Segment:
         local = split_tag(element.tag)[1]
