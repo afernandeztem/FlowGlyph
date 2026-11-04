@@ -19,9 +19,15 @@ pytestmark = pytest.mark.llm
 
 @dataclass(frozen=True)
 class Case:
+    """One requirement and what a good plan must contain.
+
+    `expect_unresolved` is None when a gap is acceptable either way, for instance when the
+    fixtures can send an approval request but cannot wait for the decision.
+    """
+
     requirements: str
     expected: frozenset[str]
-    expect_unresolved: bool = False
+    expect_unresolved: bool | None = False
 
 
 CASES = [
@@ -29,6 +35,7 @@ CASES = [
         "When an invoice arrives check the vendor exists, ask for approval above 10000 EUR, "
         "then create the invoice.",
         frozenset({"ValidateVendor", "RequestApproval", "createInvoice"}),
+        expect_unresolved=None,
     ),
     Case("List the invoices that are still drafts.", frozenset({"listInvoices"})),
     Case("Fetch invoice INV-7 and show its status.", frozenset({"getInvoice"})),
@@ -89,4 +96,5 @@ def test_planner_case(case: Case, catalog: Catalog, model: PlanModel):
     chosen = {c.rsplit("/", 1)[-1] for c in report.workflow.calls}
     assert not [p for p in report.problems if "not in the catalog" in p], "invented a capability"
     assert case.expected <= chosen, f"chose {sorted(chosen)}"
-    assert bool(report.unresolved) is case.expect_unresolved
+    if case.expect_unresolved is not None:
+        assert bool(report.unresolved) is case.expect_unresolved
