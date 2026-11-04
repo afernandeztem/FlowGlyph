@@ -137,8 +137,22 @@ pip install "flowglyph[llm]"
 flowglyph plan requirements.md catalog -o plan
 ```
 
-Pass `--via claude-code` to plan through the Claude Code CLI with the account it is signed in
-with, instead of an API key.
+The planner is not tied to one provider. Pick who proposes the plan with `--via`:
+
+| `--via` | Uses | Needs |
+|---|---|---|
+| `anthropic` (default) | the Anthropic API | `pip install "flowglyph[llm]"` and an API key |
+| `claude-code`, `codex`, `gemini`, `cursor` | the coding assistant you already use, headless | the CLI installed and signed in; your subscription covers it |
+| `openai-compatible` | OpenAI, Ollama, vLLM, LM Studio, OpenRouter, LiteLLM... | `--model`, plus `OPENAI_BASE_URL` / `OPENAI_API_KEY` when needed |
+| a plugin | any SDK | a package registering a `flowglyph.planners` entry point |
+
+```bash
+flowglyph plan requirements.md catalog --via claude-code
+OPENAI_BASE_URL=http://localhost:11434/v1 flowglyph plan requirements.md catalog \
+  --via openai-compatible --model llama3.1
+```
+
+Whatever proposes the plan, the same deterministic resolver checks it.
 
 Describe what you need in plain language and FlowGlyph designs the workflow with the
 capabilities you already have. Claude proposes the plan; a deterministic resolver then checks

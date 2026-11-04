@@ -79,7 +79,7 @@ def test_falls_back_to_a_json_result_text(tmp_path: Path):
         ),
         ({"is_error": False, "result": "Sure, here is a plan!"}, None, "structured plan"),
         ({"is_error": False, "structured_output": {"goal": 1}}, None, "invalid plan"),
-        (None, "not json at all", "no JSON result"),
+        (None, "not json at all", "claude-code failed: not json at all"),
     ],
 )
 def test_failures_become_planner_errors(

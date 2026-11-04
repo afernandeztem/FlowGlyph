@@ -40,4 +40,6 @@ deterministic, so a catalog can be committed and its changes reviewed like code.
 - **A new source**: implement `flowglyph.adapters.Adapter` and register it under the
   `flowglyph.adapters` entry point group.
 - **A new execution target**: implement `flowglyph.gateway.Executor` and pass it to `Gateway`.
-- **Another model provider for planning**: implement `flowglyph.planner.PlanModel`.
+- **Another model provider for planning**: implement `flowglyph.planner.PlanModel` and register
+  a factory `(model, effort) -> PlanModel` under the `flowglyph.planners` entry point group.
+  Coding assistants with a headless mode only need a `flowglyph.planner.command.CommandSpec`.

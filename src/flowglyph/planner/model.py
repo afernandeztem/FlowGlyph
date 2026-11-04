@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -59,3 +59,28 @@ class Plan(_PlanModel):
     inputs: list[PlannedInput]
     steps: list[PlannedStep]
     assumptions: list[str] = Field(description="anything assumed that the requirements left open")
+
+
+def plan_json_schema() -> dict[str, Any]:
+    """JSON Schema of `Plan` in the strict form most structured-output APIs require.
+
+    Every property is listed as required and objects reject unknown keys, which OpenAI's strict
+    mode demands and Anthropic, Gemini and local servers accept.
+    """
+    return _strict(Plan.model_json_schema())
+
+
+def _strict(node: Any) -> Any:
+    if isinstance(node, list):
+        return [_strict(item) for item in cast("list[Any]", node)]
+    if not isinstance(node, dict):
+        return node
+    schema = {
+        key: _strict(value)
+        for key, value in cast("dict[str, Any]", node).items()
+        if key != "default"
+    }
+    if schema.get("type") == "object" and "properties" in schema:
+        schema["required"] = list(schema["properties"])
+        schema["additionalProperties"] = False
+    return schema

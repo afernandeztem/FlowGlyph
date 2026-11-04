@@ -1,7 +1,8 @@
 """Planner quality against a real model. Run with `pytest -m llm`.
 
-Set `FLOWGLYPH_PLANNER=claude-code` to plan through the signed-in Claude Code CLI instead of
-the API; either way every run uses real model capacity.
+`FLOWGLYPH_PLANNER` picks the backend (`anthropic` by default, or `claude-code`, `codex`,
+`gemini`, `cursor`, `openai-compatible` or a plugin) and `FLOWGLYPH_MODEL` its model. Every run
+uses real model capacity.
 """
 
 import os
@@ -81,13 +82,11 @@ def catalog() -> Catalog:
 
 @pytest.fixture(scope="module")
 def model() -> PlanModel:
-    if os.environ.get("FLOWGLYPH_PLANNER") == "claude-code":
-        from flowglyph.planner.claude_code import ClaudeCodePlanModel  # noqa: PLC0415
+    from flowglyph.planner.backends import planner_backend  # noqa: PLC0415
 
-        return ClaudeCodePlanModel()
-    from flowglyph.planner.claude import ClaudePlanModel  # noqa: PLC0415
-
-    return ClaudePlanModel()
+    return planner_backend(
+        os.environ.get("FLOWGLYPH_PLANNER", "anthropic"), os.environ.get("FLOWGLYPH_MODEL")
+    )
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.requirements[:40])

@@ -313,40 +313,40 @@ def plan(
     catalog_dir: Annotated[Path, typer.Argument(help="Catalog directory or project to plan with.")],
     *,
     out: Annotated[Path, typer.Option("--out", "-o", help="Where to write the plan.")] = Path(),
-    model: Annotated[
-        str, typer.Option(help="Claude model that proposes the plan.")
-    ] = "claude-opus-5-5",
-    effort: Annotated[
-        Literal["low", "medium", "high", "xhigh", "max"], typer.Option(help="Reasoning effort.")
-    ] = "high",
     via: Annotated[
-        Literal["api", "claude-code"],
+        str,
         typer.Option(
-            help="`api` calls the Anthropic API with an API key; `claude-code` runs the local "
-            "Claude Code CLI with the account it is signed in with."
+            help="Who proposes the plan: anthropic (API key), claude-code, codex, gemini, "
+            "cursor (the signed-in CLI), openai-compatible (OpenAI, Ollama, vLLM...) or an "
+            "installed plugin."
         ),
-    ] = "api",
+    ] = "anthropic",
+    model: Annotated[str | None, typer.Option(help="Model name, if the backend needs one.")] = None,
+    effort: Annotated[
+        str | None, typer.Option(help="Reasoning effort, for backends that support it.")
+    ] = None,
 ) -> None:
     """Design a workflow from REQUIREMENTS using only capabilities in the catalog."""
     planner = importlib.import_module("flowglyph.planner")
+    backends = importlib.import_module("flowglyph.planner.backends")
     try:
-        if via == "claude-code":
-            backend = importlib.import_module("flowglyph.planner.claude_code")
-            model_class = backend.ClaudeCodePlanModel
-        else:
-            backend = importlib.import_module("flowglyph.planner.claude")
-            model_class = backend.ClaudePlanModel
+        model_instance = backends.planner_backend(via, model, effort)
     except ModuleNotFoundError as error:
         if error.name != "anthropic":
             raise
-        errors.print("[bold red]error:[/] the planner needs: pip install 'flowglyph\\[llm]'")
+        errors.print(
+            "[bold red]error:[/] the anthropic planner needs: pip install 'flowglyph\\[llm]'"
+        )
+        raise typer.Exit(2) from error
+    except FlowGlyphError as error:
+        errors.print(f"[bold red]error:[/] {error}")
         raise typer.Exit(2) from error
     catalog = _open(catalog_dir)
     try:
         report = planner.plan(
             requirements.read_text(encoding="utf-8"),
             catalog,
-            model_class(model, effort=effort),
+            model_instance,
         )
     except FlowGlyphError as error:
         errors.print(f"[bold red]error:[/] {error}")
