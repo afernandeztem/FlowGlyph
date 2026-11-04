@@ -2,7 +2,8 @@
 
 # FlowGlyph
 
-**Turn enterprise automations into capabilities AI agents can discover, plan with and run safely.**
+**Turn enterprise automations into a catalog of functions that people and AI agents can
+understand, search and run safely.**
 
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-3776ab)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
@@ -14,35 +15,45 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="FlowGlyph pipeline: sources go through deterministic adapters into the Automation IR, which feeds a versioned catalog used by an MCP gateway, a planner and the Python library." src="docs/assets/pipeline-light.svg">
+  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata and OpenAPI specs, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, an LLM wiki, an idempotency report and the Python library." src="docs/assets/pipeline-light.svg">
 </picture>
 
 ## Why
 
-Companies already have thousands of automations: UiPath robots, internal APIs, process models.
-Agents could use them, but every platform describes its automations differently, and none of
-them tells an agent the two things it needs before pressing a button: **what will this change
-in the world, and is it safe to run twice?**
+Companies run thousands of automations: UiPath robots, SAP OData services, internal APIs. The
+knowledge of what each one does is scattered across XML files, and none of them answers the
+two questions that matter before anything, or anyone, presses the button: **what will this
+change, and is it safe to run twice?**
 
-FlowGlyph reads automations with deterministic parsers, translates them into one small
-vendor-neutral representation, the **Automation IR**, and serves that to agents through a
-gateway that enforces policy and idempotency. The LLM never has to rediscover how a platform
-works; it only reads short, typed cards.
+FlowGlyph reads those sources with deterministic parsers, never with an LLM, and turns every
+workflow, entity operation and API call into a small, typed **capability**: its inputs and
+outputs, its effects and its idempotency. From that catalog you take only what you need: a
+spreadsheet of functions and their retry safety, a wiki an LLM can maintain, an MCP server that
+lets agents use your automations without being able to break the rules, or a planner that
+designs new workflows from the capabilities you already have.
+
+## Install
+
+```bash
+pip install flowglyph                    # the library: only pydantic and PyYAML
+uv tool install "flowglyph[cli]"         # the flowglyph command
+pip install "flowglyph[all]"             # everything: CLI, MCP gateway, Anthropic planner
+```
+
+| Extra | Adds | For |
+|---|---|---|
+| none | the Python library | `import flowglyph` in your own tools |
+| `cli` | typer, rich | the `flowglyph` command |
+| `mcp` | the MCP SDK, jsonschema | `flowglyph serve` |
+| `llm` | the Anthropic SDK | `flowglyph plan --via anthropic`; the other planner backends need nothing extra |
 
 ## Quickstart
 
-### As a command-line tool
-
 ```bash
-uv tool install "flowglyph[cli]"          # or: pipx install "flowglyph[cli]"
-
-flowglyph extract ./my-uipath-project -o catalog
-flowglyph inspect catalog
+flowglyph extract https://github.com/UiPath/ReFrameWork -o catalog   # read a whole repository
+flowglyph idempotency catalog                                         # every function and its retry safety
+flowglyph inspect catalog                                             # the call tree of each entry point
 ```
-
-The same command reads OpenAPI 3.x documents (`flowglyph extract openapi.yaml`): safe methods
-become read-only capabilities, `PUT` and `DELETE` are idempotent, and `POST` is retry-safe only
-when the operation accepts an `Idempotency-Key` header.
 
 ```text
 Main RWdX none
@@ -58,179 +69,345 @@ Main RWdX none
 └── CloseAllApplications pure natural
 ```
 
-Every workflow shows its effects (`R` reads, `W` writes, `D` destructive, `X` external, lower
-case when unknown) and whether it is safe to retry.
+`R` reads, `W` writes, `D` destroys, `X` talks to another system; upper case means yes, lower
+case means it may. `natural` means safe to retry; `none` means a retry repeats the effect.
+
+## Pick what you need
+
+Every piece works on its own. Start with the first row and stop wherever you have what you need.
+
+| I want to... | Run | Get |
+|---|---|---|
+| Know what every function does and whether it can be retried | `flowglyph idempotency <source>` | a table, or Markdown, CSV, JSON |
+| Keep a versioned catalog of all functions | `flowglyph extract <source> -o catalog` | `catalog.jsonl`, `graph.json`, `flowglyph.lock`, one card per function |
+| Give people and LLMs a wiki of the automations | `flowglyph wiki build <source> -o wiki` | linked pages, an index, a log and an `AGENTS.md` for the LLM |
+| Let an AI agent use the automations safely | `flowglyph serve catalog` | an MCP server with policy, idempotency and audit |
+| Design a new workflow from a description | `flowglyph plan requirements.md catalog` | a checked workflow, with the missing pieces named |
+| Fail CI when a contract breaks | `flowglyph diff old.lock catalog --fail-on major` | a non-zero exit on breaking changes |
+| Build my own tooling | `import flowglyph` | the same features as a typed Python API |
+
+`<source>` is a folder, a single file or a git URL. A saved catalog folder works too, anywhere a
+source is accepted.
+
+## Sources
+
+### Where FlowGlyph reads from
 
 ```bash
-flowglyph search catalog "read configuration from excel"
-flowglyph inspect catalog Framework/InitAllSettings     # the full card
-flowglyph validate catalog                              # schema and reference checks
+flowglyph extract ./automations                                   # a folder: every project inside
+flowglyph extract ./services/ZSUPPLIER_INVOICE_SRV.edmx           # a single file
+flowglyph extract https://github.com/acme/rpa                     # a repository
+flowglyph extract https://github.com/acme/rpa/tree/main/finance   # a folder of a repository, as copied from the browser
+flowglyph extract git@github.com:acme/rpa.git --ref release-4.2   # a branch, tag or commit
 ```
 
-Run `extract` again after the sources change and FlowGlyph versions every capability with
-semver, so you can tell a harmless edit from a breaking one:
+A folder is walked completely. A repository holding forty UiPath projects, a few SAP service
+definitions and some OpenAPI specs becomes **one** catalog: each project keeps its own name in
+the capability ids, and nested projects are read once. Repositories are shallow-cloned into
+`~/.cache/flowglyph` (or `$FLOWGLYPH_CACHE`) and refreshed on the next run; the lock file records
+the URL and the exact commit, so every catalog can be traced back to what it was built from.
+
+### What FlowGlyph understands
 
 ```bash
-flowglyph extract ./my-uipath-project -o catalog
-flowglyph diff old.lock catalog --fail-on major         # use it as a CI gate
+flowglyph adapters
 ```
 
-### As a Python library
+| Adapter | Reads | Each capability is |
+|---|---|---|
+| `uipath` | UiPath Studio projects: `project.json` and every `.xaml` | a workflow, typed from its arguments, with its graph of steps; plus one entry per activity type in use |
+| `sap` | SAP OData `$metadata` documents (EDMX, OData V2 and V4) from SAP S/4HANA, SAP Gateway or SAP BTP | an entity operation (query, read, create, update, delete), a function import, a function or an action |
+| `openapi` | OpenAPI 3.0 and 3.1 documents, JSON or YAML | an API operation |
 
-The base package depends only on pydantic and PyYAML.
+By default every adapter is tried and everything found is extracted. Pick one with `--adapter`:
 
 ```bash
-pip install flowglyph
+flowglyph extract ./landscape --adapter sap      # only the SAP services
+flowglyph idempotency ./landscape -a uipath      # only the robots
 ```
 
-```python
-import flowglyph
+To get the metadata of an SAP service, open
+`https://<host>/sap/opu/odata/sap/<SERVICE_NAME>/$metadata` (OData V2) or the `$metadata` of the
+V4 service and save it, or download it from the SAP Business Accelerator Hub. Files named
+`$metadata`, `*.edmx` or `*.xml` are recognised by their content.
 
-catalog = flowglyph.extract("./my-uipath-project")
+### How effects and idempotency are decided
 
-for capability in catalog.search("read configuration from excel", limit=5):
-    print(capability.id, capability.effects.code(), capability.idempotency.mode)
+Nothing is guessed by a model. Each adapter applies the semantics of its platform, and every
+answer records whether it was inferred or declared by a person.
 
-settings = catalog.get("Framework/InitAllSettings")
-print([p.name for p in settings.inputs], settings.effects.has_side_effects)
+| Source | Rule |
+|---|---|
+| UiPath | Each activity is classified by an [editable taxonomy](src/flowglyph/adapters/uipath/taxonomy.yaml) (Excel, mail, Orchestrator, UI, file system...). A workflow has the effects of its activities and of every workflow it invokes. UI automation is never assumed harmless. |
+| SAP OData | Query and read are read-only and idempotent. Update and delete are idempotent; delete is destructive. Create and actions are not idempotent. Operations the service forbids (`sap:creatable="false"`, V4 `InsertRestrictions`...) are not generated at all. |
+| OpenAPI | HTTP semantics (RFC 9110): `GET` reads, `PUT` and `DELETE` are idempotent, `POST` is retry-safe only when the operation accepts an `Idempotency-Key` header. |
 
-catalog.save("catalog")
-catalog = flowglyph.load_catalog("catalog")
+## Recipes
+
+### 1. Only the functions and their idempotency
+
+```bash
+flowglyph idempotency https://github.com/acme/rpa                # table in the terminal
+flowglyph idempotency ./rpa -f csv -o functions.csv              # for a spreadsheet
+flowglyph idempotency ./rpa -f markdown -o FUNCTIONS.md          # for a pull request
+flowglyph idempotency ./rpa --side-effects --kind workflow       # only workflows that change something
+flowglyph idempotency ./rpa --review                             # only what still needs a decision
 ```
 
-### As an MCP server for agents
+Each row gets a status:
+
+| Status | Meaning |
+|---|---|
+| `safe` | no side effects, or naturally idempotent |
+| `keyed` | retry-safe when called with its idempotency key |
+| `declared` | a person declared how it behaves |
+| `review` | it changes something and nothing guarantees a retry is safe |
+
+### 2. Iterate until nothing is left to review
+
+The parser tells you what it can prove. The rest you decide, in a file next to the sources, and
+the decision becomes part of the catalog.
+
+```bash
+flowglyph idempotency ./rpa --review
+```
+
+```yaml
+# ./rpa/flowglyph.overrides.yaml
+capabilities:
+  uipath/Invoices/Main:
+    description: Books a supplier invoice in the ERP.
+    idempotency: {mode: key, key_fields: [in_InvoiceReference], ttl_seconds: 86400}
+    security: {approval_required: true}
+  sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/create:
+    idempotency: {mode: key, key_fields: [body]}
+```
+
+```bash
+flowglyph idempotency ./rpa --review      # the declared ones are gone from the list
+flowglyph extract ./rpa -o catalog        # and the catalog records them as declared
+```
+
+Run it as often as you like. Unchanged sources produce byte-identical output, and changed ones
+get the right semver bump: `major` when an input becomes required or disappears, `minor` when one
+is added or the behaviour changes, `patch` for documentation.
+
+### 3. An LLM wiki of the automations
+
+```bash
+flowglyph wiki build https://github.com/acme/rpa -o wiki
+flowglyph wiki lint wiki
+```
+
+This follows Andrej Karpathy's [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+pattern. The automation sources are the raw layer and are never touched. FlowGlyph writes the
+structural part of every page; an LLM, or you, adds what the sources cannot say.
+
+```text
+wiki/
+├── AGENTS.md        the schema: how an LLM should maintain this wiki; yours to edit, never overwritten
+├── index.md         every page by category, one line each
+├── overview.md      sources, counts, what is left to review, invocations that point nowhere
+├── log.md           append-only: "## [2026-11-04] ingest | ..." and "## [2026-11-04] lint | ..."
+├── capabilities/    one page per function: contract, effects, steps, used by, related
+├── categories/      one page per category
+├── sources/         one page per project or service, with call trees
+└── _data/           the machine-readable catalog
+```
+
+Every page ends with a **Notes** section, and everything written there, by a person or by an
+LLM, survives each rebuild. When a function leaves the sources its page is deleted, unless it
+has notes: then it is kept and marked as removed. `wiki lint` lists functions to review,
+invocations outside the sources, workflows nothing calls, broken links and retired pages.
+
+To work on it with an LLM, open the wiki folder in Claude Code, Codex, Cursor or any assistant
+and ask it to follow `AGENTS.md`: ingest after each `wiki build`, answer questions from the pages
+and work through `wiki lint`.
+
+### 4. Let an AI agent use the automations
 
 ```bash
 pip install "flowglyph[mcp]"
-flowglyph serve catalog
+flowglyph serve catalog --policy policy.yaml
+claude mcp add flowglyph -- flowglyph serve /path/to/catalog    # Claude Code; any MCP client works
 ```
 
-Register it with any MCP client, for example Claude Code:
+The agent never runs anything directly. It goes through the gateway, which on every call:
 
-```bash
-claude mcp add flowglyph -- flowglyph serve /path/to/catalog
-```
-
-The gateway validates every call against the capability's schema, applies your policy, runs
-anything with side effects at most once per idempotency key, and writes an audit log without
-argument values. Steps that may destroy data wait for a person:
-
-```bash
-flowglyph approvals catalog                  # what is waiting
-flowglyph approve catalog '<idempotency key>'
-```
-
-Execution is a dry run in this release: the agent gets exactly what would have been sent, with
-every guarantee enforced. Policies are plain YAML:
-
-```yaml
-default: allow
-rules:
-  - {capabilities: "openapi/*/executePayment", action: deny, reason: payments are manual}
-  - {capabilities: "uipath/*", if_effects: [destructive], action: require_approval}
-```
-
-### As a planner
-
-```bash
-pip install "flowglyph[llm]"
-flowglyph plan requirements.md catalog -o plan
-```
-
-The planner is not tied to one provider. Pick who proposes the plan with `--via`:
-
-| `--via` | Uses | Needs |
-|---|---|---|
-| `anthropic` (default) | the Anthropic API | `pip install "flowglyph[llm]"` and an API key |
-| `claude-code`, `codex`, `gemini`, `cursor` | the coding assistant you already use, headless | the CLI installed and signed in; your subscription covers it |
-| `openai-compatible` | OpenAI, Ollama, vLLM, LM Studio, OpenRouter, LiteLLM... | `--model`, plus `OPENAI_BASE_URL` / `OPENAI_API_KEY` when needed |
-| a plugin | any SDK | a package registering a `flowglyph.planners` entry point |
-
-```bash
-flowglyph plan requirements.md catalog --via claude-code
-OPENAI_BASE_URL=http://localhost:11434/v1 flowglyph plan requirements.md catalog \
-  --via openai-compatible --model llama3.1
-```
-
-Whatever proposes the plan, the same deterministic resolver checks it.
-
-Describe what you need in plain language and FlowGlyph designs the workflow with the
-capabilities you already have. Claude proposes the plan; a deterministic resolver then checks
-every capability, argument and reference against the catalog. A step that nothing in the
-catalog can do is reported as **missing** instead of being invented, so the plan doubles as a
-gap analysis. See [examples/invoice-processing](examples/invoice-processing).
-
-## How it works
-
-1. **Adapters parse, deterministically.** An adapter turns one source format into IR. It never
-   calls an LLM or the network, so the same input always gives the same output. The UiPath
-   adapter reads argument types, defaults and annotations, classifies every activity with an
-   [editable taxonomy](src/flowglyph/adapters/uipath/taxonomy.yaml), follows `Invoke Workflow
-   File` across the project and keeps branch conditions.
-
-2. **The Automation IR says what an automation does, not how.** A `Capability` has a typed
-   contract, effects and an idempotency model. A `Workflow` is the graph behind it. Effects are
-   `yes`, `no` or `unknown`, because a parser cannot prove that a click is harmless, and
-   pretending otherwise is how agents break production systems.
-
-   ```yaml
-   id: uipath/reframework/Framework/GetTransactionData
-   kind: workflow
-   effects: {reads: yes, mutates_state: yes, destructive: no, external: yes}
-   idempotency: {mode: none, provenance: inferred, confidence: 0.7}
-   input_schema:
-     properties:
-       in_TransactionNumber: {type: integer, description: Sequential counter of transaction items.}
-   ```
-
-   The full specification is in [docs/ir-spec.md](docs/ir-spec.md).
-
-3. **The catalog is versioned and reviewable.** `catalog.jsonl`, `graph.json` and Markdown cards
-   are plain files you can commit and diff. `flowglyph.lock` records content hashes, so an
-   unchanged project produces byte-identical output and a changed one gets the right semver
-   bump. What the parser can only guess, a person can declare in `flowglyph.overrides.yaml`.
-
-4. **Agents load only what they are about to use.**
+1. validates the arguments against the capability's JSON Schema;
+2. applies your policy: allow, deny, or hold for a person's approval;
+3. runs anything with side effects at most once per idempotency key, and gives a retry the stored
+   result;
+4. executes it (a dry run in this release: you see exactly what would be sent);
+5. records the call in an audit log, without the argument values.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/token-flow-dark.svg">
   <img alt="An agent discovers capabilities as L0 cards, reads a few L1 cards, and calls one tool whose L2 contract is validated by the gateway's policy, idempotency ledger and audit log." src="docs/assets/token-flow-light.svg">
 </picture>
 
-| Level | What the agent gets | Size |
+| MCP tool | What the agent gets |
+|---|---|
+| `catalog_search` | L0 cards, about 40 tokens each, to scan thousands of functions |
+| `catalog_card` | the L1 card of one function: inputs, outputs, steps, retry advice |
+| `catalog_contract` | the full L2 contract |
+| `run_capability`, or one tool per function | a run through the gateway |
+| `run_status` | the outcome of an earlier run |
+
+```yaml
+# policy.yaml
+default: allow
+rules:
+  - {capabilities: "sap/*/*/delete", action: deny, reason: deletions go through change management}
+  - {capabilities: "openapi/*/executePayment", action: deny, reason: payments are released by treasury}
+  - {if_effects: [destructive], action: require_approval, reason: may destroy data}
+```
+
+```bash
+flowglyph approvals catalog                     # what is waiting for a person
+flowglyph approve catalog '<idempotency key>'   # let the agent's next attempt run it
+```
+
+### 5. Design a workflow from a description
+
+```bash
+flowglyph plan requirements.md catalog -o plan --via claude-code
+```
+
+Describe what you need in plain language. A model proposes a plan using only the capabilities in
+the catalog; a deterministic resolver then checks every capability, argument, reference and
+dependency. A step that nothing in the catalog can do is reported as **missing** instead of being
+invented, so the plan doubles as a gap analysis. See
+[examples/invoice-processing](examples/invoice-processing).
+
+The planner works with whatever you already use:
+
+| `--via` | Uses | Needs |
 |---|---|---|
-| L0 | id, one-line description, parameter names, effects, idempotency | ~40 tokens |
-| L1 | the Markdown card: inputs, outputs, steps, retry advice | ~300 tokens |
-| L2 | the full JSON Schema contract | only for the call being made |
+| `anthropic` (default) | the Anthropic API | `pip install "flowglyph[llm]"` and an API key |
+| `claude-code`, `codex`, `gemini`, `cursor` | that coding assistant, run headless with your account | the CLI installed and signed in; your subscription covers it |
+| `openai-compatible` | OpenAI, Ollama, vLLM, LM Studio, OpenRouter, LiteLLM | `--model`, plus `OPENAI_BASE_URL` / `OPENAI_API_KEY` when needed |
+| a plugin | any SDK | a package registering a `flowglyph.planners` entry point |
+
+```bash
+OPENAI_BASE_URL=http://localhost:11434/v1 flowglyph plan requirements.md catalog \
+  --via openai-compatible --model llama3.1
+```
+
+### 6. Use it from Python
+
+```python
+import flowglyph
+from flowglyph import report, wiki
+
+catalog = flowglyph.extract("https://github.com/acme/rpa", adapter="uipath")
+
+for row in report.rows(catalog, side_effects_only=True, statuses=["review"]):
+    print(row.id, row.effects, row.advice)
+
+invoice = catalog.get("Steps/BookInvoice")
+print([p.name for p in invoice.inputs], invoice.effects.code(), invoice.idempotency.mode)
+
+workflow = catalog.workflow("Main")
+print(workflow.simulate(lambda condition: False))  # which steps run when every condition is false
+
+catalog.save("catalog")
+wiki.build_wiki(catalog, "wiki")
+```
+
+```python
+from flowglyph.gateway import Gateway, Policy
+
+gateway = Gateway("catalog", policy=Policy.load("policy.yaml"))
+result = gateway.run("createInvoice", {"Idempotency-Key": "inv-118", "body": invoice_body})
+print(result.status)  # done, replayed, approval_required, denied, invalid...
+```
+
+## How it works
+
+**The Automation IR** is the contract between everything else. A `Capability` says what an
+operation needs, what it returns, what it does to the world (`reads`, `mutates_state`,
+`destructive`, `external`, each `yes`, `no` or `unknown`) and how it can be retried (`natural`,
+`key`, `conditional`, `none`). A `Workflow` is the graph behind it: steps, conditional edges, and
+a `join` on each step that says whether it needs every predecessor to have run or just one. The
+full specification is in [docs/ir-spec.md](docs/ir-spec.md).
+
+```yaml
+id: sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/create
+kind: operation
+effects: {reads: no, mutates_state: yes, destructive: no, external: yes}
+idempotency: {mode: none, provenance: inferred, confidence: 0.7}
+input_schema:
+  properties:
+    body:
+      properties:
+        CompanyCode: {type: string, maxLength: 4, description: Company code}
+        InvoicingParty: {type: string, maxLength: 10, description: Supplier}
+      required: [CompanyCode, InvoicingParty]
+```
+
+**Adapters** produce IR and nothing else. They are deterministic and offline, so the same files
+always give the same catalog. New source formats are plugins: implement
+`flowglyph.adapters.Adapter` and register it under the `flowglyph.adapters` entry point group.
+
+**The catalog** is plain files you can commit and review. Agents read it at three levels of
+detail (L0 to search, L1 to choose, L2 to call), so they never load more contracts than they use.
+
+**The gateway** is the only part that executes, and the only part that has to be trusted:
+annotations and idempotency modes describe intent, the gateway enforces it.
+
+More in [docs/architecture.md](docs/architecture.md) and the decision records in
+[docs/adr](docs/adr).
+
+## Command reference
+
+| Command | Purpose | Key options |
+|---|---|---|
+| `flowglyph extract SOURCE` | build a catalog | `-o`, `--adapter`, `--ref`, `--strict` |
+| `flowglyph idempotency SOURCE` | the function list and its retry safety | `-f table/markdown/csv/json`, `-o`, `--kind`, `--provider`, `--side-effects`, `--review`, `--adapter` |
+| `flowglyph inspect SOURCE [CAPABILITY]` | call trees, or one function's card | |
+| `flowglyph search SOURCE QUERY` | find functions by what they do | `-n`, `--invocable` |
+| `flowglyph validate CATALOG` | schema and reference checks | |
+| `flowglyph diff OLD NEW` | what changed between two extractions | `--fail-on major/minor/patch` |
+| `flowglyph adapters` | the source formats available | |
+| `flowglyph wiki build SOURCE` | write or refresh the LLM wiki | `-o`, `--adapter`, `--ref` |
+| `flowglyph wiki lint [WIKI]` | check the wiki | `--strict` |
+| `flowglyph serve CATALOG` | the MCP gateway | `--policy`, `--state`, `--expose auto/all/meta` |
+| `flowglyph approvals CATALOG` | runs waiting for a person | |
+| `flowglyph approve CATALOG KEY` | approve one of them | |
+| `flowglyph plan REQUIREMENTS SOURCE` | design a workflow | `--via`, `--model`, `--effort`, `-o` |
+
+Every command has `--help`.
 
 ## How FlowGlyph compares
 
-| | FlowGlyph | UiPath native MCP servers | XAML parsers such as `xaml-parser` | Generic OpenAPI to MCP converters |
+| | FlowGlyph | UiPath and SAP native MCP servers | XAML parsers such as `xaml-parser` | Generic OpenAPI to MCP converters |
 |---|---|---|---|---|
-| Sources | UiPath, OpenAPI, pluggable | UiPath artifacts | UiPath | OpenAPI |
+| Sources | UiPath, SAP OData, OpenAPI, pluggable | their own platform | UiPath | OpenAPI |
 | Vendor-neutral model | yes, the Automation IR | no | no | no |
-| Effects and retry safety | tri-state effects, idempotency with provenance | hints | no | hints from HTTP verbs at best |
-| Versioning of contracts | semver from a lock file | platform versions | no | no |
+| Effects and retry safety | tri-state effects, idempotency with provenance, enforced by a gateway | hints | no | hints from HTTP verbs at best |
+| Contract versioning | semver from a lock file, with the git commit | platform versions | no | no |
+| Knowledge base for LLMs | generated wiki with preserved notes | no | no | no |
 | Runs locally, offline | yes | no, cloud platform | yes | yes |
 | License | Apache-2.0 | proprietary | CC BY 4.0 | varies |
 
 ## Roadmap
 
-- [x] Automation IR, UiPath adapter, versioned catalog, CLI
-- [x] OpenAPI 3.0 and 3.1 adapter
-- [x] MCP gateway with policy, idempotency ledger and audit log (dry-run executor)
-- [ ] Executors that run against UiPath Orchestrator and HTTP APIs
-- [x] Planner: requirements in plain language to checked workflow IR
-- [ ] LLM enrichment cached by source hash, more adapters (BPMN, SAP), compilers back to BPMN and XAML
+- [x] Automation IR with joins, versioned catalog, CLI
+- [x] Adapters for UiPath, SAP OData and OpenAPI; extraction from folders and git repositories
+- [x] Idempotency report and LLM wiki
+- [x] MCP gateway with policy, idempotency ledger and audit log (dry-run execution)
+- [x] Planner with any model provider or coding assistant
+- [ ] Executors that run against UiPath Orchestrator, SAP and HTTP APIs
+- [ ] LLM enrichment cached by source hash; more adapters (BPMN, SAP Build Process Automation, n8n)
+- [ ] Compilers from workflow IR back to BPMN and XAML
 
 ## Contributing
 
-Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md): it explains the setup
-(`make install`, `make check`), the code style and how to write a new adapter. Diagrams are
-edited in [Excalidraw](https://excalidraw.com) from the `.excalidraw` files in `docs/assets/`
-and re-rendered with `make diagrams`.
-
-Security issues: see [SECURITY.md](SECURITY.md).
+Contributions are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains the setup (`make install`,
+`make check`), the code style and how to write an adapter or a planner backend. Diagrams are
+edited in [Excalidraw](https://excalidraw.com) from the `.excalidraw` files in `docs/assets/` and
+rendered with `make diagrams`. Security issues: see [SECURITY.md](SECURITY.md).
 
 ## License
 

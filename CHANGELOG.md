@@ -47,6 +47,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   overview, an append-only log of ingests and lint passes, an `AGENTS.md` schema for the LLM that
   maintains it, and Notes sections that survive every rebuild. Lint reports idempotency to
   review, invocations outside the sources, orphan workflows, broken links and retired pages.
+- The UiPath taxonomy covers cloud, infrastructure, directory and SaaS connector packages (Azure,
+  AWS, Google Cloud, Citrix, Hyper-V, VMware, Active Directory, Jira...) and derives effects from
+  the verb in an activity's name (`Get`, `Create`, `Set`, `Delete`, `...Scope`) where the category
+  alone cannot tell. On UiPath's IT automation solutions, unclassified activities drop from 118
+  to 1 of 172.
+- Repository URLs that point at a folder download only that folder (sparse checkout), and the
+  checkout is named after the repository.
+- Services or APIs published twice in one source, such as the same SAP service as OData V2 and
+  V4, keep separate ids. SAP metadata that uses the `sap:` prefix without declaring it is read.
 
 ### Changed
 
