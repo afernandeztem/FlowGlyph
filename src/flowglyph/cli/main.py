@@ -239,7 +239,7 @@ def _gateway_module() -> ModuleType:
     except ModuleNotFoundError as error:
         if error.name not in {"mcp", "mcp_types", "jsonschema"}:
             raise
-        errors.print("[bold red]error:[/] the gateway needs: pip install 'flowglyph[mcp]'")
+        errors.print("[bold red]error:[/] the gateway needs: pip install 'flowglyph\\[mcp]'")
         raise typer.Exit(2) from error
 
 
@@ -326,7 +326,7 @@ def plan(
     except ModuleNotFoundError as error:
         if error.name != "anthropic":
             raise
-        errors.print("[bold red]error:[/] the planner needs: pip install 'flowglyph[llm]'")
+        errors.print("[bold red]error:[/] the planner needs: pip install 'flowglyph\\[llm]'")
         raise typer.Exit(2) from error
     catalog = _open(catalog_dir)
     try:

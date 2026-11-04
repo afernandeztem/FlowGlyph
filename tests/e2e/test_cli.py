@@ -178,3 +178,21 @@ def test_plan_writes_the_proposal_and_the_ir(
     assert "missing" in output
     assert (out / "workflow.plan.yaml").is_file()
     assert "needs attention" in (out / "workflow.ir.yaml").read_text()
+
+
+def test_missing_extras_name_the_exact_install_command(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
+    import importlib  # noqa: PLC0415
+
+    real_import = importlib.import_module
+
+    def without_mcp(name: str, package: str | None = None) -> object:
+        if name.startswith("flowglyph.gateway"):
+            raise ModuleNotFoundError("No module named 'mcp'", name="mcp")
+        return real_import(name, package)
+
+    monkeypatch.setattr(importlib, "import_module", without_mcp)
+    code, output = invoke("serve", tmp_path)
+    assert code == 2
+    assert "pip install 'flowglyph[mcp]'" in output
