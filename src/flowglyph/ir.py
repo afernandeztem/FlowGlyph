@@ -109,6 +109,17 @@ class Idempotency(_Model):
     confidence: float = Field(default=0.5, ge=0.0, le=1.0)
     inferred_by: Literal["heuristic", "llm"] | None = "heuristic"
 
+    def advice(self) -> str:
+        """How to call the capability safely more than once, in one sentence."""
+        if self.mode == "natural":
+            return "safe to retry"
+        if self.mode == "key":
+            fields = ", ".join(self.key_fields) or "a caller-supplied key"
+            return f"safe to retry when deduplicated on {fields}"
+        if self.mode == "conditional":
+            return "safe to retry only under documented conditions"
+        return "not idempotent: run through the gateway with an idempotency key"
+
 
 class Semantics(_Model):
     """Business meaning of a capability, independent of how it is implemented."""

@@ -40,22 +40,10 @@ def _effects_line(capability: Capability) -> str:
     return ", ".join(parts)
 
 
-def _retry_advice(capability: Capability) -> str:
-    idempotency = capability.idempotency
-    if idempotency.mode == "natural":
-        return "safe to retry"
-    if idempotency.mode == "key":
-        fields = ", ".join(idempotency.key_fields) or "a caller-supplied key"
-        return f"safe to retry when deduplicated on {fields}"
-    if idempotency.mode == "conditional":
-        return "safe to retry only under documented conditions"
-    return "not idempotent: run through the gateway with an idempotency key"
-
-
 def _idempotency_line(capability: Capability) -> str:
     idempotency = capability.idempotency
     return (
-        f"{idempotency.mode}, {_retry_advice(capability)} "
+        f"{idempotency.mode}, {capability.idempotency.advice()} "
         f"({idempotency.provenance}, confidence {idempotency.confidence:.1f})"
     )
 

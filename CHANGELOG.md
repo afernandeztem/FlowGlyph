@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extraction from whole trees and git repositories: `flowglyph extract <folder|file|git URL>`
   reads every project and document it finds, records the origin and commit in the lock, and
   `--adapter` limits it to one source type.
+- `flowglyph idempotency`: the catalog and nothing else, one row per function with its effects,
+  idempotency and a status (`safe`, `keyed`, `declared`, `review`), filterable by kind, provider,
+  side effects or pending review, as a table, Markdown, CSV or JSON. Also `flowglyph.report`.
+- `flowglyph adapters` lists the source formats available, plugins included.
 
 ### Changed
 

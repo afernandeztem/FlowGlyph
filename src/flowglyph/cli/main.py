@@ -1,8 +1,10 @@
 import asyncio
 import importlib
+import sys
+from inspect import getdoc
 from pathlib import Path
 from types import ModuleType
-from typing import Annotated, Literal
+from typing import Annotated, Literal, cast
 
 import typer
 from rich.console import Console
@@ -11,10 +13,12 @@ from rich.table import Table
 from rich.tree import Tree
 
 import flowglyph
+from flowglyph import report
 from flowglyph._internal import markdown
+from flowglyph.adapters import available_adapters
 from flowglyph.catalog import LOCK_FILE, Bump, Catalog, Change, Lock, diff_locks
 from flowglyph.errors import FlowGlyphError
-from flowglyph.ir import Capability
+from flowglyph.ir import Capability, CapabilityKind
 
 app = typer.Typer(
     name="flowglyph",
@@ -392,3 +396,79 @@ def plan(
     console.print(f"Wrote {proposal} and {result}")
     if report.problems:
         raise typer.Exit(1)
+
+
+@app.command()
+def adapters() -> None:
+    """List the source formats FlowGlyph can read, built in or added by plugins."""
+    table = Table(box=None)
+    table.add_column("Adapter", no_wrap=True)
+    table.add_column("Version", no_wrap=True)
+    table.add_column("Reads")
+    for name, adapter_class in sorted(available_adapters().items()):
+        summary = (getdoc(adapter_class) or "").split("\n", 1)[0]
+        table.add_row(name, adapter_class.version, summary)
+    console.print(table)
+    console.print("Use one with [bold]--adapter <name>[/]; by default every adapter is tried.")
+
+
+@app.command()
+def idempotency(
+    source: Annotated[str, typer.Argument(help=_SOURCE_HELP)],
+    *,
+    output_format: Annotated[
+        Literal["table", "markdown", "csv", "json"],
+        typer.Option("--format", "-f", help="How to print the report."),
+    ] = "table",
+    out: Annotated[
+        Path | None, typer.Option("--out", "-o", help="Write the report to a file.")
+    ] = None,
+    adapter: Annotated[
+        str, typer.Option("--adapter", "-a", help="Only read this kind of source.")
+    ] = "auto",
+    kind: Annotated[
+        list[str] | None,
+        typer.Option(help="Only these kinds: workflow, operation, activity. Repeatable."),
+    ] = None,
+    provider: Annotated[
+        list[str] | None, typer.Option(help="Only these providers: uipath, openapi, sap.")
+    ] = None,
+    side_effects: Annotated[
+        bool, typer.Option("--side-effects", help="Only capabilities that change state.")
+    ] = False,
+    review: Annotated[
+        bool, typer.Option("--review", help="Only what still needs a person to decide.")
+    ] = False,
+) -> None:
+    """Every function with its effects and idempotency: the catalog and nothing else.
+
+    Rows marked review have side effects and no retry guarantee. Declare what you know in
+    flowglyph.overrides.yaml next to the sources and run the command again.
+    """
+    catalog = _open(source, adapter)
+    selected = report.rows(
+        catalog,
+        kinds=cast("list[CapabilityKind] | None", kind),
+        providers=provider,
+        side_effects_only=side_effects,
+        statuses=["review"] if review else None,
+    )
+    if output_format != "table":
+        text = report.render(selected, output_format)
+        if out:
+            out.write_text(text, encoding="utf-8")
+            console.print(f"Wrote {len(selected)} rows to {out}")
+        else:
+            sys.stdout.write(text)
+        return
+    styles = {"safe": "green", "keyed": "cyan", "declared": "blue", "review": "bold yellow"}
+    table = Table(box=None)
+    table.add_column("Capability", overflow="fold")
+    for header in ("Kind", "Effects", "Idempotency", "Status"):
+        table.add_column(header, no_wrap=True)
+    for row in selected:
+        style = styles[row.status]
+        table.add_row(row.id, row.kind, row.effects, row.idempotency, f"[{style}]{row.status}[/]")
+    console.print(table)
+    pending = sum(1 for row in selected if row.status == "review")
+    console.print(f"{len(selected)} capabilities, {pending} to review.")

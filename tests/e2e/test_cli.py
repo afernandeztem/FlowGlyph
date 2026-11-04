@@ -196,3 +196,22 @@ def test_missing_extras_name_the_exact_install_command(
     code, output = invoke("serve", tmp_path)
     assert code == 2
     assert "pip install 'flowglyph[mcp]'" in output
+
+
+def test_adapters_are_listed():
+    code, output = invoke("adapters")
+    assert code == 0
+    for name in ("uipath", "openapi", "sap"):
+        assert name in output
+
+
+def test_idempotency_report_on_its_own(synthetic: Path, tmp_path: Path):
+    code, output = invoke("idempotency", synthetic.parent / "sap", "--review")
+    assert code == 0
+    assert "sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/create" in output
+    assert "query" not in output
+
+    target = tmp_path / "report.csv"
+    code, _ = invoke("idempotency", synthetic, "-f", "csv", "-o", target, "--adapter", "uipath")
+    assert code == 0
+    assert target.read_text().startswith("id,kind,provider")
