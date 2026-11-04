@@ -23,3 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   search-only exposure, JSON Schema validation, YAML policies with allow, deny and approval,
   an SQLite idempotency ledger with atomic claims and TTL, an audit log without argument
   values, and `flowglyph approve` / `approvals` for people.
+- Planner (`flowglyph plan`): BM25 shortlist, a plan proposed by Claude with structured output
+  and server-side refusal fallbacks, and a deterministic resolver that rejects invented
+  capabilities and broken references and reports missing capabilities as gaps.

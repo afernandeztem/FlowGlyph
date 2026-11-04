@@ -303,3 +303,56 @@ def approvals(
     for run in pending:
         table.add_row(run.key, run.capability, run.version)
     console.print(table)
+
+
+@app.command()
+def plan(
+    requirements: Annotated[
+        Path, typer.Argument(help="Requirements in plain language (text or Markdown).")
+    ],
+    catalog_dir: Annotated[Path, typer.Argument(help="Catalog directory or project to plan with.")],
+    out: Annotated[Path, typer.Option("--out", "-o", help="Where to write the plan.")] = Path(),
+    model: Annotated[
+        str, typer.Option(help="Claude model that proposes the plan.")
+    ] = "claude-opus-5-5",
+    effort: Annotated[
+        Literal["low", "medium", "high", "xhigh", "max"], typer.Option(help="Reasoning effort.")
+    ] = "high",
+) -> None:
+    """Design a workflow from REQUIREMENTS using only capabilities in the catalog."""
+    try:
+        planner = importlib.import_module("flowglyph.planner")
+        claude = importlib.import_module("flowglyph.planner.claude")
+    except ModuleNotFoundError as error:
+        if error.name != "anthropic":
+            raise
+        errors.print("[bold red]error:[/] the planner needs: pip install 'flowglyph[llm]'")
+        raise typer.Exit(2) from error
+    catalog = _open(catalog_dir)
+    try:
+        report = planner.plan(
+            requirements.read_text(encoding="utf-8"),
+            catalog,
+            claude.ClaudePlanModel(model, effort=effort),
+        )
+    except FlowGlyphError as error:
+        errors.print(f"[bold red]error:[/] {error}")
+        raise typer.Exit(2) from error
+    proposal, result = report.save(out)
+    table = Table(box=None)
+    table.add_column("Step", no_wrap=True)
+    table.add_column("Capability", overflow="fold")
+    table.add_column("Intent")
+    for step in report.plan.steps:
+        resolved = step.id not in report.unresolved
+        capability = step.capability if resolved else "[red]missing[/]"
+        table.add_row(step.id, capability or "[red]missing[/]", step.intent)
+    console.print(f"[bold]{report.plan.goal}[/]")
+    console.print(table)
+    for problem in report.problems:
+        errors.print(f"  [bold red]problem[/] {problem}")
+    for warning in report.warnings:
+        errors.print(f"  [yellow]warning[/] {warning}")
+    console.print(f"Wrote {proposal} and {result}")
+    if report.problems:
+        raise typer.Exit(1)

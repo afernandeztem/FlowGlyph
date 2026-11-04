@@ -123,3 +123,58 @@ def test_people_approve_held_runs_from_the_command_line(synthetic: Path, tmp_pat
     code, output = invoke("approve", out, held.idempotency_key)
     assert code == 1
     assert "no run is waiting" in output
+
+
+def test_plan_writes_the_proposal_and_the_ir(
+    project: Path, synthetic: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    from flowglyph.planner import claude  # noqa: PLC0415
+    from flowglyph.planner.model import (  # noqa: PLC0415
+        Plan,
+        PlannedArgument,
+        PlannedInput,
+        PlannedStep,
+    )
+
+    proposal = Plan(
+        goal="Book invoice",
+        inputs=[PlannedInput(name="invoice", type="object", description="Invoice")],
+        steps=[
+            PlannedStep(
+                id="book",
+                intent="Book the invoice",
+                capability="uipath/Invoices/Steps/BookInvoice",
+                arguments=[
+                    PlannedArgument(name="in_Invoice", source="workflow_input", value="invoice")
+                ],
+                after=[],
+                condition=None,
+            ),
+            PlannedStep(
+                id="notify",
+                intent="Tell the vendor",
+                capability=None,
+                arguments=[],
+                after=["book"],
+                condition=None,
+            ),
+        ],
+        assumptions=[],
+    )
+
+    class Scripted:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        def propose(self, *_args: object) -> Plan:
+            return proposal
+
+    monkeypatch.setattr(claude, "ClaudePlanModel", Scripted)
+    requirements = tmp_path / "requirements.md"
+    requirements.write_text("Book the invoice and tell the vendor.")
+    out = tmp_path / "plan"
+    code, output = invoke("plan", requirements, project, "-o", out)
+    assert code == 0, output
+    assert "missing" in output
+    assert (out / "workflow.plan.yaml").is_file()
+    assert "needs attention" in (out / "workflow.ir.yaml").read_text()

@@ -15,3 +15,5 @@ htmlcov/
 node_modules/
 scripts/dist/
 .DS_Store
+examples/*/catalog/
+examples/*/out/

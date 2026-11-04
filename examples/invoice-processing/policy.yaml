@@ -1,0 +1,8 @@
+default: allow
+rules:
+  - capabilities: "openapi/*/executePayment"
+    action: deny
+    reason: payments are released by treasury, never by an agent
+  - if_effects: [destructive]
+    action: require_approval
+    reason: may destroy data

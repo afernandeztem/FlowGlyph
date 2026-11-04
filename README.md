@@ -130,6 +130,19 @@ rules:
   - {capabilities: "uipath/*", if_effects: [destructive], action: require_approval}
 ```
 
+### As a planner
+
+```bash
+pip install "flowglyph[llm]"
+flowglyph plan requirements.md catalog -o plan
+```
+
+Describe what you need in plain language and FlowGlyph designs the workflow with the
+capabilities you already have. Claude proposes the plan; a deterministic resolver then checks
+every capability, argument and reference against the catalog. A step that nothing in the
+catalog can do is reported as **missing** instead of being invented, so the plan doubles as a
+gap analysis. See [examples/invoice-processing](examples/invoice-processing).
+
 ## How it works
 
 1. **Adapters parse, deterministically.** An adapter turns one source format into IR. It never
@@ -190,7 +203,7 @@ rules:
 - [x] OpenAPI 3.0 and 3.1 adapter
 - [x] MCP gateway with policy, idempotency ledger and audit log (dry-run executor)
 - [ ] Executors that run against UiPath Orchestrator and HTTP APIs
-- [ ] Planner: requirements in plain language to workflow IR
+- [x] Planner: requirements in plain language to checked workflow IR
 - [ ] LLM enrichment cached by source hash, more adapters (BPMN, SAP), compilers back to BPMN and XAML
 
 ## Contributing
