@@ -40,6 +40,10 @@ flowglyph extract ./my-uipath-project -o catalog
 flowglyph inspect catalog
 ```
 
+The same command reads OpenAPI 3.x documents (`flowglyph extract openapi.yaml`): safe methods
+become read-only capabilities, `PUT` and `DELETE` are idempotent, and `POST` is retry-safe only
+when the operation accepts an `Idempotency-Key` header.
+
 ```text
 Main RWdX none
 ├── InitiAllSettings RX natural
@@ -151,7 +155,7 @@ catalog = flowglyph.load_catalog("catalog")
 ## Roadmap
 
 - [x] Automation IR, UiPath adapter, versioned catalog, CLI
-- [ ] OpenAPI adapter
+- [x] OpenAPI 3.0 and 3.1 adapter
 - [ ] MCP gateway with policy, idempotency ledger and audit log
 - [ ] Planner: requirements in plain language to workflow IR
 - [ ] LLM enrichment cached by source hash, more adapters (BPMN, SAP), compilers back to BPMN and XAML

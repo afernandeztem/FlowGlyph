@@ -1,0 +1,154 @@
+openapi: 3.1.0
+info:
+  title: Payments API
+  version: 2.3.0
+security:
+  - oauth: [invoices:read]
+paths:
+  /invoices:
+    get:
+      operationId: listInvoices
+      summary: List invoices
+      tags: [invoices]
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of invoices to return.
+          schema: {type: integer, maximum: 100}
+        - name: status
+          in: query
+          schema: {type: string, enum: [draft, booked, paid]}
+      responses:
+        "200":
+          description: A page of invoices.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/Invoice"}
+    post:
+      operationId: createInvoice
+      summary: Create a supplier invoice
+      description: Books the invoice in the ledger. Send the same Idempotency-Key to retry safely.
+      tags: [invoices]
+      security:
+        - oauth: [invoices:write]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/NewInvoice"}
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Invoice"}
+        "400": {$ref: "#/components/responses/BadRequest"}
+        "409":
+          description: An invoice with this reference already exists.
+  /invoices/{invoiceId}:
+    parameters:
+      - name: invoiceId
+        in: path
+        required: true
+        description: Identifier of the invoice.
+        schema: {type: string}
+    get:
+      operationId: getInvoice
+      tags: [invoices]
+      responses:
+        "200":
+          description: The invoice.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Invoice"}
+        "404":
+          description: No such invoice.
+    put:
+      operationId: replaceInvoice
+      tags: [invoices]
+      security:
+        - oauth: [invoices:write]
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/NewInvoice"}
+      responses:
+        "200":
+          description: Replaced.
+    delete:
+      operationId: deleteInvoice
+      tags: [invoices]
+      security:
+        - oauth: [invoices:delete]
+      responses:
+        "204":
+          description: Deleted.
+    patch:
+      summary: Update some fields of an invoice
+      tags: [invoices]
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema: {type: object}
+      responses:
+        "200":
+          description: Updated.
+  /payments:
+    post:
+      operationId: executePayment
+      summary: Pay an invoice
+      tags: [payments]
+      deprecated: true
+      security:
+        - oauth: [payments:write]
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoiceId, amount]
+              properties:
+                invoiceId: {type: string}
+                amount: {type: number}
+      responses:
+        "202":
+          description: Accepted.
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Unique key per logical request.
+      schema: {type: string}
+  responses:
+    BadRequest:
+      description: The request is invalid.
+  schemas:
+    NewInvoice:
+      type: object
+      required: [vendor, amount, currency, reference]
+      properties:
+        vendor: {type: string}
+        amount: {type: number}
+        currency: {type: string, minLength: 3, maxLength: 3}
+        reference: {type: string}
+        customer: {$ref: "customers.yaml#/components/schemas/Customer"}
+    Invoice:
+      allOf:
+        - $ref: "#/components/schemas/NewInvoice"
+        - type: object
+          properties:
+            id: {type: string}
+            status: {type: string}
+            replaces: {$ref: "#/components/schemas/Invoice"}

@@ -41,6 +41,7 @@ flowglyph = "flowglyph.cli:run"
 
 [project.entry-points."flowglyph.adapters"]
 uipath = "flowglyph.adapters.uipath:UiPathAdapter"
+openapi = "flowglyph.adapters.openapi:OpenAPIAdapter"
 
 [project.urls]
 Homepage = "https://github.com/flowglyph/flowglyph"

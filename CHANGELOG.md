@@ -16,3 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an index, a lock file with automatic semver bumps, and `flowglyph.overrides.yaml`.
 - `flowglyph` command line: `extract`, `validate`, `diff`, `inspect` and `search`.
 - README with Excalidraw diagrams rendered to light and dark SVG by `make diagrams`.
+- OpenAPI 3.0 and 3.1 adapter: parameters and bodies as one input schema, local `$ref`
+  resolution with recursion cut-off, effects and idempotency from HTTP semantics and
+  `Idempotency-Key` headers, OAuth scopes and error responses.
