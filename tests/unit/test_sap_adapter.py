@@ -103,7 +103,34 @@ def test_detection(sap: Path, synthetic: Path):
 
 def test_metadata_saved_from_a_browser_is_found(sap: Path, tmp_path: Path):
     shutil.copy(sap / "ZSUPPLIER_INVOICE_SRV.edmx", tmp_path / "$metadata")
-    assert SapODataAdapter().discover(tmp_path) == [tmp_path / "$metadata"]
+    extraction = SapODataAdapter().extract(tmp_path)
+    assert f"{V2}/Supplier/read" in {c.id for c in extraction.capabilities}
+
+
+def test_the_same_service_in_v2_and_v4_stays_apart(sap: Path, tmp_path: Path):
+    v2 = (sap / "ZSUPPLIER_INVOICE_SRV.edmx").read_text()
+    v4 = (
+        (sap / "zbusinesspartner_v4.xml")
+        .read_text()
+        .replace('Namespace="zbusinesspartner"', 'Namespace="ZSUPPLIER_INVOICE_SRV"')
+    )
+    (tmp_path / "v2.edmx").write_text(v2)
+    (tmp_path / "v4.xml").write_text(v4)
+    ids = {c.id for c in SapODataAdapter().extract(tmp_path).capabilities}
+    assert f"{V2}.v2/SupplierInvoice/create" in ids
+    assert f"{V2}.v4/BusinessPartner/read" in ids
+
+
+def test_undeclared_sap_namespaces_are_tolerated(sap: Path, tmp_path: Path):
+    text = (sap / "ZSUPPLIER_INVOICE_SRV.edmx").read_text()
+    text = text.replace(' xmlns:sap="http://www.sap.com/Protocols/SAPData"', "", 1)
+    (tmp_path / "sloppy.edmx").write_text(text)
+    extraction = SapODataAdapter().extract(tmp_path)
+    assert f"{V2}/Supplier/read" in {c.id for c in extraction.capabilities}
+    assert [d.level for d in extraction.diagnostics] == ["info"]
+    assert not {c.id for c in extraction.capabilities} & {f"{V2}/Supplier/create"}, (
+        "sap:creatable is still honoured"
+    )
 
 
 def test_sap_sits_next_to_other_sources(sap: Path, synthetic: Path, tmp_path: Path):

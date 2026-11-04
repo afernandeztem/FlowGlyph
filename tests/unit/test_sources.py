@@ -73,6 +73,7 @@ def test_repositories_are_cloned_and_updated(
 
     first = sources.resolve(f"file://{upstream}")
     assert first.path.is_relative_to(tmp_path / "cache")
+    assert first.path.name == "upstream", "the checkout is named after the repository"
     assert (first.path / "invoices" / "Main.xaml").is_file()
     assert first.origin == f"file://{upstream}"
 
@@ -88,10 +89,10 @@ def test_repositories_are_cloned_and_updated(
 
 
 def test_browser_links_to_folders_are_understood(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
-    calls: list[tuple[str, str | None]] = []
+    calls: list[tuple[str, str | None, str]] = []
 
-    def fake_checkout(url: str, ref: str | None) -> Path:
-        calls.append((url, ref))
+    def fake_checkout(url: str, ref: str | None, subdir: str = "") -> Path:
+        calls.append((url, ref, subdir))
         (tmp_path / "Framework").mkdir(exist_ok=True)
         return tmp_path
 
@@ -101,6 +102,6 @@ def test_browser_links_to_folders_are_understood(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(sources, "_checkout", fake_checkout)
     monkeypatch.setattr(sources, "_git", fake_git)
     resolved = sources.resolve("https://github.com/UiPath/ReFrameWork/tree/master/Framework")
-    assert calls == [("https://github.com/UiPath/ReFrameWork.git", "master")]
+    assert calls == [("https://github.com/UiPath/ReFrameWork.git", "master", "Framework")]
     assert resolved.path == tmp_path / "Framework"
     assert resolved.revision == "abc123"

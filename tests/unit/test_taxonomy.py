@@ -36,3 +36,56 @@ def test_ui_automation_is_never_assumed_harmless():
     effects = default_taxonomy().classify(UIPATH, "Click").effects
     assert effects.mutates_state is Tri.UNKNOWN
     assert effects.has_side_effects
+
+
+@pytest.mark.parametrize(
+    ("namespace", "name", "category", "effects"),
+    [
+        (
+            "clr-namespace:UiPath.Azure.Activities",
+            "AzureGetVirtualMachine",
+            "integration.cloud",
+            "RX",
+        ),
+        (
+            "clr-namespace:UiPath.Citrix.Activities",
+            "CitrixDeleteVM",
+            "integration.infrastructure",
+            "WDX",
+        ),
+        (
+            "clr-namespace:UiPath.Citrix.Activities",
+            "CitrixScope",
+            "integration.infrastructure",
+            "X",
+        ),
+        (
+            "clr-namespace:UiPath.AmazonWebServices.Activities",
+            "AWSStartInstance",
+            "integration.cloud",
+            "rWX",
+        ),
+        (
+            "http://schemas.uipath.com/workflow/activities/activedirectorydomainservices",
+            "GroupExists",
+            "integration.directory",
+            "RX",
+        ),
+        (
+            "clr-namespace:UiPath.JiraSoftware.Activities",
+            "ChangeIssueStatus",
+            "integration.saas",
+            "rWdX",
+        ),
+    ],
+)
+def test_connector_activities_get_effects_from_their_verb(
+    namespace: str, name: str, category: str, effects: str
+):
+    classified = default_taxonomy().classify(namespace, name)
+    assert (classified.name, classified.effects.code()) == (category, effects)
+
+
+def test_verbs_never_override_what_is_known():
+    assert default_taxonomy().classify(UIPATH, "GetQueueItem").effects.mutates_state is Tri.YES
+    assert default_taxonomy().classify(SYSTEM, "Assign").effects.code() == ""

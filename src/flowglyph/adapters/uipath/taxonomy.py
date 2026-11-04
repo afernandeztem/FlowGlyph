@@ -8,6 +8,8 @@ import yaml
 
 from flowglyph.ir import Effects, Tri
 
+_WORDS = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+")
+
 
 @dataclass(frozen=True)
 class Category:
@@ -25,15 +27,30 @@ class Taxonomy:
     name_rules: tuple[tuple[re.Pattern[str], str], ...]
     namespace_rules: tuple[tuple[str, str], ...]
     activity_effects: dict[str, dict[str, Tri]]
+    verb_effects: tuple[tuple[frozenset[str], dict[str, Tri]], ...] = ()
+    suffix_effects: tuple[tuple[str, dict[str, Tri]], ...] = ()
 
     def classify(self, namespace: str, name: str) -> Category:
         """Category and effects of the activity `name` from XML namespace `namespace`."""
         category = self._category_name(namespace, name)
         effects = self.categories[category]
         overrides = self.activity_effects.get(name)
+        if overrides is None and Tri.UNKNOWN in {effects.mutates_state, effects.reads}:
+            overrides = self._from_name(name)
         if overrides:
             effects = effects.model_copy(update=overrides)
         return Category(category, effects)
+
+    def _from_name(self, name: str) -> dict[str, Tri] | None:
+        for suffix, effects in self.suffix_effects:
+            if name.endswith(suffix):
+                return effects
+        words = [word.lower() for word in _WORDS.findall(name)]
+        for word in words:
+            for vocabulary, effects in self.verb_effects:
+                if word in vocabulary:
+                    return effects
+        return None
 
     def _category_name(self, namespace: str, name: str) -> str:
         for pattern, category in self.name_rules:
@@ -81,4 +98,14 @@ def parse_taxonomy(document: dict[str, Any]) -> Taxonomy:
         activity_effects={
             name: _effects(raw) for name, raw in document.get("activities", {}).items()
         },
+        verb_effects=tuple(
+            (frozenset(spec["words"]), _effects(spec["effects"]))
+            for spec in document.get("verbs", {}).values()
+            if "words" in spec
+        ),
+        suffix_effects=tuple(
+            (spec["suffix"], _effects(spec["effects"]))
+            for spec in document.get("verbs", {}).values()
+            if "suffix" in spec
+        ),
     )

@@ -7,14 +7,19 @@ imports, functions and actions of the service.
 """
 
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
+from xml.etree import ElementTree as ET
 
 from flowglyph._internal.hashing import digest
-from flowglyph._internal.xml import load_xml
+from flowglyph._internal.paths import distinguishing_names
+from flowglyph._internal.xml import parse_xml
 from flowglyph.adapters import Diagnostic, Extraction
 from flowglyph.adapters.sap.edmx import (
+    METADATA_V2,
+    SAP,
     EntitySet,
     EntityType,
     Operation,
@@ -29,7 +34,9 @@ from flowglyph.errors import AdapterError
 from flowglyph.ir import Capability, Effects, Idempotency, JsonSchema, Source, Tri
 
 _SUFFIXES = frozenset({".xml", ".edmx"})
-_EDMX_MARKER = re.compile(rb"<(?:[\w-]+:)?Edmx\b")
+_EDMX_ROOT = re.compile(rb"<(?:[\w-]+:)?Edmx\b")
+_KNOWN_PREFIXES = {"sap": SAP, "m": METADATA_V2}
+_COLLISION = 2
 _QUERY_OPTIONS: JsonSchema = {
     "$filter": {"type": "string", "description": "OData filter expression."},
     "$select": {"type": "string", "description": "Comma-separated properties to return."},
@@ -63,31 +70,41 @@ class SapODataAdapter:
 
     def detect(self, path: Path) -> bool:
         """Whether `path` is an OData metadata document or a folder containing one."""
-        return bool(self.discover(path))
+        return bool(_metadata_files(path))
 
     def discover(self, root: Path) -> list[Path]:
-        """Every OData metadata document under `root`, one source per file."""
-        if root.is_file():
-            return [root] if _is_metadata(root) else []
-        if not root.is_dir():
-            return []
-        return sorted(file for file in root.rglob("*") if file.is_file() and _is_metadata(file))
+        """`root` itself when it holds metadata documents: they are read together.
+
+        Reading them together lets the adapter notice the same service published twice, for
+        instance as OData V2 and V4, and keep both apart.
+        """
+        return [root] if _metadata_files(root) else []
 
     def extract(self, path: Path) -> Extraction:
         """Extract every metadata document at `path`."""
         root = path if path.is_dir() else path.parent
-        capabilities: list[Capability] = []
         artifacts: dict[str, str] = {}
         diagnostics: list[Diagnostic] = []
-        for file in self.discover(path):
+        services: list[tuple[Service, str]] = []
+        for file in _metadata_files(path):
             artifact = file.relative_to(root).as_posix()
-            artifacts[artifact] = digest(file.read_bytes())
+            data = file.read_bytes()
+            artifacts[artifact] = digest(data)
             try:
-                document = load_xml(file)
+                document, repaired = _parse_lenient(data, artifact)
             except AdapterError as error:
                 diagnostics.append(Diagnostic("error", artifact, str(error)))
                 continue
-            service = parse_service(document, file.stem)
+            if not is_edmx(document):
+                diagnostics.append(Diagnostic("info", artifact, "not OData metadata, skipped"))
+                continue
+            if repaired:
+                diagnostics.append(Diagnostic("info", artifact, repaired))
+            services.append((parse_service(document, file.stem), artifact))
+        names = _qualified_names(services)
+        capabilities: list[Capability] = []
+        for (service, artifact), name in zip(services, names, strict=True):
+            service.name = name
             reader = _ServiceReader(service, artifact, artifacts[artifact])
             capabilities.extend(reader.capabilities())
             diagnostics.extend(reader.diagnostics)
@@ -283,17 +300,57 @@ def _object(properties: JsonSchema, required: list[str]) -> JsonSchema:
     }
 
 
+def _metadata_files(path: Path) -> list[Path]:
+    if path.is_file():
+        return [path] if _is_metadata(path) else []
+    if not path.is_dir():
+        return []
+    return sorted(file for file in path.rglob("*") if file.is_file() and _is_metadata(file))
+
+
 def _is_metadata(file: Path) -> bool:
     if file.suffix.lower() not in _SUFFIXES and "$metadata" not in file.name:
         return False
     with file.open("rb") as handle:
         head = handle.read(4096)
-    if _EDMX_MARKER.search(head) is None:
-        return False
+    return _EDMX_ROOT.search(head) is not None
+
+
+def _parse_lenient(data: bytes, artifact: str) -> tuple[ET.Element, str | None]:
+    """Parse metadata, declaring the SAP namespaces some services use without declaring."""
     try:
-        return is_edmx(load_xml(file))
-    except AdapterError:
-        return True
+        return parse_xml(data, artifact), None
+    except AdapterError as error:
+        if "unbound prefix" not in str(error):
+            raise
+        match = _EDMX_ROOT.search(data)
+        if match is None:
+            raise
+        missing = [
+            f' xmlns:{prefix}="{uri}"'.encode()
+            for prefix, uri in _KNOWN_PREFIXES.items()
+            if f"xmlns:{prefix}=".encode() not in data
+        ]
+        patched = data[: match.end()] + b"".join(missing) + data[match.end() :]
+        document = parse_xml(patched, artifact)
+        return document, "declared the SAP XML namespaces the document uses without declaring"
+
+
+def _qualified_names(services: list[tuple[Service, str]]) -> list[str]:
+    """Service names, qualified by OData version, or else by path, where documents collide."""
+    groups: defaultdict[str, list[int]] = defaultdict(list)
+    for index, (service, _) in enumerate(services):
+        groups[service.name].append(index)
+    names = [service.name for service, _ in services]
+    for name, indexes in groups.items():
+        if len(indexes) < _COLLISION:
+            continue
+        versions = [f"v{services[i][0].version.split('.')[0]}" for i in indexes]
+        if len(set(versions)) < len(versions):
+            versions = distinguishing_names([services[i][1] for i in indexes])
+        for index, suffix in zip(indexes, versions, strict=True):
+            names[index] = f"{name}.{suffix}"
+    return names
 
 
 __all__ = ["SapODataAdapter"]

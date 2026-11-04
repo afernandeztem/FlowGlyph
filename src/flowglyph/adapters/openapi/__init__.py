@@ -2,6 +2,7 @@
 
 import json
 import re
+from collections import defaultdict
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, ClassVar, cast
@@ -9,6 +10,7 @@ from typing import Any, ClassVar, cast
 import yaml
 
 from flowglyph._internal.hashing import digest
+from flowglyph._internal.paths import distinguishing_names
 from flowglyph.adapters import Diagnostic, Extraction
 from flowglyph.adapters.openapi.refs import RefResolver
 from flowglyph.errors import AdapterError
@@ -41,8 +43,11 @@ class OpenAPIAdapter:
         return bool(_spec_files(path))
 
     def discover(self, root: Path) -> list[Path]:
-        """Every OpenAPI 3.x document under `root`, one source per file."""
-        return _spec_files(root)
+        """`root` itself when it holds OpenAPI documents: they are read together.
+
+        Reading them together lets the adapter keep apart two documents with the same title.
+        """
+        return [root] if _spec_files(root) else []
 
     def extract(self, path: Path) -> Extraction:
         """Extract every OpenAPI document at `path`."""
@@ -50,6 +55,7 @@ class OpenAPIAdapter:
         capabilities: list[Capability] = []
         artifacts: dict[str, str] = {}
         diagnostics: list[Diagnostic] = []
+        readers: list[_DocumentReader] = []
         for file in _spec_files(path):
             artifact = file.relative_to(root).as_posix()
             data = file.read_bytes()
@@ -59,7 +65,16 @@ class OpenAPIAdapter:
             except AdapterError as error:
                 diagnostics.append(Diagnostic("error", artifact, str(error)))
                 continue
-            reader = _DocumentReader(document, artifact, artifacts[artifact])
+            readers.append(_DocumentReader(document, artifact, artifacts[artifact]))
+        by_title: defaultdict[str, list[_DocumentReader]] = defaultdict(list)
+        for reader in readers:
+            by_title[reader.api].append(reader)
+        for title, group in by_title.items():
+            if len(group) > 1:
+                suffixes = distinguishing_names([reader.artifact for reader in group])
+                for reader, suffix in zip(group, suffixes, strict=True):
+                    reader.api = f"{title}.{suffix}"
+        for reader in readers:
             capabilities.extend(reader.capabilities())
             diagnostics.extend(reader.diagnostics)
         return Extraction(capabilities=capabilities, artifacts=artifacts, diagnostics=diagnostics)

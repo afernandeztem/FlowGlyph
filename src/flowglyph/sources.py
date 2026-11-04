@@ -63,26 +63,30 @@ def resolve(spec: str | Path, *, ref: str | None = None) -> Source:
         url = f"https://{tree['host']}/{tree['owner']}/{tree['repo']}.git"
         ref = ref or tree["ref"]
         subdir = tree["subdir"] or ""
-    checkout = _checkout(url, ref)
+    checkout = _checkout(url, ref, subdir)
     path = checkout / subdir if subdir else checkout
     if not path.exists():
         raise CatalogError(f"{subdir} does not exist in {url}")
     return Source(path=path, origin=url, revision=_git("rev-parse", "HEAD", cwd=checkout))
 
 
-def _checkout(url: str, ref: str | None) -> Path:
+def _checkout(url: str, ref: str | None, subdir: str = "") -> Path:
+    """Clone or refresh `url`. With `subdir`, only that folder is downloaded."""
     if shutil.which("git") is None:
         raise CatalogError("reading a repository needs git on PATH")
-    key = hashlib.sha256(f"{url}@{ref or ''}".encode()).hexdigest()[:16]
+    key = hashlib.sha256(f"{url}@{ref or ''}:{subdir}".encode()).hexdigest()[:16]
     name = re.sub(r"[^\w.-]+", "_", url.rstrip("/").removesuffix(".git").rsplit("/", 1)[-1])
-    target = cache_directory() / "sources" / f"{name}-{key}"
+    target = cache_directory() / "sources" / key / name
     if (target / ".git").is_dir():
         _git("fetch", "--depth", "1", "origin", ref or "HEAD", cwd=target)
         _git("reset", "--hard", "FETCH_HEAD", cwd=target)
         return target
     target.parent.mkdir(parents=True, exist_ok=True)
     branch = ["--branch", ref] if ref else []
-    _git("clone", "--depth", "1", "--single-branch", *branch, url, str(target))
+    sparse = ["--filter=blob:none", "--sparse"] if subdir else []
+    _git("clone", "--depth", "1", "--single-branch", *sparse, *branch, url, str(target))
+    if subdir:
+        _git("sparse-checkout", "set", subdir, cwd=target)
     return target
 
 

@@ -34,6 +34,14 @@ categories:
     effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
   scripting:
     effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: unknown}
+  integration.cloud:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  integration.infrastructure:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  integration.directory:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  integration.saas:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
   unknown:
     effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: unknown}
 
@@ -45,7 +53,7 @@ rules:
   - {name: "(Http|Rest|Soap)", category: integration.web}
   - {name: "(Credential|Asset|QueueItem|TransactionStatus|^AddQueue|^StartJob)", category: orchestrator}
   - {name: "^(KillProcess|StartProcess|CloseApplication|OpenApplication|OpenBrowser)", category: system}
-  - {name: "^(Click|TypeInto|TypeSecureText|TakeScreenshot|ElementExists|AttachWindow|AttachBrowser|GetText|Hover|SendHotkey|FindElement|WaitElement|UseApplication)", category: ui}
+  - {name: "^(Click|TypeInto|TypeSecureText|TakeScreenshot|ElementExists|AttachWindow|AttachBrowser|GetText|GetFullText|Hover|SendHotkey|FindElement|WaitElement|UseApplication|Highlight|MaximizeWindow|MinimizeWindow|SelectItem|SetValue|GetValue|ExtractData|MessageBox|InputDialog|BrowserScope|NavigateTo|AnchorBase|Region|CursorPosition|SetFocus|CheckState)$", category: ui}
   - {name: "(File|Directory|Folder|SaveImage|^Copy|^Move|^Delete)", category: filesystem}
   - {name: "^(Log|AddLogFields$|RemoveLogFields$|Comment$|WriteLine$)", category: logging}
   - {name: "(Query$|^DatabaseConnect|^DatabaseDisconnect|^BulkInsert|^InsertDataTable|^StartTransaction)", category: integration.database}
@@ -56,14 +64,59 @@ rules:
 
 namespaces:
   - {contains: "netfx/2009/xaml/activities", category: control}
+  - {contains: "activities/azureactivedirectory", category: integration.directory}
+  - {contains: "activities/activedirectorydomainservices", category: integration.directory}
+  - {contains: "activities/vmware", category: integration.infrastructure}
+  - {contains: "UiPath.Azure", category: integration.cloud}
+  - {contains: "UiPath.AmazonWebServices", category: integration.cloud}
+  - {contains: "UiPath.AmazonWorkSpaces", category: integration.cloud}
+  - {contains: "UiPath.GoogleCloud", category: integration.cloud}
+  - {contains: "UiPath.Citrix", category: integration.infrastructure}
+  - {contains: "UiPath.HyperV", category: integration.infrastructure}
+  - {contains: "UiPath.SystemCenter", category: integration.infrastructure}
+  - {contains: "UiPath.VMware", category: integration.infrastructure}
+  - {contains: "UiPath.ActiveDirectory", category: integration.directory}
+  - {contains: "UiPath.Jira", category: integration.saas}
+  - {contains: "UiPath.Salesforce", category: integration.saas}
+  - {contains: "UiPath.ServiceNow", category: integration.saas}
+  - {contains: "UiPath.Workday", category: integration.saas}
+  - {contains: "UiPath.MicrosoftOffice365", category: integration.saas}
+  - {contains: "UiPath.GSuite", category: integration.saas}
   - {contains: "UiPath.Excel", category: integration.excel}
   - {contains: "UiPath.Mail", category: integration.mail}
   - {contains: "UiPath.Web", category: integration.web}
   - {contains: "UiPath.UIAutomation", category: ui}
   - {contains: "UiPath.Database", category: integration.database}
 
+# Effects from the verb in an activity's name, for categories that cannot tell on their own
+# ("AzureADGetUser" reads, "CitrixDeleteVM" destroys). The first word of the name found in one
+# of these lists decides. Explicit entries under `activities` always win.
+verbs:
+  read:
+    words: [get, list, find, search, exists, is, has, read, check, query, lookup, count, wait, download, export, foreach, each]
+    effects: {reads: yes, mutates_state: no, destructive: no}
+  create:
+    words: [create, add, new, insert, upload, send, post, invite, assign, start, run, execute, invoke, enable, import, copy, clone]
+    effects: {reads: unknown, mutates_state: yes, destructive: no}
+  update:
+    words: [set, update, change, reset, write, save, append, fill, move, rename, reboot, restart, stop, power, shutdown, suspend, resume, take, apply, approve, disable, tag, force, modify, edit, replace]
+    effects: {reads: unknown, mutates_state: yes, destructive: unknown}
+  delete:
+    words: [delete, remove, terminate, kill, purge, destroy, revoke, drop, clear, unassign]
+    effects: {reads: no, mutates_state: yes, destructive: yes}
+  scope:
+    suffix: Scope
+    effects: {reads: no, mutates_state: no, destructive: no}
+
 # Activities whose effects are known more precisely than their category's defaults.
 activities:
+  MessageBox: {reads: no, mutates_state: no, destructive: no, external: no}
+  InputDialog: {reads: yes, mutates_state: no, destructive: no, external: no}
+  Highlight: {reads: no, mutates_state: no, destructive: no}
+  MaximizeWindow: {reads: no, mutates_state: no, destructive: no}
+  GetFullText: {reads: yes, mutates_state: no, destructive: no}
+  GetValue: {reads: yes, mutates_state: no, destructive: no}
+  ExtractData: {reads: yes, mutates_state: no, destructive: no}
   GetRobotAsset: {reads: yes, mutates_state: no, destructive: no}
   GetRobotCredential: {reads: yes, mutates_state: no, destructive: no}
   GetSecureCredential: {reads: yes, mutates_state: no, destructive: no, external: no}

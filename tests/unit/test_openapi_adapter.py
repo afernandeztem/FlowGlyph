@@ -119,3 +119,10 @@ def test_one_catalog_for_every_source(openapi: Path, reframework: Path):
     pure = [c for c in catalog if c.invocable and not c.effects.has_side_effects]
     assert {c.source.provider for c in pure} == {"uipath", "openapi"}
     assert catalog.get("deleteInvoice").effects.destructive is Tri.YES
+
+
+def test_documents_with_the_same_title_stay_apart(openapi: Path, tmp_path: Path):
+    for name in ("eu.yaml", "us.yaml"):
+        (tmp_path / name).write_text((openapi / "payments.yaml").read_text())
+    ids = {c.id for c in OpenAPIAdapter().extract(tmp_path).capabilities}
+    assert {"openapi/Payments_API.eu/createInvoice", "openapi/Payments_API.us/createInvoice"} <= ids
