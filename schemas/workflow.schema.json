@@ -1,0 +1,146 @@
+{
+  "$defs": {
+    "Edge": {
+      "additionalProperties": false,
+      "description": "Control flow between two nodes, optionally guarded by a condition.",
+      "properties": {
+        "condition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condition"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "Node": {
+      "additionalProperties": false,
+      "description": "A step in a workflow graph.",
+      "properties": {
+        "capability": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capability"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/NodeKind"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "label"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "NodeKind": {
+      "enum": [
+        "invoke",
+        "activity",
+        "decision",
+        "container",
+        "opaque"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:flowglyph:ir:0.1.0:workflow",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The implementation graph behind a workflow capability.",
+  "properties": {
+    "calls": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Calls",
+      "type": "array"
+    },
+    "capability": {
+      "title": "Capability",
+      "type": "string"
+    },
+    "edges": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Edge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "nodes": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "unresolved_calls": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Unresolved Calls",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "capability"
+  ],
+  "title": "Workflow",
+  "type": "object"
+}

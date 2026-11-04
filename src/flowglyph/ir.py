@@ -1,0 +1,253 @@
+"""The Automation IR: vendor-neutral models for capabilities and workflows.
+
+A `Capability` describes one operation an automation can perform: its contract, its side
+effects and whether it is safe to retry. A `Workflow` is a graph of nodes that reference
+capabilities. Adapters produce these models; everything else in FlowGlyph consumes them.
+"""
+
+import json
+from enum import StrEnum
+from pathlib import Path
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+IR_VERSION = "0.1.0"
+
+type JsonSchema = dict[str, Any]
+type CapabilityKind = Literal["workflow", "activity", "operation"]
+type IdempotencyMode = Literal["none", "natural", "key", "conditional"]
+type Provenance = Literal["declared", "inferred"]
+type NodeKind = Literal["invoke", "activity", "decision", "container", "opaque"]
+
+
+class Tri(StrEnum):
+    """A three-valued answer for properties static analysis cannot always settle."""
+
+    YES = "yes"
+    NO = "no"
+    UNKNOWN = "unknown"
+
+    @property
+    def possible(self) -> bool:
+        """Whether the property may hold, treating `UNKNOWN` as a yes."""
+        return self is not Tri.NO
+
+    @classmethod
+    def combine(cls, values: "list[Tri]") -> "Tri":
+        """Aggregate the values of several steps into the value for the whole."""
+        if Tri.YES in values:
+            return Tri.YES
+        if Tri.UNKNOWN in values:
+            return Tri.UNKNOWN
+        return Tri.NO
+
+
+class _Model(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid", use_enum_values=False)
+
+
+class Effects(_Model):
+    """What running a capability does to the world outside the caller."""
+
+    reads: Tri = Tri.UNKNOWN
+    mutates_state: Tri = Tri.UNKNOWN
+    destructive: Tri = Tri.UNKNOWN
+    external: Tri = Tri.UNKNOWN
+
+    @property
+    def has_side_effects(self) -> bool:
+        """Whether the capability may change state, counting unknowns as changes."""
+        return self.mutates_state.possible or self.destructive.possible
+
+    @classmethod
+    def combine(cls, effects: "list[Effects]") -> "Effects":
+        """Effects of running every given capability."""
+        if not effects:
+            return cls(reads=Tri.NO, mutates_state=Tri.NO, destructive=Tri.NO, external=Tri.NO)
+        return cls(
+            reads=Tri.combine([effect.reads for effect in effects]),
+            mutates_state=Tri.combine([effect.mutates_state for effect in effects]),
+            destructive=Tri.combine([effect.destructive for effect in effects]),
+            external=Tri.combine([effect.external for effect in effects]),
+        )
+
+    def code(self) -> str:
+        """Compact form used in L0 cards: `R`ead, `W`rite, `D`estroy, e`X`ternal.
+
+        Upper case means yes, lower case means unknown, absent means no.
+        """
+        letters = (
+            ("r", self.reads),
+            ("w", self.mutates_state),
+            ("d", self.destructive),
+            ("x", self.external),
+        )
+        return "".join(
+            letter.upper() if value is Tri.YES else letter
+            for letter, value in letters
+            if value is not Tri.NO
+        )
+
+
+class Idempotency(_Model):
+    """Whether, and how, a capability can be called more than once safely.
+
+    `natural` means repeating the call has no further effect. `key` means it is safe only
+    when deduplicated on `key_fields`. `none` means every call has an effect, so a gateway
+    must deduplicate on a caller-supplied key before retrying.
+    """
+
+    mode: IdempotencyMode = "none"
+    key_fields: tuple[str, ...] = ()
+    scope: str | None = None
+    ttl_seconds: int | None = Field(default=None, ge=1)
+    compensation: str | None = None
+    provenance: Provenance = "inferred"
+    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    inferred_by: Literal["heuristic", "llm"] | None = "heuristic"
+
+
+class Semantics(_Model):
+    """Business meaning of a capability, independent of how it is implemented."""
+
+    verb: str | None = None
+    entity: str | None = None
+    domain: str | None = None
+
+
+class Security(_Model):
+    """Authorization a caller needs before the capability may run."""
+
+    scopes: tuple[str, ...] = ()
+    approval_required: bool = False
+
+
+class Source(_Model):
+    """Where a capability came from, so it can be traced back and re-extracted."""
+
+    provider: str
+    artifact: str
+    location: str
+    source_hash: str
+    artifact_version: str | None = None
+
+
+class Parameter(_Model):
+    """One named input or output, a convenience view over the JSON Schema."""
+
+    name: str
+    type: str
+    required: bool
+    description: str | None = None
+
+
+class Capability(_Model):
+    """One operation an agent can discover, reason about and, if invocable, run."""
+
+    id: str
+    version: str = "1.0.0"
+    kind: CapabilityKind
+    title: str
+    description: str = ""
+    category: str = "uncategorized"
+    semantics: Semantics = Semantics()
+    input_schema: JsonSchema = Field(default_factory=lambda: {"type": "object", "properties": {}})
+    output_schema: JsonSchema = Field(default_factory=lambda: {"type": "object", "properties": {}})
+    effects: Effects = Effects()
+    idempotency: Idempotency = Idempotency()
+    security: Security = Security()
+    errors: tuple[str, ...] = ()
+    tags: tuple[str, ...] = ()
+    notes: tuple[str, ...] = ()
+    source: Source
+    invocable: bool = True
+
+    @property
+    def inputs(self) -> list[Parameter]:
+        """Input parameters in schema order."""
+        return _parameters(self.input_schema)
+
+    @property
+    def outputs(self) -> list[Parameter]:
+        """Output parameters in schema order."""
+        return _parameters(self.output_schema)
+
+    def card(self) -> dict[str, Any]:
+        """The L0 representation: a few dozen bytes an agent can scan by the thousand."""
+        return {
+            "id": self.id,
+            "d": self.description.split("\n", 1)[0][:120] or self.title,
+            "in": [parameter.name for parameter in self.inputs],
+            "out": [parameter.name for parameter in self.outputs],
+            "e": self.effects.code(),
+            "i": self.idempotency.mode,
+        }
+
+
+class Node(_Model):
+    """A step in a workflow graph."""
+
+    id: str
+    kind: NodeKind
+    label: str
+    capability: str | None = None
+    note: str | None = None
+
+
+class Edge(_Model):
+    """Control flow between two nodes, optionally guarded by a condition."""
+
+    source: str
+    target: str
+    condition: str | None = None
+
+
+class Workflow(_Model):
+    """The implementation graph behind a workflow capability."""
+
+    id: str
+    capability: str
+    nodes: tuple[Node, ...] = ()
+    edges: tuple[Edge, ...] = ()
+    calls: tuple[str, ...] = ()
+    unresolved_calls: tuple[str, ...] = ()
+
+    @property
+    def entry(self) -> Node | None:
+        """The first node, the one no edge points to."""
+        targets = {edge.target for edge in self.edges}
+        return next((node for node in self.nodes if node.id not in targets), None)
+
+
+def _parameters(schema: JsonSchema) -> list[Parameter]:
+    properties: dict[str, JsonSchema] = schema.get("properties", {})
+    required = set(schema.get("required", []))
+    return [
+        Parameter(
+            name=name,
+            type=str(spec.get("type", "any")),
+            required=name in required,
+            description=spec.get("description"),
+        )
+        for name, spec in properties.items()
+    ]
+
+
+def export_json_schemas(directory: str | Path) -> list[Path]:
+    """Write the JSON Schemas of the IR documents into `directory`.
+
+    Returns:
+        The paths written, one per top-level IR document.
+    """
+    target = Path(directory)
+    target.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    for name, model in (("capability", Capability), ("workflow", Workflow)):
+        schema = model.model_json_schema()
+        schema["$id"] = f"urn:flowglyph:ir:{IR_VERSION}:{name}"
+        schema["$schema"] = "https://json-schema.org/draft/2020-12/schema"
+        path = target / f"{name}.schema.json"
+        path.write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n")
+        written.append(path)
+    return written

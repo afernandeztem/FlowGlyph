@@ -1,0 +1,11 @@
+<Activity x:Class="RequestApproval"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:um="clr-namespace:UiPath.Mail.SMTP.Activities;assembly=UiPath.Mail.Activities"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Approver" Type="InArgument(x:String)" />
+  </x:Members>
+  <Sequence DisplayName="Request approval">
+    <um:SendMail DisplayName="Mail approver" To="[in_Approver]" Subject="Approve invoice" />
+  </Sequence>
+</Activity>

@@ -1,0 +1,769 @@
+{
+  "ir_version": "0.1.0",
+  "workflows": [
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Framework/CloseAllApplications",
+      "edges": [],
+      "id": "uipath/reframework/Framework/CloseAllApplications",
+      "nodes": [],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Framework/GetAppCredentials",
+      "edges": [
+        {
+          "condition": "not (Not CredentialsFound)",
+          "source": "If_5",
+          "target": "AddCredential_2"
+        },
+        {
+          "condition": null,
+          "source": "RequestCredential_2",
+          "target": "If_5"
+        },
+        {
+          "condition": "Not CredentialsFound",
+          "source": "If_3",
+          "target": "RequestCredential_2"
+        },
+        {
+          "condition": "out_Username Is Nothing Or out_Password Is Nothing",
+          "source": "If_4",
+          "target": "If_3"
+        },
+        {
+          "condition": null,
+          "source": "GetRobotCredential_2",
+          "target": "If_4"
+        }
+      ],
+      "id": "uipath/reframework/Framework/GetAppCredentials",
+      "nodes": [
+        {
+          "capability": "uipath/activity/GetRobotCredential",
+          "id": "GetRobotCredential_2",
+          "kind": "activity",
+          "label": "Get credentials",
+          "note": "Attempt to retrieve credentials from Orchestrator."
+        },
+        {
+          "capability": null,
+          "id": "If_4",
+          "kind": "decision",
+          "label": "If out_Username Is Nothing Or out_Password Is Nothing",
+          "note": "The Private property is used to prevent the generation of logs that might contain information about the credentials."
+        },
+        {
+          "capability": null,
+          "id": "If_3",
+          "kind": "decision",
+          "label": "If Not CredentialsFound",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/RequestCredential",
+          "id": "RequestCredential_2",
+          "kind": "activity",
+          "label": "Request credentials",
+          "note": "Request credentials from user."
+        },
+        {
+          "capability": null,
+          "id": "If_5",
+          "kind": "decision",
+          "label": "If Not CredentialsFound",
+          "note": "Throw exception in case of no credentials, or add provided credentials to Windows Credential Manager."
+        },
+        {
+          "capability": "uipath/activity/AddCredential",
+          "id": "AddCredential_2",
+          "kind": "activity",
+          "label": "Add Credential",
+          "note": "Add provided credentials to the Windows Credential Manager to avoid requesting them in later executions of the process."
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Framework/GetTransactionData",
+      "edges": [
+        {
+          "condition": null,
+          "source": "GetQueueItem_1",
+          "target": "If_1"
+        }
+      ],
+      "id": "uipath/reframework/Framework/GetTransactionData",
+      "nodes": [
+        {
+          "capability": "uipath/activity/GetQueueItem",
+          "id": "GetQueueItem_1",
+          "kind": "activity",
+          "label": "Get transaction item",
+          "note": "Get a transaction item from the specified Orchestrator queue.\nIf queues are not used in this process, replace this activity with the appropriated logic to retrieve transaction items.\nFor example, if transactions are rows from a DataTable, the row corresponding to the current transaction is retrieved at this point."
+        },
+        {
+          "capability": null,
+          "id": "If_1",
+          "kind": "decision",
+          "label": "If out_TransactionItem isNot Nothing",
+          "note": "This optional step can be used to include more information about a transaction item and it's used mainly for logging and visualization purposes.\nFor example, if transaction items are invoices, then the out_TransactionID can be the invoice number, out_TransactionField1 can be the invoice date and out_TransactionField2 can be the invoice amount."
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Framework/InitAllApplications",
+      "edges": [],
+      "id": "uipath/reframework/Framework/InitAllApplications",
+      "nodes": [],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Framework/InitAllSettings",
+      "edges": [
+        {
+          "condition": null,
+          "source": "ReadRange_2",
+          "target": "If_1"
+        },
+        {
+          "condition": null,
+          "source": "GetRobotAsset_4",
+          "target": "If_5"
+        },
+        {
+          "condition": null,
+          "source": "ReadRange_3",
+          "target": "GetRobotAsset_4"
+        },
+        {
+          "condition": null,
+          "source": "If_1",
+          "target": "ReadRange_3"
+        }
+      ],
+      "id": "uipath/reframework/Framework/InitAllSettings",
+      "nodes": [
+        {
+          "capability": "uipath/activity/ReadRange",
+          "id": "ReadRange_2",
+          "kind": "activity",
+          "label": "Read range (Settings and Constants sheets)",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_1",
+          "kind": "decision",
+          "label": "If Not String.IsNullOrEmpty(row(\"Name\").ToString.Trim)",
+          "note": "Read non-empty rows in the sheet."
+        },
+        {
+          "capability": "uipath/activity/ReadRange",
+          "id": "ReadRange_3",
+          "kind": "activity",
+          "label": "Read range (Assets sheet)",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/GetRobotAsset",
+          "id": "GetRobotAsset_4",
+          "kind": "activity",
+          "label": "Get Asset",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_5",
+          "kind": "decision",
+          "label": "If Not String.IsNullOrEmpty(Row(\"Name\").ToString.Trim)",
+          "note": "Logs a warn message in case the asset is specified in the Config file, but it could not be loaded from Orchestrator."
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Framework/KillAllProcesses",
+      "edges": [],
+      "id": "uipath/reframework/Framework/KillAllProcesses",
+      "nodes": [],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [
+        "uipath/reframework/Framework/TakeScreenshot",
+        "uipath/reframework/Framework/CloseAllApplications",
+        "uipath/reframework/Framework/KillAllProcesses"
+      ],
+      "capability": "uipath/reframework/Framework/SetTransactionStatus",
+      "edges": [
+        {
+          "condition": "in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
+          "source": "If_2",
+          "target": "node_3"
+        },
+        {
+          "condition": "in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
+          "source": "If_3",
+          "target": "SetTransactionStatus_2"
+        },
+        {
+          "condition": "in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
+          "source": "If_4",
+          "target": "SetTransactionStatus_3"
+        },
+        {
+          "condition": null,
+          "source": "SetTransactionStatus_3",
+          "target": "Flowchart_7"
+        },
+        {
+          "condition": null,
+          "source": "If_4",
+          "target": "Flowchart_7"
+        },
+        {
+          "condition": null,
+          "source": "Flowchart_7",
+          "target": "InvokeWorkflowFile_4"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_5",
+          "target": "InvokeWorkflowFile_6"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_4",
+          "target": "InvokeWorkflowFile_5"
+        },
+        {
+          "condition": null,
+          "source": "SetTransactionStatus_2",
+          "target": "If_4"
+        },
+        {
+          "condition": null,
+          "source": "If_3",
+          "target": "If_4"
+        },
+        {
+          "condition": null,
+          "source": "node_3",
+          "target": "If_3"
+        },
+        {
+          "condition": null,
+          "source": "If_2",
+          "target": "If_3"
+        },
+        {
+          "condition": null,
+          "source": "Flowchart_2",
+          "target": "If_2"
+        }
+      ],
+      "id": "uipath/reframework/Framework/SetTransactionStatus",
+      "nodes": [
+        {
+          "capability": null,
+          "id": "Flowchart_2",
+          "kind": "opaque",
+          "label": "Set Transaction Status",
+          "note": "Set and log the transaction's status along with extra log fields. \nThere can be three possible statuses: Success, Business Rule Exception and System Error (Application Exception).\n\nBusiness Rule Exception characterizes an irregular situation according to the process's rules and prevents the transaction to be processed. The transaction is not retried in this case, since the result will be the same until the problem that causes the exception is solved.\nFor example, it can be considered a BusinessRuleException if a process expects to read an email's attachment, but the sender didn't attach any file. In this case, immediate retries of the transaction will not yield a different result.\n\nOn the other hand, system errors are characterized by exceptions whose types are different than BusinessRuleException. When this kind of exception happens, the transaction item can be retried after closing and reopening the applications involved in the process. The rationale behind this is that the exception was caused by a problem in the applications, which might be solved by restarting them.\n\nIf Orchestrator queues are the source of transactions, the Set Transaction Status activity is used to update the status. In addition, the retry mechanism is also implemented by Orchestrator.\n\nIf Orchestrator queues are not used, the status can be set, for example, by writing to a specific column in a spreadsheet. In such cases, the retry mechanism is covered by the framework and the number of retries is defined in the configuration file.\n\nAt the end, io_TransactionNumber is incremented, which makes the framework get the next transaction to be processed."
+        },
+        {
+          "capability": null,
+          "id": "If_2",
+          "kind": "decision",
+          "label": "If in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/SetTransactionStatus",
+          "id": "node_3",
+          "kind": "activity",
+          "label": "Set transaction status (Successful)",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_3",
+          "kind": "decision",
+          "label": "If in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/SetTransactionStatus",
+          "id": "SetTransactionStatus_2",
+          "kind": "activity",
+          "label": "Set transaction status (BusinessRuleException status",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_4",
+          "kind": "decision",
+          "label": "If in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/SetTransactionStatus",
+          "id": "SetTransactionStatus_3",
+          "kind": "activity",
+          "label": "Set transaction status (SystemError)",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "Flowchart_7",
+          "kind": "opaque",
+          "label": "Retry current transaction",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Framework/TakeScreenshot",
+          "id": "InvokeWorkflowFile_4",
+          "kind": "invoke",
+          "label": "Take Screenshot",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Framework/CloseAllApplications",
+          "id": "InvokeWorkflowFile_5",
+          "kind": "invoke",
+          "label": "Close All Applications",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Framework/KillAllProcesses",
+          "id": "InvokeWorkflowFile_6",
+          "kind": "invoke",
+          "label": "Kill All Processes",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Framework/TakeScreenshot",
+      "edges": [
+        {
+          "condition": null,
+          "source": "TakeScreenshot_1",
+          "target": "If_3"
+        },
+        {
+          "condition": "Not Directory.Exists(ScreenshotFileInfo.DirectoryName)",
+          "source": "If_2",
+          "target": "CreateDirectory_1"
+        },
+        {
+          "condition": null,
+          "source": "If_3",
+          "target": "If_2"
+        },
+        {
+          "condition": null,
+          "source": "CreateDirectory_1",
+          "target": "SaveImage_2"
+        },
+        {
+          "condition": null,
+          "source": "If_2",
+          "target": "SaveImage_2"
+        }
+      ],
+      "id": "uipath/reframework/Framework/TakeScreenshot",
+      "nodes": [
+        {
+          "capability": "uipath/activity/TakeScreenshot",
+          "id": "TakeScreenshot_1",
+          "kind": "activity",
+          "label": "Take screenshot",
+          "note": "The whole screen is captured."
+        },
+        {
+          "capability": null,
+          "id": "If_3",
+          "kind": "decision",
+          "label": "If String.IsNullOrEmpty(io_FilePath)",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_2",
+          "kind": "decision",
+          "label": "If Not Directory.Exists(ScreenshotFileInfo.DirectoryName)",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/CreateDirectory",
+          "id": "CreateDirectory_1",
+          "kind": "activity",
+          "label": "Create directory",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/SaveImage",
+          "id": "SaveImage_2",
+          "kind": "activity",
+          "label": "Save screenshot",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [
+        "uipath/reframework/Framework/InitAllSettings",
+        "uipath/reframework/Framework/KillAllProcesses",
+        "uipath/reframework/Framework/InitAllApplications",
+        "uipath/reframework/Framework/GetTransactionData",
+        "uipath/reframework/Process",
+        "uipath/reframework/Framework/SetTransactionStatus",
+        "uipath/reframework/Framework/CloseAllApplications"
+      ],
+      "capability": "uipath/reframework/Main",
+      "edges": [
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_12",
+          "target": "If_10"
+        },
+        {
+          "condition": null,
+          "source": "If_10",
+          "target": "InvokeWorkflowFile_19"
+        },
+        {
+          "condition": "Config is Nothing",
+          "source": "If_1",
+          "target": "InvokeWorkflowFile_12"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_19",
+          "target": "InvokeWorkflowFile_5"
+        },
+        {
+          "condition": null,
+          "source": "If_1",
+          "target": "InvokeWorkflowFile_5"
+        },
+        {
+          "condition": "not (ShouldStop)",
+          "source": "If_11",
+          "target": "InvokeWorkflowFile_20"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_24",
+          "target": "InvokeWorkflowFile_25"
+        },
+        {
+          "condition": null,
+          "source": "If_11",
+          "target": "InvokeWorkflowFile_24"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_20",
+          "target": "InvokeWorkflowFile_24"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_21",
+          "target": "InvokeWorkflowFile_22"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_25",
+          "target": "InvokeWorkflowFile_21"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_5",
+          "target": "If_11"
+        },
+        {
+          "condition": null,
+          "source": "StateMachine_1",
+          "target": "If_1"
+        }
+      ],
+      "id": "uipath/reframework/Main",
+      "nodes": [
+        {
+          "capability": null,
+          "id": "StateMachine_1",
+          "kind": "opaque",
+          "label": "General Business Process",
+          "note": "[Process title]\n[Process description]\n[Additional information (e.g., author, contact information and applications involved and required external setup)]"
+        },
+        {
+          "capability": null,
+          "id": "If_1",
+          "kind": "decision",
+          "label": "If Config is Nothing",
+          "note": "An uninitialized Config dictionary indicates that this is the first run of the process."
+        },
+        {
+          "capability": "uipath/reframework/Framework/InitAllSettings",
+          "id": "InvokeWorkflowFile_12",
+          "kind": "invoke",
+          "label": "Invoke InitAllSettings workflow",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_10",
+          "kind": "decision",
+          "label": "If Not string.IsNullOrEmpty(in_OrchestratorQueueName)",
+          "note": "Overwrite queue name from in configuration file in case the argument OrchestratorQueueName is specified.\nThis provides backward compatibility with < 2018.3 and allows default values to come from Config.xlsx"
+        },
+        {
+          "capability": "uipath/reframework/Framework/KillAllProcesses",
+          "id": "InvokeWorkflowFile_19",
+          "kind": "invoke",
+          "label": "Invoke KillAllProcesses workflow (first run)",
+          "note": "Kills all Windows processes representing applications used in this business process to assure that the execution starts in a clean state.\nSince the applications are assumed to be already closed, CloseAllApplications is skipped and just KillAllProcess is invoked."
+        },
+        {
+          "capability": "uipath/reframework/Framework/InitAllApplications",
+          "id": "InvokeWorkflowFile_5",
+          "kind": "invoke",
+          "label": "Invoke InitiAllApplications workflow",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_11",
+          "kind": "decision",
+          "label": "If ShouldStop",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Framework/GetTransactionData",
+          "id": "InvokeWorkflowFile_20",
+          "kind": "invoke",
+          "label": "Invoke GetTransactionData workflow",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Process",
+          "id": "InvokeWorkflowFile_24",
+          "kind": "invoke",
+          "label": "Invoke Process workflow",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Framework/SetTransactionStatus",
+          "id": "InvokeWorkflowFile_25",
+          "kind": "invoke",
+          "label": "Invoke SetTransactionStatus workflow",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Framework/CloseAllApplications",
+          "id": "InvokeWorkflowFile_21",
+          "kind": "invoke",
+          "label": "Invoke CloseAllApplications workflow",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Framework/KillAllProcesses",
+          "id": "InvokeWorkflowFile_22",
+          "kind": "invoke",
+          "label": "Invoke KillAllProcesses workflow (End process)",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Process",
+      "edges": [],
+      "id": "uipath/reframework/Process",
+      "nodes": [],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [
+        "uipath/reframework/Tests/RunAllTests_Logging"
+      ],
+      "capability": "uipath/reframework/Tests/RunAllTests",
+      "edges": [
+        {
+          "condition": "Not File.Exists(in_TestLogFile)",
+          "source": "If_4",
+          "target": "CreateFile_1"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_2",
+          "target": "InvokeWorkflowFile_3"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_3",
+          "target": "InvokeWorkflowFile_4"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_4",
+          "target": "InvokeWorkflowFile_5"
+        },
+        {
+          "condition": null,
+          "source": "ExcelReadRange_2",
+          "target": "InvokeWorkflowFile_2"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_5",
+          "target": "ExcelWriteRange_2"
+        },
+        {
+          "condition": null,
+          "source": "ExcelWriteRange_2",
+          "target": "OpenApplication_2"
+        },
+        {
+          "condition": null,
+          "source": "ExcelApplicationScope_2",
+          "target": "ExcelReadRange_2"
+        },
+        {
+          "condition": null,
+          "source": "CreateFile_1",
+          "target": "ExcelApplicationScope_2"
+        },
+        {
+          "condition": null,
+          "source": "If_4",
+          "target": "ExcelApplicationScope_2"
+        }
+      ],
+      "id": "uipath/reframework/Tests/RunAllTests",
+      "nodes": [
+        {
+          "capability": null,
+          "id": "If_4",
+          "kind": "decision",
+          "label": "If Not File.Exists(in_TestLogFile)",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/CreateFile",
+          "id": "CreateFile_1",
+          "kind": "activity",
+          "label": "Create Log file",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/ExcelReadRange",
+          "id": "ExcelReadRange_2",
+          "kind": "activity",
+          "label": "Read Range (Defined tests)",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "InvokeWorkflowFile_2",
+          "kind": "invoke",
+          "label": "Invoke Test File",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Tests/RunAllTests_Logging",
+          "id": "InvokeWorkflowFile_3",
+          "kind": "invoke",
+          "label": "Invoke Test Logging (Success)",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Tests/RunAllTests_Logging",
+          "id": "InvokeWorkflowFile_4",
+          "kind": "invoke",
+          "label": "Invoke Test Logging (Application Exception)",
+          "note": null
+        },
+        {
+          "capability": "uipath/reframework/Tests/RunAllTests_Logging",
+          "id": "InvokeWorkflowFile_5",
+          "kind": "invoke",
+          "label": "Invoke Test Logging (BRE)",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/ExcelWriteRange",
+          "id": "ExcelWriteRange_2",
+          "kind": "activity",
+          "label": "Write Range (Tests results)",
+          "note": null
+        },
+        {
+          "capability": "uipath/activity/OpenApplication",
+          "id": "OpenApplication_2",
+          "kind": "activity",
+          "label": "Open application (Notepad)",
+          "note": "Open log file in a Notepad window."
+        },
+        {
+          "capability": "uipath/activity/ExcelApplicationScope",
+          "id": "ExcelApplicationScope_2",
+          "kind": "container",
+          "label": "Excel application scope",
+          "note": null
+        }
+      ],
+      "unresolved_calls": [
+        "[Row(\"WorkflowFile\").ToString]"
+      ]
+    },
+    {
+      "calls": [],
+      "capability": "uipath/reframework/Tests/RunAllTests_Logging",
+      "edges": [],
+      "id": "uipath/reframework/Tests/RunAllTests_Logging",
+      "nodes": [
+        {
+          "capability": null,
+          "id": "If_1",
+          "kind": "decision",
+          "label": "If in_ExpectedOutcome = in_ActualOutcome",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [
+        "uipath/reframework/Framework/InitAllSettings"
+      ],
+      "capability": "uipath/reframework/Tests/TestWorkflowTemplate",
+      "edges": [],
+      "id": "uipath/reframework/Tests/TestWorkflowTemplate",
+      "nodes": [
+        {
+          "capability": "uipath/reframework/Framework/InitAllSettings",
+          "id": "node_1",
+          "kind": "invoke",
+          "label": "Initialize All Settings",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    }
+  ]
+}

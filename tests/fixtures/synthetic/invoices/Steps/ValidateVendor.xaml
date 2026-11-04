@@ -1,0 +1,14 @@
+<Activity x:Class="ValidateVendor"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_VendorId" Type="InArgument(x:String)" />
+    <x:Property Name="out_Exists" Type="OutArgument(x:Boolean)" />
+  </x:Members>
+  <Sequence DisplayName="Validate vendor">
+    <Assign>
+      <Assign.To><OutArgument x:TypeArguments="x:Boolean">[out_Exists]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="x:Boolean">True</InArgument></Assign.Value>
+    </Assign>
+  </Sequence>
+</Activity>

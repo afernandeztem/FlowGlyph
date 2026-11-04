@@ -1,4 +1,4 @@
-.PHONY: install lint format typecheck test test-llm check diagrams build clean
+.PHONY: install lint format typecheck test test-llm check diagrams schemas build clean
 
 install:
 	uv sync --all-extras
@@ -31,3 +31,6 @@ build:
 
 clean:
 	rm -rf dist build .pytest_cache .ruff_cache .coverage htmlcov scripts/dist
+
+schemas:
+	uv run python -c "from flowglyph.ir import export_json_schemas; export_json_schemas('schemas')"

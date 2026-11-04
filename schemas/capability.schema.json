@@ -1,0 +1,372 @@
+{
+  "$defs": {
+    "CapabilityKind": {
+      "enum": [
+        "workflow",
+        "activity",
+        "operation"
+      ],
+      "type": "string"
+    },
+    "Effects": {
+      "additionalProperties": false,
+      "description": "What running a capability does to the world outside the caller.",
+      "properties": {
+        "destructive": {
+          "$ref": "#/$defs/Tri",
+          "default": "unknown"
+        },
+        "external": {
+          "$ref": "#/$defs/Tri",
+          "default": "unknown"
+        },
+        "mutates_state": {
+          "$ref": "#/$defs/Tri",
+          "default": "unknown"
+        },
+        "reads": {
+          "$ref": "#/$defs/Tri",
+          "default": "unknown"
+        }
+      },
+      "title": "Effects",
+      "type": "object"
+    },
+    "Idempotency": {
+      "additionalProperties": false,
+      "description": "Whether, and how, a capability can be called more than once safely.\n\n`natural` means repeating the call has no further effect. `key` means it is safe only\nwhen deduplicated on `key_fields`. `none` means every call has an effect, so a gateway\nmust deduplicate on a caller-supplied key before retrying.",
+      "properties": {
+        "compensation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compensation"
+        },
+        "confidence": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "inferred_by": {
+          "anyOf": [
+            {
+              "enum": [
+                "heuristic",
+                "llm"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "heuristic",
+          "title": "Inferred By"
+        },
+        "key_fields": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Fields",
+          "type": "array"
+        },
+        "mode": {
+          "$ref": "#/$defs/IdempotencyMode",
+          "default": "none"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance",
+          "default": "inferred"
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope"
+        },
+        "ttl_seconds": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ttl Seconds"
+        }
+      },
+      "title": "Idempotency",
+      "type": "object"
+    },
+    "IdempotencyMode": {
+      "enum": [
+        "none",
+        "natural",
+        "key",
+        "conditional"
+      ],
+      "type": "string"
+    },
+    "JsonSchema": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "Provenance": {
+      "enum": [
+        "declared",
+        "inferred"
+      ],
+      "type": "string"
+    },
+    "Security": {
+      "additionalProperties": false,
+      "description": "Authorization a caller needs before the capability may run.",
+      "properties": {
+        "approval_required": {
+          "default": false,
+          "title": "Approval Required",
+          "type": "boolean"
+        },
+        "scopes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Scopes",
+          "type": "array"
+        }
+      },
+      "title": "Security",
+      "type": "object"
+    },
+    "Semantics": {
+      "additionalProperties": false,
+      "description": "Business meaning of a capability, independent of how it is implemented.",
+      "properties": {
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity"
+        },
+        "verb": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verb"
+        }
+      },
+      "title": "Semantics",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a capability came from, so it can be traced back and re-extracted.",
+      "properties": {
+        "artifact": {
+          "title": "Artifact",
+          "type": "string"
+        },
+        "artifact_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Version"
+        },
+        "location": {
+          "title": "Location",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "source_hash": {
+          "title": "Source Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "artifact",
+        "location",
+        "source_hash"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Tri": {
+      "description": "A three-valued answer for properties static analysis cannot always settle.",
+      "enum": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "title": "Tri",
+      "type": "string"
+    }
+  },
+  "$id": "urn:flowglyph:ir:0.1.0:capability",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One operation an agent can discover, reason about and, if invocable, run.",
+  "properties": {
+    "category": {
+      "default": "uncategorized",
+      "title": "Category",
+      "type": "string"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "effects": {
+      "$ref": "#/$defs/Effects",
+      "default": {
+        "destructive": "unknown",
+        "external": "unknown",
+        "mutates_state": "unknown",
+        "reads": "unknown"
+      }
+    },
+    "errors": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Errors",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "idempotency": {
+      "$ref": "#/$defs/Idempotency",
+      "default": {
+        "compensation": null,
+        "confidence": 0.5,
+        "inferred_by": "heuristic",
+        "key_fields": [],
+        "mode": "none",
+        "provenance": "inferred",
+        "scope": null,
+        "ttl_seconds": null
+      }
+    },
+    "input_schema": {
+      "$ref": "#/$defs/JsonSchema"
+    },
+    "invocable": {
+      "default": true,
+      "title": "Invocable",
+      "type": "boolean"
+    },
+    "kind": {
+      "$ref": "#/$defs/CapabilityKind"
+    },
+    "notes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "output_schema": {
+      "$ref": "#/$defs/JsonSchema"
+    },
+    "security": {
+      "$ref": "#/$defs/Security",
+      "default": {
+        "approval_required": false,
+        "scopes": []
+      }
+    },
+    "semantics": {
+      "$ref": "#/$defs/Semantics",
+      "default": {
+        "domain": null,
+        "entity": null,
+        "verb": null
+      }
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "tags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "version": {
+      "default": "1.0.0",
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "title",
+    "source"
+  ],
+  "title": "Capability",
+  "type": "object"
+}

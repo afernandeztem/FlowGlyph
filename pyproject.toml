@@ -33,7 +33,7 @@ dependencies = [
 [project.optional-dependencies]
 cli = ["typer>=0.27.3", "rich>=15.0.0"]
 mcp = ["flowglyph[cli]", "mcp>=2.3.0", "jsonschema>=4.26.0"]
-llm = ["anthropic>=2.4.0", "rank-bm25>=0.2.2"]
+llm = ["anthropic>=2.4.0"]
 all = ["flowglyph[cli,mcp,llm]"]
 
 [project.scripts]
@@ -41,7 +41,6 @@ flowglyph = "flowglyph.cli.main:run"
 
 [project.entry-points."flowglyph.adapters"]
 uipath = "flowglyph.adapters.uipath:UiPathAdapter"
-openapi = "flowglyph.adapters.openapi:OpenAPIAdapter"
 
 [project.urls]
 Homepage = "https://github.com/flowglyph/flowglyph"

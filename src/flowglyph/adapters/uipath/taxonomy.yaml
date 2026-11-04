@@ -1,0 +1,89 @@
+# Classification of UiPath activities into categories with default effects.
+#
+# Rules are tried in order: the first `name` pattern that matches the activity's local name
+# wins, then the first `namespace` substring that matches its XML namespace, then `unknown`.
+# Effects are yes / no / unknown. Unknown is the honest answer for most activities that touch
+# another system: the parser cannot see what a click or a script does.
+
+categories:
+  control:
+    effects: {reads: no, mutates_state: no, destructive: no, external: no}
+  data:
+    effects: {reads: no, mutates_state: no, destructive: no, external: no}
+  logging:
+    effects: {reads: no, mutates_state: no, destructive: no, external: no}
+  crypto:
+    effects: {reads: no, mutates_state: no, destructive: no, external: no}
+  orchestrator:
+    effects: {reads: yes, mutates_state: unknown, destructive: no, external: yes}
+  integration.excel:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  integration.mail:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  integration.web:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  integration.database:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  integration.ftp:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  filesystem:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  system:
+    effects: {reads: unknown, mutates_state: yes, destructive: unknown, external: yes}
+  ui:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: yes}
+  scripting:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: unknown}
+  unknown:
+    effects: {reads: unknown, mutates_state: unknown, destructive: unknown, external: unknown}
+
+rules:
+  - {name: "^(InvokeWorkflowFile|InvokeMethod|MultipleAssign|AssignOperation|CommentOut)$", category: control}
+  - {name: "^(ForEach|ForEachRow|While|DoWhile|Break|Continue|RetryScope|Delay|Parallel|ParallelForEach|ShouldStop)", category: control}
+  - {name: "^(Excel|ReadRange$|WriteRange$|ReadCell|WriteCell|AppendRange)", category: integration.excel}
+  - {name: "(Mail|Outlook|Smtp|Imap|Pop3|Exchange)", category: integration.mail}
+  - {name: "(Http|Rest|Soap)", category: integration.web}
+  - {name: "(Credential|Asset|QueueItem|TransactionStatus|^AddQueue|^StartJob)", category: orchestrator}
+  - {name: "^(KillProcess|StartProcess|CloseApplication|OpenApplication|OpenBrowser)", category: system}
+  - {name: "^(Click|TypeInto|TypeSecureText|TakeScreenshot|ElementExists|AttachWindow|AttachBrowser|GetText|Hover|SendHotkey|FindElement|WaitElement|UseApplication)", category: ui}
+  - {name: "(File|Directory|Folder|SaveImage|^Copy|^Move|^Delete)", category: filesystem}
+  - {name: "^(Log|AddLogFields$|RemoveLogFields$|Comment$|WriteLine$)", category: logging}
+  - {name: "(Query$|^DatabaseConnect|^DatabaseDisconnect|^BulkInsert|^InsertDataTable|^StartTransaction)", category: integration.database}
+  - {name: "Ftp", category: integration.ftp}
+  - {name: "^(Python|Java|InvokeCode$|LoadJar|LoadScript|RunScript|GetObject|CreateJavaObject|ConvertJavaObject|InvokeJava|PowerShell|InvokeVBScript)", category: scripting}
+  - {name: "(Hash|Encrypt|Decrypt)", category: crypto}
+  - {name: "(DataColumn|DataRow|DataTable|^AppendLine|^Filter|^Sort|^Join|^Lookup|^Merge|^Deserialize|^Serialize|Matches|^Replace|^IsMatch|^Format)", category: data}
+
+namespaces:
+  - {contains: "netfx/2009/xaml/activities", category: control}
+  - {contains: "UiPath.Excel", category: integration.excel}
+  - {contains: "UiPath.Mail", category: integration.mail}
+  - {contains: "UiPath.Web", category: integration.web}
+  - {contains: "UiPath.UIAutomation", category: ui}
+  - {contains: "UiPath.Database", category: integration.database}
+
+# Activities whose effects are known more precisely than their category's defaults.
+activities:
+  GetRobotAsset: {reads: yes, mutates_state: no, destructive: no}
+  GetRobotCredential: {reads: yes, mutates_state: no, destructive: no}
+  GetSecureCredential: {reads: yes, mutates_state: no, destructive: no, external: no}
+  GetQueueItem: {reads: yes, mutates_state: yes, destructive: no}
+  SetTransactionStatus: {reads: no, mutates_state: yes, destructive: no}
+  AddQueueItem: {reads: no, mutates_state: yes, destructive: no}
+  AddCredential: {reads: no, mutates_state: yes, destructive: no, external: no}
+  RequestCredential: {reads: yes, mutates_state: no, destructive: no, external: yes}
+  ReadRange: {reads: yes, mutates_state: no, destructive: no}
+  ExcelReadRange: {reads: yes, mutates_state: no, destructive: no}
+  ExcelApplicationScope: {reads: yes, mutates_state: unknown, destructive: no}
+  ExcelWriteRange: {reads: no, mutates_state: yes, destructive: unknown}
+  CreateDirectory: {reads: no, mutates_state: yes, destructive: no}
+  CreateFile: {reads: no, mutates_state: yes, destructive: no}
+  SaveImage: {reads: no, mutates_state: yes, destructive: unknown}
+  TakeScreenshot: {reads: yes, mutates_state: no, destructive: no}
+  KillProcess: {reads: no, mutates_state: yes, destructive: yes}
+  OpenApplication: {reads: no, mutates_state: yes, destructive: no}
+  SendMail: {reads: no, mutates_state: yes, destructive: no}
+  SendOutlookMailMessage: {reads: no, mutates_state: yes, destructive: no}
+  GetOutlookMailMessages: {reads: yes, mutates_state: no, destructive: no}
+  ExecuteQuery: {reads: yes, mutates_state: unknown, destructive: unknown}
+  ExecuteNonQuery: {reads: no, mutates_state: yes, destructive: unknown}

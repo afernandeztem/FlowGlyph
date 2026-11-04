@@ -1,0 +1,12 @@
+<Activity x:Class="BookInvoice"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:ui="http://schemas.uipath.com/workflow/activities"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Invoice" Type="InArgument(scg:Dictionary(x:String, x:Object))" />
+    <x:Property Name="out_InvoiceId" Type="OutArgument(x:String)" />
+  </x:Members>
+  <Sequence DisplayName="Book invoice">
+    <ui:AddQueueItem DisplayName="Queue booking" QueueType="Invoices" />
+  </Sequence>
+</Activity>
