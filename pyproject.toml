@@ -93,7 +93,7 @@ max-branches = 12
 max-statements = 40
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["D", "ANN", "PLR2004", "S101", "S105", "S106", "FBT", "ARG"]
+"tests/**" = ["D", "ANN", "PLR2004", "S101", "S105", "S106", "S603", "S607", "FBT", "ARG"]
 "src/flowglyph/cli/**" = ["FBT001", "FBT002", "B008"]
 
 [tool.ruff.format]

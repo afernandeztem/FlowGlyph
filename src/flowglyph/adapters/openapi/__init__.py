@@ -40,6 +40,10 @@ class OpenAPIAdapter:
         """Whether `path` is an OpenAPI 3.x document or a directory containing one."""
         return bool(_spec_files(path))
 
+    def discover(self, root: Path) -> list[Path]:
+        """Every OpenAPI 3.x document under `root`, one source per file."""
+        return _spec_files(root)
+
     def extract(self, path: Path) -> Extraction:
         """Extract every OpenAPI document at `path`."""
         root = path if path.is_dir() else path.parent

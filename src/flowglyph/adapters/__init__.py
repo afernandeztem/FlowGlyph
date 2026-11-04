@@ -5,11 +5,11 @@ packages are discovered through the `flowglyph.adapters` entry point group; adap
 be registered at runtime with `register_adapter`.
 """
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
 from pathlib import Path
-from typing import ClassVar, Literal, Protocol, runtime_checkable
+from typing import ClassVar, Literal, Protocol, cast, runtime_checkable
 
 from flowglyph.errors import AdapterNotFoundError
 from flowglyph.ir import Capability, Workflow
@@ -84,6 +84,20 @@ def get_adapter(name: str) -> Adapter:
     return adapters[name]()
 
 
+def discover(adapter: Adapter, root: Path) -> list[Path]:
+    """The sources under `root` that `adapter` extracts, each one on its own.
+
+    Adapters can define `discover(root)` to find several projects or documents in one tree,
+    such as every UiPath project in a repository. Adapters without it are given `root` as a
+    whole when they recognise it.
+    """
+    finder = getattr(adapter, "discover", None)
+    if callable(finder):
+        found = cast("Iterable[Path]", finder(root))
+        return sorted(found)
+    return [root] if adapter.detect(root) else []
+
+
 def detect_adapter(path: Path) -> Adapter:
     """The first available adapter that recognises `path`.
 
@@ -103,6 +117,7 @@ __all__ = [
     "Extraction",
     "available_adapters",
     "detect_adapter",
+    "discover",
     "get_adapter",
     "register_adapter",
 ]

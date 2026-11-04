@@ -2,7 +2,7 @@
 
 import json
 from collections.abc import Iterable, Iterator, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -10,11 +10,18 @@ from typing import Any, Literal, cast
 import yaml
 from pydantic import BaseModel, ConfigDict
 
+from flowglyph import sources
 from flowglyph._internal import markdown
 from flowglyph._internal.hashing import fingerprint
 from flowglyph._internal.search import BM25Index, Document
-from flowglyph.adapters import Adapter, Diagnostic, detect_adapter, get_adapter
-from flowglyph.errors import CatalogError
+from flowglyph.adapters import (
+    Adapter,
+    Diagnostic,
+    available_adapters,
+    discover,
+    get_adapter,
+)
+from flowglyph.errors import AdapterNotFoundError, CatalogError
 from flowglyph.ir import IR_VERSION, Capability, CapabilityKind, JsonSchema, Workflow
 
 OVERRIDES_FILE = "flowglyph.overrides.yaml"
@@ -88,6 +95,8 @@ class Lock(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     ir_version: str = IR_VERSION
+    origin: str | None = None
+    revision: str | None = None
     adapters: dict[str, str] = {}
     artifacts: dict[str, str] = {}
     capabilities: dict[str, LockEntry] = {}
@@ -256,39 +265,87 @@ def extract(
     *,
     adapter: str | Adapter = "auto",
     previous: Lock | str | Path | None = None,
+    ref: str | None = None,
 ) -> Catalog:
-    """Extract a catalog from a source directory or file.
+    """Extract a catalog from a folder, a file or a git repository URL.
+
+    Every source found under `path` is extracted, so a repository holding many UiPath projects,
+    OpenAPI documents and SAP OData metadata files becomes one catalog.
 
     Args:
-        path: The project directory or file to read.
-        adapter: An adapter name, an adapter instance, or `"auto"` to detect one.
+        path: A folder, a file, or a git URL such as a GitHub link to a repository or folder.
+        adapter: `"auto"` to use every adapter that finds something, or one adapter by name
+            (`"uipath"`, `"openapi"`, `"sap"`, a plugin) or instance.
         previous: The lock of an earlier extraction, used to version capabilities. When
             omitted, capabilities start at 1.0.0.
+        ref: Branch, tag or commit to read when `path` is a repository URL.
 
     Returns:
         The catalog, with `changes` describing what moved since `previous`.
+
+    Raises:
+        AdapterNotFoundError: If no adapter finds anything to extract.
     """
-    source = Path(path)
-    if not source.exists():
-        raise CatalogError(f"{source} does not exist")
-    if isinstance(adapter, str):
-        adapter = detect_adapter(source) if adapter == "auto" else get_adapter(adapter)
-    extraction = adapter.extract(source)
-    root = source if source.is_dir() else source.parent
-    capabilities = _apply_overrides(extraction.capabilities, root / OVERRIDES_FILE)
+    source = sources.resolve(path, ref=ref)
+    root = source.path if source.path.is_dir() else source.path.parent
+    jobs = _jobs(source.path, adapter)
+    capabilities: dict[str, Capability] = {}
+    workflows: dict[str, Workflow] = {}
+    artifacts: dict[str, str] = {}
+    diagnostics: list[Diagnostic] = []
+    for job_adapter, target in jobs:
+        extraction = job_adapter.extract(target)
+        prefix = _prefix(target, root)
+        artifacts.update({prefix + name: digest for name, digest in extraction.artifacts.items()})
+        diagnostics.extend(
+            replace(diagnostic, artifact=prefix + diagnostic.artifact)
+            for diagnostic in extraction.diagnostics
+        )
+        for capability in extraction.capabilities:
+            if capability.id in capabilities and capability.kind != "activity":
+                diagnostics.append(
+                    Diagnostic("warning", prefix, f"{capability.id} is defined more than once")
+                )
+            capabilities[capability.id] = capability
+        workflows.update({workflow.id: workflow for workflow in extraction.workflows})
+    overridden = _apply_overrides(capabilities.values(), root / OVERRIDES_FILE)
     old_lock = Lock.read(previous) if isinstance(previous, str | Path) else previous
-    versioned, entries, changes = _version(capabilities, old_lock)
+    versioned, entries, changes = _version(overridden, old_lock)
     return Catalog(
         capabilities={capability.id: capability for capability in versioned},
-        workflows={workflow.id: workflow for workflow in extraction.workflows},
+        workflows=workflows,
         lock=Lock(
-            adapters={adapter.name: adapter.version},
-            artifacts=dict(sorted(extraction.artifacts.items())),
+            origin=source.origin,
+            revision=source.revision,
+            adapters={job_adapter.name: job_adapter.version for job_adapter, _ in jobs},
+            artifacts=dict(sorted(artifacts.items())),
             capabilities=entries,
         ),
-        diagnostics=tuple(extraction.diagnostics),
+        diagnostics=tuple(diagnostics),
         changes=tuple(changes),
     )
+
+
+def _jobs(path: Path, adapter: str | Adapter) -> list[tuple[Adapter, Path]]:
+    if isinstance(adapter, str):
+        chosen = (
+            [cls() for cls in available_adapters().values()]
+            if adapter == "auto"
+            else [get_adapter(adapter)]
+        )
+    else:
+        chosen = [adapter]
+    jobs = [(each, target) for each in chosen for target in discover(each, path)]
+    if not jobs:
+        names = ", ".join(each.name for each in chosen)
+        raise AdapterNotFoundError(f"nothing to extract in {path} (looked for: {names})")
+    return jobs
+
+
+def _prefix(target: Path, root: Path) -> str:
+    base = target if target.is_dir() else target.parent
+    relative = base.resolve().relative_to(root.resolve()).as_posix()
+    return "" if relative == "." else relative + "/"
 
 
 def load_catalog(directory: str | Path) -> Catalog:

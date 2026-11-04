@@ -38,6 +38,23 @@ class UiPathAdapter:
             return path.suffix.lower() == ".xaml"
         return (path / "project.json").is_file() or any(path.glob("*.xaml"))
 
+    def discover(self, root: Path) -> list[Path]:
+        """Every UiPath project under `root`: one per `project.json` that has workflows.
+
+        Workflows outside any project are grouped into one extra source rooted at `root`.
+        """
+        if root.is_file():
+            return [root] if self.detect(root) else []
+        projects = sorted(
+            manifest.parent
+            for manifest in root.rglob("project.json")
+            if not _SKIPPED_DIRECTORIES.intersection(manifest.relative_to(root).parts)
+            and _workflow_files(manifest.parent)
+        )
+        if root not in projects and _workflow_files(root):
+            projects.insert(0, root)
+        return projects
+
     def extract(self, path: Path) -> Extraction:
         """Extract the project rooted at `path`."""
         root = path if path.is_dir() else path.parent
@@ -149,10 +166,13 @@ class UiPathAdapter:
 
 
 def _workflow_files(root: Path) -> list[Path]:
+    """Workflows of the project at `root`, leaving out projects nested inside it."""
+    nested = {manifest.parent for manifest in root.rglob("project.json") if manifest.parent != root}
     return sorted(
         file
         for file in root.rglob("*.xaml")
         if not _SKIPPED_DIRECTORIES.intersection(file.relative_to(root).parts)
+        and not any(project in file.parents for project in nested)
     )
 
 

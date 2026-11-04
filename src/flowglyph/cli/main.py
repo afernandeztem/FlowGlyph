@@ -45,12 +45,15 @@ def main(
     """Turn enterprise automations into a vendor-neutral IR that agents can use safely."""
 
 
-def _open(source: Path) -> Catalog:
+_SOURCE_HELP = "A saved catalog, or a folder, file or git URL to extract on the fly."
+
+
+def _open(source: str | Path, adapter: str = "auto") -> Catalog:
     """A saved catalog directory, or a catalog extracted on the fly from sources."""
     try:
-        if (source / "catalog.jsonl").is_file():
+        if (Path(source) / "catalog.jsonl").is_file():
             return flowglyph.load_catalog(source)
-        return flowglyph.extract(source)
+        return flowglyph.extract(source, adapter=adapter)
     except FlowGlyphError as error:
         errors.print(f"[bold red]error:[/] {error}")
         raise typer.Exit(2) from error
@@ -72,31 +75,51 @@ def _print_changes(changes: list[Change] | tuple[Change, ...]) -> None:
 
 @app.command()
 def extract(
-    source: Annotated[Path, typer.Argument(help="Project directory or file to read.")],
+    source: Annotated[
+        str,
+        typer.Argument(help="A folder, a file, or a git URL (GitHub links to folders work)."),
+    ],
     out: Annotated[Path, typer.Option("--out", "-o", help="Where to write the catalog.")] = Path(
         "flowglyph-out"
     ),
-    adapter: Annotated[str, typer.Option(help="Adapter name, or `auto` to detect it.")] = "auto",
+    adapter: Annotated[
+        str,
+        typer.Option(
+            "--adapter", "-a", help="uipath, openapi, sap, a plugin, or auto to use them all."
+        ),
+    ] = "auto",
+    ref: Annotated[
+        str | None, typer.Option(help="Branch, tag or commit when SOURCE is a repository.")
+    ] = None,
     strict: Annotated[
         bool, typer.Option(help="Exit with an error when any artifact fails to parse.")
     ] = False,
 ) -> None:
-    """Extract a catalog from SOURCE and save it, versioned against the previous run."""
+    """Extract a catalog from SOURCE and save it, versioned against the previous run.
+
+    Every project and document under SOURCE is read: point it at a whole repository.
+    """
     previous_lock = out / LOCK_FILE
     try:
         catalog = flowglyph.extract(
             source,
             adapter=adapter,
             previous=previous_lock if previous_lock.is_file() else None,
+            ref=ref,
         )
     except FlowGlyphError as error:
         errors.print(f"[bold red]error:[/] {error}")
         raise typer.Exit(2) from error
     catalog.save(out)
     invocable = sum(1 for capability in catalog if capability.invocable)
+    origin = (
+        f" from {catalog.lock.origin} @ {catalog.lock.revision[:10]}"
+        if catalog.lock.origin and catalog.lock.revision
+        else ""
+    )
     console.print(
         f"[bold green]Extracted[/] {invocable} invocable capabilities and "
-        f"{len(catalog) - invocable} activity types into [bold]{out}[/]"
+        f"{len(catalog) - invocable} activity types{origin} into [bold]{out}[/]"
     )
     for diagnostic in catalog.diagnostics:
         style = _LEVEL_STYLE[diagnostic.level]
@@ -151,7 +174,7 @@ def _lock(path: Path) -> Lock:
 
 @app.command()
 def inspect(
-    source: Annotated[Path, typer.Argument(help="Catalog directory or project to read.")],
+    source: Annotated[str, typer.Argument(help=_SOURCE_HELP)],
     capability: Annotated[
         str | None, typer.Argument(help="Show this capability's card instead of the call tree.")
     ] = None,
@@ -207,7 +230,7 @@ def _label(capability: Capability) -> str:
 
 @app.command()
 def search(
-    source: Annotated[Path, typer.Argument(help="Catalog directory or project to read.")],
+    source: Annotated[str, typer.Argument(help=_SOURCE_HELP)],
     query: Annotated[str, typer.Argument(help="What you are looking for, in plain words.")],
     limit: Annotated[int, typer.Option("--limit", "-n", help="Maximum results.")] = 10,
     invocable: Annotated[
@@ -310,7 +333,7 @@ def plan(
     requirements: Annotated[
         Path, typer.Argument(help="Requirements in plain language (text or Markdown).")
     ],
-    catalog_dir: Annotated[Path, typer.Argument(help="Catalog directory or project to plan with.")],
+    catalog_dir: Annotated[str, typer.Argument(help=_SOURCE_HELP)],
     *,
     out: Annotated[Path, typer.Option("--out", "-o", help="Where to write the plan.")] = Path(),
     via: Annotated[
