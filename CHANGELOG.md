@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a `CommandSpec`), any OpenAI-compatible server (OpenAI, Ollama, vLLM, LM Studio, OpenRouter)
   through the standard library, or a plugin registered under `flowglyph.planners`. Plans use a
   strict JSON Schema that all of them accept.
+- SAP adapter (`--adapter sap`): reads OData V2 and V4 `$metadata` (EDMX) from SAP S/4HANA,
+  SAP Gateway or SAP BTP. One capability per operation the service allows, honouring
+  `sap:creatable`/`updatable`/`deletable` and the V4 Capabilities vocabulary, with typed keys and
+  bodies, SAP labels as descriptions, function imports, functions and bound actions.
+- Extraction from whole trees and git repositories: `flowglyph extract <folder|file|git URL>`
+  reads every project and document it finds, records the origin and commit in the lock, and
+  `--adapter` limits it to one source type.
 
 ### Changed
 

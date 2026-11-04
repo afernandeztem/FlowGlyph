@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from flowglyph.errors import AdapterError
+from flowglyph._internal.xml import load_xml
 from flowglyph.ir import JsonSchema
 
 XAML_NS = "http://schemas.microsoft.com/winfx/2006/xaml"
@@ -43,20 +43,8 @@ _ARGUMENT_TYPE = re.compile(r"\s*(?P<direction>In|Out|InOut)Argument\((?P<inner>
 
 
 def load(path: Path) -> ET.Element:
-    """Parse a XAML file, refusing documents that declare a DTD.
-
-    Raises:
-        AdapterError: If the file is not well-formed XML or declares a DTD.
-    """
-    data = path.read_bytes()
-    if b"<!DOCTYPE" in data[:4096].upper():
-        raise AdapterError(f"{path}: XAML must not declare a DTD")
-    try:
-        # ElementTree never resolves external entities, and the bundled expat (2.4.1+)
-        # limits entity expansion, so with DTDs rejected above this input is safe to parse.
-        return ET.fromstring(data)  # noqa: S314
-    except ET.ParseError as error:
-        raise AdapterError(f"{path}: {error}") from error
+    """Parse a XAML file, refusing documents that declare a DTD."""
+    return load_xml(path)
 
 
 def split_tag(tag: str) -> tuple[str, str]:

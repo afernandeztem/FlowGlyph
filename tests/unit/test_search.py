@@ -8,6 +8,15 @@ def test_tokenize_splits_identifiers():
     ]  # fmt: skip
 
 
+def test_plurals_match_singulars():
+    assert tokenize("duplicates entries status address") == [
+        "duplicate",
+        "entry",
+        "status",
+        "address",
+    ]
+
+
 def test_first_line_truncates():
     assert first_line("one\ntwo") == "one"
     assert first_line("x" * 10, limit=5) == "xxxx…"
