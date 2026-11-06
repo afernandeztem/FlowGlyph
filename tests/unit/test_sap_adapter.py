@@ -7,6 +7,7 @@ import flowglyph
 from flowglyph.adapters import detect_adapter
 from flowglyph.adapters.sap import SapODataAdapter
 from flowglyph.ir import Capability, Tri
+from flowglyph.views import effects_code
 
 V2 = "sap/ZSUPPLIER_INVOICE_SRV"
 V4 = "sap/zbusinesspartner"
@@ -47,7 +48,7 @@ def test_only_operations_the_service_allows_are_generated(capabilities: dict[str
 )
 def test_odata_semantics(capabilities: dict[str, Capability], name: str, mode: str, effects: str):
     assert capabilities[name].idempotency.mode == mode
-    assert capabilities[name].effects.code() == effects
+    assert effects_code(capabilities[name].effects) == effects
 
 
 def test_keys_types_and_labels(capabilities: dict[str, Capability]):
@@ -91,7 +92,9 @@ def test_metadata_and_traceability(capabilities: dict[str, Capability]):
     assert create.source.location == "ZSUPPLIER_INVOICE_SRV.edmx#SupplierInvoice/create"
     assert create.source.artifact == "POST SupplierInvoice"
     assert create.category == "ZSUPPLIER_INVOICE_SRV"
-    assert "odata-v2" in create.tags
+    assert create.trigger is not None
+    assert create.trigger.channel == "OData V2"
+    assert create.trigger.address == "POST SupplierInvoice"
     assert capabilities[f"{V4}/checkDuplicates"].effects.destructive is Tri.NO
 
 

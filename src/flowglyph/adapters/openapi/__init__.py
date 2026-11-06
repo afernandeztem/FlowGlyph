@@ -14,7 +14,16 @@ from flowglyph._internal.paths import distinguishing_names
 from flowglyph.adapters import Diagnostic, Extraction
 from flowglyph.adapters.openapi.refs import RefResolver
 from flowglyph.errors import AdapterError
-from flowglyph.ir import Capability, Effects, Idempotency, JsonSchema, Security, Source, Tri
+from flowglyph.ir import (
+    Capability,
+    Effects,
+    Idempotency,
+    JsonSchema,
+    Security,
+    Source,
+    Tri,
+    Trigger,
+)
 
 HTTP_METHODS = ("get", "put", "post", "delete", "patch", "head", "options", "trace")
 _SAFE_METHODS = frozenset({"get", "head", "options", "trace"})
@@ -123,8 +132,6 @@ class _DocumentReader:
             )
         input_schema, header_names = self._input_schema(operation, shared)
         tags = [str(tag) for tag in operation.get("tags", [])]
-        if operation.get("deprecated"):
-            tags.append("deprecated")
         summary = str(operation.get("summary") or "").strip()
         details = str(operation.get("description") or "").strip()
         return Capability(
@@ -132,13 +139,15 @@ class _DocumentReader:
             kind="operation",
             title=str(operation_id),
             description="\n\n".join(part for part in (summary, details) if part),
-            category=tags[0] if tags and tags[0] != "deprecated" else "api",
+            category=tags[0] if tags else "api",
             input_schema=input_schema,
             output_schema=self._output_schema(operation),
             effects=_effects(method),
             idempotency=_idempotency(method, header_names),
             security=Security(scopes=self._scopes(operation)),
             errors=self._errors(operation),
+            trigger=Trigger(channel="HTTP", address=f"{method.upper()} {route}"),
+            deprecated=bool(operation.get("deprecated")),
             tags=tuple(tags),
             source=Source(
                 provider="openapi",

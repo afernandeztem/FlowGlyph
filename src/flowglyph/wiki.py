@@ -20,6 +20,7 @@ from flowglyph._internal import markdown
 from flowglyph._internal.text import first_line
 from flowglyph.catalog import Catalog, Change, load_catalog
 from flowglyph.ir import Capability
+from flowglyph.views import effects_code
 
 NOTES_MARKER = "<!-- flowglyph:notes -->"
 DATA_DIRECTORY = "_data"
@@ -159,7 +160,7 @@ def lint_wiki(directory: str | Path) -> list[LintIssue]:
         for note in capability.notes:
             level = "warning" if note.startswith("warning: ") else "info"
             issues.append(LintIssue(level, page, note.removeprefix(f"{level}: ")))
-        is_root = "entry-point" in capability.tags or capability.source.provider != "uipath"
+        is_root = capability.entry_point or capability.source.provider != "uipath"
         if capability.kind == "workflow" and capability.id not in called and not is_root:
             issues.append(LintIssue("info", page, _ORPHAN_MESSAGE))
     for workflow in catalog.workflows.values():
@@ -218,7 +219,7 @@ def _group_page(title: str, members: list[Capability]) -> str:
         "|---|---|---|---|",
     ]
     lines += [
-        f"| [{c.title}](../capabilities/{page_name(c.id)}) | {c.effects.code() or 'none'} "
+        f"| [{c.title}](../capabilities/{page_name(c.id)}) | {effects_code(c.effects) or 'none'} "
         f"| {c.idempotency.mode} | {report.status(c)} |"
         for c in members
     ]
@@ -227,7 +228,7 @@ def _group_page(title: str, members: list[Capability]) -> str:
 
 def _source_page(source: str, members: list[Capability], catalog: Catalog) -> str:
     page = _group_page(f"Source: {source}", members).rstrip("\n")
-    entry_points = [c for c in members if "entry-point" in c.tags]
+    entry_points = [c for c in members if c.entry_point]
     lines = [page]
     for entry in entry_points:
         lines += [
@@ -242,7 +243,7 @@ def _source_page(source: str, members: list[Capability], catalog: Catalog) -> st
 
 
 def _tree(root: Capability, catalog: Catalog) -> list[str]:
-    lines = [f"{root.title} [{root.effects.code() or 'pure'}]"]
+    lines = [f"{root.title} [{effects_code(root.effects) or 'pure'}]"]
 
     def visit(capability_id: str, depth: int, seen: frozenset[str]) -> None:
         workflow = catalog.workflows.get(capability_id)
@@ -252,7 +253,9 @@ def _tree(root: Capability, catalog: Catalog) -> list[str]:
             target = catalog.capabilities.get(callee)
             if target is None:
                 continue
-            lines.append(f"{'  ' * depth}- {target.title} [{target.effects.code() or 'pure'}]")
+            lines.append(
+                f"{'  ' * depth}- {target.title} [{effects_code(target.effects) or 'pure'}]"
+            )
             if callee not in seen:
                 visit(callee, depth + 1, seen | {callee})
 
@@ -286,7 +289,7 @@ def _index(
             summary = first_line(capability.description, 100) or capability.kind
             lines.append(
                 f"- [{capability.title}](capabilities/{page_name(capability.id)}): {summary} "
-                f"({capability.effects.code() or 'pure'}, {report.status(capability)})"
+                f"({effects_code(capability.effects) or 'pure'}, {report.status(capability)})"
             )
     return "\n".join(lines) + "\n"
 

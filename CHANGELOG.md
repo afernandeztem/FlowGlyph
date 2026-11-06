@@ -65,6 +65,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- IR 0.3.0 (ADR-0005): `Capability` gains typed `trigger`, `entry_point`, `configuration`,
+  `used_in` and `deprecated` fields instead of prefixed strings in `tags`. Presentation moves out
+  of the IR into `flowglyph.views`: `effects_code`, `retry_advice` and `l0_card` replace
+  `Effects.code()`, `Idempotency.advice()` and `Capability.card()`.
+
 - IR 0.2.0: nodes have a `join` (`all` or `any`) and skipped steps propagate, so a workflow
   says what runs after an optional step. `Workflow.simulate` evaluates the rules. The UiPath
   adapter marks branch merges as `any`; the planner chooses a join per step and warns about

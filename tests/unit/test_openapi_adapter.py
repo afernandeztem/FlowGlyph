@@ -7,6 +7,7 @@ from flowglyph.adapters import detect_adapter
 from flowglyph.adapters.openapi import OpenAPIAdapter
 from flowglyph.adapters.openapi.refs import RefResolver
 from flowglyph.ir import Capability, Tri
+from flowglyph.views import effects_code
 
 
 @pytest.fixture
@@ -42,7 +43,7 @@ def test_detection(openapi: Path, reframework: Path):
 def test_http_semantics(payments: dict[str, Capability], operation: str, mode: str, effects: str):
     capability = payments[operation]
     assert capability.idempotency.mode == mode
-    assert capability.effects.code() == effects
+    assert effects_code(capability.effects) == effects
 
 
 def test_idempotency_key_header_is_the_key_field(payments: dict[str, Capability]):
@@ -76,7 +77,8 @@ def test_security_errors_and_tags(payments: dict[str, Capability]):
         "400: The request is invalid.",
         "409: An invoice with this reference already exists.",
     )
-    assert "deprecated" in payments["executePayment"].tags
+    assert payments["executePayment"].deprecated
+    assert payments["executePayment"].tags == ("payments",)
     assert payments["executePayment"].category == "payments"
 
 
@@ -87,6 +89,8 @@ def test_metadata_and_traceability(payments: dict[str, Capability]):
     assert create.description.startswith("Create a supplier invoice\n\nBooks the invoice")
     assert create.source.location == "payments.yaml#/paths/~1invoices/post"
     assert create.source.artifact_version == "2.3.0"
+    assert create.trigger is not None
+    assert (create.trigger.channel, create.trigger.address) == ("HTTP", "POST /invoices")
 
 
 def test_problems_become_diagnostics(openapi: Path):

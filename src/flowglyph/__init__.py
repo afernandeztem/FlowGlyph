@@ -2,10 +2,11 @@
 
 ```python
 import flowglyph
+from flowglyph.views import effects_code
 
 catalog = flowglyph.extract("path/to/uipath-project")
 for capability in catalog.search("read configuration from excel", limit=5):
-    print(capability.id, capability.effects.code(), capability.idempotency.mode)
+    print(capability.id, effects_code(capability.effects), capability.idempotency.mode)
 catalog.save("out")
 ```
 """
@@ -23,6 +24,7 @@ from flowglyph.ir import (
     Idempotency,
     Node,
     Tri,
+    Trigger,
     Workflow,
 )
 
@@ -43,6 +45,7 @@ __all__ = [
     "Lock",
     "Node",
     "Tri",
+    "Trigger",
     "Workflow",
     "__version__",
     "extract",

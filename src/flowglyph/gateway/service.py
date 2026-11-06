@@ -16,6 +16,7 @@ from flowglyph.gateway.executors import DryRunExecutor, Executor
 from flowglyph.gateway.ledger import Ledger, Run, Ticket
 from flowglyph.gateway.policy import DEFAULT_POLICY, Decision, Policy
 from flowglyph.ir import Capability
+from flowglyph.views import l0_card
 
 DEFAULT_TTL_SECONDS = 24 * 60 * 60
 
@@ -95,7 +96,7 @@ class Gateway:
     ) -> list[dict[str, Any]]:
         """L0 cards of the capabilities that best match `query`."""
         found = self.catalog.search(query, limit=limit, invocable=True if invocable_only else None)
-        return [capability.card() for capability in found]
+        return [l0_card(capability) for capability in found]
 
     def describe(self, reference: str) -> str:
         """The L1 card of a capability, as Markdown."""

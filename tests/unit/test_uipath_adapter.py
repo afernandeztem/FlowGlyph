@@ -20,7 +20,9 @@ def test_arguments_become_typed_schemas(synthetic: Path):
     assert not inputs["in_Threshold"].required, "arguments with a default are optional"
     assert [parameter.name for parameter in capability.outputs] == ["out_InvoiceId"]
     assert capability.input_schema["additionalProperties"] is False
-    assert "entry-point" in capability.tags
+    assert capability.entry_point
+    assert capability.trigger is not None
+    assert capability.trigger.channel == "Orchestrator"
 
 
 def test_graph_keeps_invocations_and_branches(synthetic: Path):
@@ -67,6 +69,7 @@ def test_activity_types_document_observed_parameters(synthetic: Path):
     assert send_mail.category == "integration.mail"
     assert set(send_mail.input_schema["properties"]) == {"To", "Subject"}
     assert send_mail.input_schema["properties"]["To"]["examples"] == ["[in_Approver]"]
+    assert send_mail.used_in == ("Steps/RequestApproval.xaml",)
 
 
 def test_problems_are_reported_not_raised(synthetic: Path, tmp_path: Path):

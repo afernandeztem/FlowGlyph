@@ -15,6 +15,7 @@ from flowglyph.errors import FlowGlyphError
 from flowglyph.ir import Capability
 from flowglyph.planner.model import Plan, PlannedArgument, PlannedInput, PlannedStep
 from flowglyph.planner.resolver import PlanReport, resolve
+from flowglyph.views import effects_code
 
 DEFAULT_CANDIDATES = 20
 _SENTENCE = re.compile(r"(?<=[.!?;:])\s+|\n+")
@@ -41,7 +42,7 @@ def candidate_card(capability: Capability) -> dict[str, Any]:
             {"name": p.name, "type": p.type, "required": p.required} for p in capability.inputs
         ],
         "outputs": [p.name for p in capability.outputs],
-        "effects": capability.effects.code() or "none",
+        "effects": effects_code(capability.effects) or "none",
         "idempotency": capability.idempotency.mode,
     }
 

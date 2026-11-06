@@ -11,7 +11,7 @@ from flowglyph.adapters.uipath.parser import ActivityStats, ParsedWorkflow, Work
 from flowglyph.adapters.uipath.taxonomy import Taxonomy, default_taxonomy
 from flowglyph.adapters.uipath.xaml import load, split_tag
 from flowglyph.errors import AdapterError
-from flowglyph.ir import Capability, Effects, Idempotency, JsonSchema, Source, Workflow
+from flowglyph.ir import Capability, Effects, Idempotency, JsonSchema, Source, Trigger, Workflow
 
 _SKIPPED_DIRECTORIES = frozenset({".local", ".screenshots", ".objects", ".settings", ".tmh"})
 _UNSAFE_ID_CHARACTERS = re.compile(r"[^\w./-]+")
@@ -124,7 +124,11 @@ class UiPathAdapter:
             output_schema=item.output_schema,
             effects=effects,
             idempotency=_inferred_idempotency(effects),
-            tags=("entry-point",) if item.artifact == main else (),
+            entry_point=item.artifact == main,
+            trigger=Trigger(
+                channel="Orchestrator" if item.artifact == main else "Invoke Workflow File",
+                address=item.artifact,
+            ),
             notes=tuple(item.notes),
             source=Source(
                 provider=self.name,
@@ -154,7 +158,7 @@ class UiPathAdapter:
             input_schema={"type": "object", "properties": properties, "required": required},
             effects=stats.category.effects,
             idempotency=_inferred_idempotency(stats.category.effects),
-            tags=tuple(f"used-in:{file}" for file in files),
+            used_in=tuple(files),
             source=Source(
                 provider=self.name,
                 artifact=f"{{{stats.namespace}}}{stats.name}",

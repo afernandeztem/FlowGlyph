@@ -31,7 +31,7 @@ from flowglyph.adapters.sap.edmx import (
     property_schema,
 )
 from flowglyph.errors import AdapterError
-from flowglyph.ir import Capability, Effects, Idempotency, JsonSchema, Source, Tri
+from flowglyph.ir import Capability, Effects, Idempotency, JsonSchema, Source, Tri, Trigger
 
 _SUFFIXES = frozenset({".xml", ".edmx"})
 _EDMX_ROOT = re.compile(rb"<(?:[\w-]+:)?Edmx\b")
@@ -253,9 +253,6 @@ class _ServiceReader:
         return keys
 
     def _capability(self, operation: "_Operation") -> Capability:
-        tags = [f"odata-v{self.service.version.split('.')[0]}"]
-        if operation.tag:
-            tags.append(operation.tag)
         return Capability(
             id=f"sap/{self.service.name}/{operation.name}",
             kind="operation",
@@ -266,7 +263,10 @@ class _ServiceReader:
             output_schema=operation.outputs,
             effects=operation.effects,
             idempotency=operation.idempotency,
-            tags=tuple(tags),
+            trigger=Trigger(
+                channel=f"OData V{self.service.version.split('.')[0]}", address=operation.request
+            ),
+            tags=(operation.tag,) if operation.tag else (),
             notes=operation.notes,
             source=Source(
                 provider="sap",

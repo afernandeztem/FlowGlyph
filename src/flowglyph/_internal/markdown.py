@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from flowglyph._internal.text import first_line
 from flowglyph.ir import Capability, Parameter, Tri, Workflow
+from flowglyph.views import effects_code, retry_advice
 
 if TYPE_CHECKING:
     from flowglyph.catalog import Catalog
@@ -40,10 +41,20 @@ def _effects_line(capability: Capability) -> str:
     return ", ".join(parts)
 
 
+def _trigger_line(capability: Capability) -> str:
+    trigger = capability.trigger
+    if trigger is None:
+        return ""
+    kind = {"call": "a call", "schedule": "a schedule", "event": "an event"}[trigger.kind]
+    via = f" through {trigger.channel}" if trigger.channel else ""
+    at = f" at `{trigger.address}`" if trigger.address else ""
+    return f"{kind}{via}{at}"
+
+
 def _idempotency_line(capability: Capability) -> str:
     idempotency = capability.idempotency
     return (
-        f"{idempotency.mode}, {capability.idempotency.advice()} "
+        f"{idempotency.mode}, {retry_advice(capability.idempotency)} "
         f"({idempotency.provenance}, confidence {idempotency.confidence:.1f})"
     )
 
@@ -95,7 +106,7 @@ def render_capability(
         "kind": capability.kind,
         "category": capability.category,
         "version": capability.version,
-        "effects": capability.effects.code() or "none",
+        "effects": effects_code(capability.effects) or "none",
         "idempotency": capability.idempotency.mode,
         "invocable": capability.invocable,
     }
@@ -108,6 +119,13 @@ def render_capability(
         f"- **Effects:** {_effects_line(capability)}",
         f"- **Idempotency:** {_idempotency_line(capability)}",
     ]
+    if capability.trigger is not None:
+        lines.append(f"- **Started by:** {_trigger_line(capability)}")
+    if capability.configuration:
+        names = ", ".join(f"`{name}`" for name in capability.configuration)
+        lines.append(f"- **Configuration:** {names}")
+    if capability.deprecated:
+        lines.append("- **Deprecated** in its source")
     if capability.security.approval_required:
         lines.append("- **Approval:** required before every run")
     lines.append("")
@@ -119,11 +137,8 @@ def render_capability(
     workflow = workflows.get(capability.id)
     if workflow is not None:
         lines += _graph_section(workflow, capabilities)
-    used_in = [
-        tag.removeprefix("used-in:") for tag in capability.tags if tag.startswith("used-in:")
-    ]
-    if used_in:
-        lines += ["## Used in", "", *(f"- `{location}`" for location in used_in), ""]
+    if capability.used_in:
+        lines += ["## Used in", "", *(f"- `{location}`" for location in capability.used_in), ""]
     lines += [
         "## Contract",
         "",
@@ -160,7 +175,7 @@ def render_index(catalog: "Catalog") -> str:
         lines.append(
             f"| [{capability.title}](capabilities/{card_filename(capability)}) "
             f"| {_cell(first_line(capability.description, 100))} | {inputs} "
-            f"| {capability.effects.code() or 'none'} | {capability.idempotency.mode} "
+            f"| {effects_code(capability.effects) or 'none'} | {capability.idempotency.mode} "
             f"| {capability.version} |"
         )
     by_category: defaultdict[str, list[Capability]] = defaultdict(list)

@@ -2,6 +2,7 @@ import pytest
 
 from flowglyph.adapters.uipath.taxonomy import default_taxonomy
 from flowglyph.ir import Tri
+from flowglyph.views import effects_code
 
 UIPATH = "http://schemas.uipath.com/workflow/activities"
 SYSTEM = "http://schemas.microsoft.com/netfx/2009/xaml/activities"
@@ -83,9 +84,9 @@ def test_connector_activities_get_effects_from_their_verb(
     namespace: str, name: str, category: str, effects: str
 ):
     classified = default_taxonomy().classify(namespace, name)
-    assert (classified.name, classified.effects.code()) == (category, effects)
+    assert (classified.name, effects_code(classified.effects)) == (category, effects)
 
 
 def test_verbs_never_override_what_is_known():
     assert default_taxonomy().classify(UIPATH, "GetQueueItem").effects.mutates_state is Tri.YES
-    assert default_taxonomy().classify(SYSTEM, "Assign").effects.code() == ""
+    assert effects_code(default_taxonomy().classify(SYSTEM, "Assign").effects) == ""

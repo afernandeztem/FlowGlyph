@@ -3,6 +3,7 @@ from pathlib import Path
 
 import flowglyph
 from flowglyph.ir import export_json_schemas
+from flowglyph.views import effects_code
 
 
 def test_reframework_catalog_is_stable(
@@ -17,7 +18,7 @@ def test_reframework_catalog_is_stable(
 
 def test_taxonomy_of_reframework_activities(reframework: Path, golden: Callable[[str, str], None]):
     activities = sorted(
-        f"{c.title}: {c.category} {c.effects.code() or '-'}"
+        f"{c.title}: {c.category} {effects_code(c.effects) or '-'}"
         for c in flowglyph.extract(reframework)
         if c.kind == "activity"
     )

@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from flowglyph.ir import Capability, Edge, Effects, Idempotency, Node, Source, Tri, Workflow
+from flowglyph.views import effects_code, l0_card
 
 SOURCE = Source(provider="test", artifact="a", location="a.xaml", source_hash="sha256:0")
 
@@ -29,13 +30,13 @@ def test_effects_code_marks_unknowns_in_lower_case():
     effects = Effects(
         reads=Tri.YES, mutates_state=Tri.UNKNOWN, destructive=Tri.NO, external=Tri.YES
     )
-    assert effects.code() == "RwX"
+    assert effects_code(effects) == "RwX"
     assert effects.has_side_effects
 
 
 def test_pure_effects_have_no_side_effects():
     effects = Effects.combine([])
-    assert effects.code() == ""
+    assert effects_code(effects) == ""
     assert not effects.has_side_effects
 
 
@@ -48,7 +49,7 @@ def test_card_is_compact():
         input_schema={"type": "object", "properties": {"a": {"type": "string"}}, "required": ["a"]},
         source=SOURCE,
     )
-    assert capability.card() == {
+    assert l0_card(capability) == {
         "id": "x/y",
         "d": "Does y.",
         "in": ["a"],

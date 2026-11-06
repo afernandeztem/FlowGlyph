@@ -318,7 +318,7 @@ for row in report.rows(catalog, side_effects_only=True, statuses=["review"]):
     print(row.id, row.effects, row.advice)
 
 invoice = catalog.get("Steps/BookInvoice")
-print([p.name for p in invoice.inputs], invoice.effects.code(), invoice.idempotency.mode)
+print([p.name for p in invoice.inputs], effects_code(invoice.effects), invoice.idempotency.mode)
 
 workflow = catalog.workflow("Main")
 print(workflow.simulate(lambda condition: False))  # which steps run when every condition is false

@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-IR_VERSION = "0.2.0"
+IR_VERSION = "0.3.0"
 
 type JsonSchema = dict[str, Any]
 type CapabilityKind = Literal["workflow", "activity", "operation"]
@@ -21,6 +21,7 @@ type IdempotencyMode = Literal["none", "natural", "key", "conditional"]
 type Provenance = Literal["declared", "inferred"]
 type NodeKind = Literal["invoke", "activity", "decision", "container", "opaque"]
 type Join = Literal["all", "any"]
+type TriggerKind = Literal["call", "schedule", "event"]
 
 
 class Tri(StrEnum):
@@ -74,23 +75,6 @@ class Effects(_Model):
             external=Tri.combine([effect.external for effect in effects]),
         )
 
-    def code(self) -> str:
-        """Compact form used in L0 cards: `R`ead, `W`rite, `D`estroy, e`X`ternal.
-
-        Upper case means yes, lower case means unknown, absent means no.
-        """
-        letters = (
-            ("r", self.reads),
-            ("w", self.mutates_state),
-            ("d", self.destructive),
-            ("x", self.external),
-        )
-        return "".join(
-            letter.upper() if value is Tri.YES else letter
-            for letter, value in letters
-            if value is not Tri.NO
-        )
-
 
 class Idempotency(_Model):
     """Whether, and how, a capability can be called more than once safely.
@@ -108,17 +92,6 @@ class Idempotency(_Model):
     provenance: Provenance = "inferred"
     confidence: float = Field(default=0.5, ge=0.0, le=1.0)
     inferred_by: Literal["heuristic", "llm"] | None = "heuristic"
-
-    def advice(self) -> str:
-        """How to call the capability safely more than once, in one sentence."""
-        if self.mode == "natural":
-            return "safe to retry"
-        if self.mode == "key":
-            fields = ", ".join(self.key_fields) or "a caller-supplied key"
-            return f"safe to retry when deduplicated on {fields}"
-        if self.mode == "conditional":
-            return "safe to retry only under documented conditions"
-        return "not idempotent: run through the gateway with an idempotency key"
 
 
 class Semantics(_Model):
@@ -146,6 +119,18 @@ class Source(_Model):
     artifact_version: str | None = None
 
 
+class Trigger(_Model):
+    """How a capability is started: called on demand, on a schedule, or by an event.
+
+    `channel` is the protocol or adapter a call arrives through, such as `HTTPS`, `OData` or
+    `ProcessDirect`, and `address` the path or address it listens on.
+    """
+
+    kind: TriggerKind = "call"
+    channel: str | None = None
+    address: str | None = None
+
+
 class Parameter(_Model):
     """One named input or output, a convenience view over the JSON Schema."""
 
@@ -171,6 +156,11 @@ class Capability(_Model):
     idempotency: Idempotency = Idempotency()
     security: Security = Security()
     errors: tuple[str, ...] = ()
+    trigger: Trigger | None = None
+    entry_point: bool = False
+    configuration: tuple[str, ...] = ()
+    used_in: tuple[str, ...] = ()
+    deprecated: bool = False
     tags: tuple[str, ...] = ()
     notes: tuple[str, ...] = ()
     source: Source
@@ -185,17 +175,6 @@ class Capability(_Model):
     def outputs(self) -> list[Parameter]:
         """Output parameters in schema order."""
         return _parameters(self.output_schema)
-
-    def card(self) -> dict[str, Any]:
-        """The L0 representation: a few dozen bytes an agent can scan by the thousand."""
-        return {
-            "id": self.id,
-            "d": self.description.split("\n", 1)[0][:120] or self.title,
-            "in": [parameter.name for parameter in self.inputs],
-            "out": [parameter.name for parameter in self.outputs],
-            "e": self.effects.code(),
-            "i": self.idempotency.mode,
-        }
 
 
 class Node(_Model):

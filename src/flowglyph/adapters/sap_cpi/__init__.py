@@ -35,6 +35,7 @@ from flowglyph.ir import (
     Node,
     Security,
     Source,
+    Trigger,
     Workflow,
 )
 
@@ -159,11 +160,10 @@ class SapCpiAdapter:
             else ("timer" if timer else "no sender")
         )
         invocable = sender is not None and sender.component.upper() in _INVOCABLE_SENDERS
-        trigger_tag = sender.component if sender else ("timer" if timer else "none")
-        tags = [f"trigger:{trigger_tag}"]
-        tags.extend(
-            f"parameter:{name}" for name in sorted(iflow.references() | set(bundle.parameters))
-        )
+        if sender is not None:
+            started = Trigger(kind="call", channel=sender.component, address=sender.address or None)
+        else:
+            started = Trigger(kind="schedule", channel="Timer") if timer else None
         return Capability(
             id=capability_id,
             kind="workflow",
@@ -180,7 +180,8 @@ class SapCpiAdapter:
             effects=effects,
             idempotency=idempotency,
             security=_security(sender),
-            tags=tuple(tags),
+            trigger=started,
+            configuration=tuple(sorted(iflow.references() | set(bundle.parameters))),
             notes=tuple(n for n in (note,) if n),
             source=Source(
                 provider="sap-cpi",

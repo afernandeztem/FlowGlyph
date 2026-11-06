@@ -51,10 +51,16 @@ def test_each_endpoint_is_a_capability(catalog: Catalog):
     assert orders.source.artifact_version == "1.2.0"
     assert orders.input_schema["properties"]["body"]["x-endpoint"] == "/orders"
     assert orders.security.scopes == ("ESBMessaging.send",)
-    assert "trigger:HTTPS" in orders.tags
+    assert orders.trigger is not None
+    assert (orders.trigger.kind, orders.trigger.channel, orders.trigger.address) == (
+        "call",
+        "HTTPS",
+        "/orders",
+    )
     report = catalog.get(REPORT)
     assert not report.invocable, "a timer cannot be called on demand"
-    assert "trigger:timer" in report.tags
+    assert report.trigger is not None
+    assert report.trigger.kind == "schedule"
 
 
 def test_idempotency_declared_by_the_iflow_wins(catalog: Catalog):
@@ -128,7 +134,7 @@ def test_design_findings(own: Path):
 
 def test_parameter_values_never_leave_the_bundle(catalog: Catalog, tmp_path: Path):
     orders = catalog.get(ORDERS)
-    assert {"parameter:ERP_URL", "parameter:ERP_Credential"} <= set(orders.tags)
+    assert {"ERP_URL", "ERP_Credential"} <= set(orders.configuration)
     catalog.save(tmp_path / "out")
     for file in (tmp_path / "out").rglob("*"):
         if file.is_file():

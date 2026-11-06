@@ -12,6 +12,7 @@ from flowglyph._internal.text import first_line
 from flowglyph.errors import CatalogError
 from flowglyph.gateway.service import Gateway
 from flowglyph.ir import Capability
+from flowglyph.views import effects_code
 
 type Exposure = Literal["auto", "all", "meta"]
 
@@ -121,9 +122,8 @@ def capability_tool(capability: Capability) -> types.Tool:
             "description": "Stable business id; a retry with the same key never runs twice.",
         }
     summary = first_line(capability.description, 300) or capability.title
-    hints = (
-        f"effects {capability.effects.code() or 'none'}, idempotency {capability.idempotency.mode}"
-    )
+    effects = effects_code(capability.effects) or "none"
+    hints = f"effects {effects}, idempotency {capability.idempotency.mode}"
     return types.Tool(
         name=tool_name(capability),
         title=capability.title,

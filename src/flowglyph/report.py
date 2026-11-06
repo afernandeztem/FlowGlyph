@@ -14,6 +14,7 @@ from typing import Literal
 
 from flowglyph.catalog import Catalog
 from flowglyph.ir import Capability, CapabilityKind
+from flowglyph.views import effects_code, retry_advice
 
 type ReportFormat = Literal["markdown", "csv", "json"]
 type Status = Literal["safe", "keyed", "declared", "review"]
@@ -102,14 +103,14 @@ def _row(capability: Capability) -> Row:
         kind=capability.kind,
         provider=capability.source.provider,
         category=capability.category,
-        effects=capability.effects.code() or "none",
+        effects=effects_code(capability.effects) or "none",
         side_effects=capability.effects.has_side_effects,
         idempotency=capability.idempotency.mode,
         key_fields=", ".join(capability.idempotency.key_fields),
         provenance=capability.idempotency.provenance,
         confidence=capability.idempotency.confidence,
         status=status(capability),
-        advice=capability.idempotency.advice(),
+        advice=retry_advice(capability.idempotency),
     )
 
 

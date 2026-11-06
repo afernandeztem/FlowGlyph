@@ -19,6 +19,7 @@ from flowglyph.adapters import available_adapters
 from flowglyph.catalog import LOCK_FILE, Bump, Catalog, Change, Lock, diff_locks
 from flowglyph.errors import FlowGlyphError
 from flowglyph.ir import Capability, CapabilityKind
+from flowglyph.views import effects_code
 
 app = typer.Typer(
     name="flowglyph",
@@ -204,7 +205,7 @@ def inspect(
 def _roots(catalog: Catalog) -> list[Capability]:
     called = {callee for workflow in catalog.workflows.values() for callee in workflow.calls}
     workflows = [catalog.capabilities[w.capability] for w in catalog.workflows.values()]
-    entry_points = [c for c in workflows if "entry-point" in c.tags]
+    entry_points = [c for c in workflows if c.entry_point]
     return sorted(entry_points or [c for c in workflows if c.id not in called], key=lambda c: c.id)
 
 
@@ -225,7 +226,7 @@ def _grow(tree: Tree, capability: Capability, catalog: Catalog, seen: frozenset[
 
 
 def _label(capability: Capability) -> str:
-    effects = capability.effects.code() or "pure"
+    effects = effects_code(capability.effects) or "pure"
     style = "yellow" if capability.effects.has_side_effects else "green"
     return (
         f"[bold]{capability.title}[/] [{style}]{effects}[/] [dim]{capability.idempotency.mode}[/]"
@@ -253,7 +254,7 @@ def search(
         table.add_row(
             capability.id,
             capability.kind,
-            capability.effects.code() or "pure",
+            effects_code(capability.effects) or "pure",
             capability.idempotency.mode,
             capability.description.split("\n", 1)[0][:70],
         )

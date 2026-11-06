@@ -252,9 +252,53 @@
       ],
       "title": "Tri",
       "type": "string"
+    },
+    "Trigger": {
+      "additionalProperties": false,
+      "description": "How a capability is started: called on demand, on a schedule, or by an event.\n\n`channel` is the protocol or adapter a call arrives through, such as `HTTPS`, `OData` or\n`ProcessDirect`, and `address` the path or address it listens on.",
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "channel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Channel"
+        },
+        "kind": {
+          "$ref": "#/$defs/TriggerKind",
+          "default": "call"
+        }
+      },
+      "title": "Trigger",
+      "type": "object"
+    },
+    "TriggerKind": {
+      "enum": [
+        "call",
+        "schedule",
+        "event"
+      ],
+      "type": "string"
     }
   },
-  "$id": "urn:flowglyph:ir:0.2.0:capability",
+  "$id": "urn:flowglyph:ir:0.3.0:capability",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "One operation an agent can discover, reason about and, if invocable, run.",
@@ -263,6 +307,19 @@
       "default": "uncategorized",
       "title": "Category",
       "type": "string"
+    },
+    "configuration": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Configuration",
+      "type": "array"
+    },
+    "deprecated": {
+      "default": false,
+      "title": "Deprecated",
+      "type": "boolean"
     },
     "description": {
       "default": "",
@@ -277,6 +334,11 @@
         "mutates_state": "unknown",
         "reads": "unknown"
       }
+    },
+    "entry_point": {
+      "default": false,
+      "title": "Entry Point",
+      "type": "boolean"
     },
     "errors": {
       "default": [],
@@ -354,6 +416,25 @@
     "title": {
       "title": "Title",
       "type": "string"
+    },
+    "trigger": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Trigger"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "used_in": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Used In",
+      "type": "array"
     },
     "version": {
       "default": "1.0.0",
