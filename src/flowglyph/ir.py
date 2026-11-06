@@ -269,6 +269,8 @@ def export_json_schemas(directory: str | Path) -> list[Path]:
         schema["$id"] = f"urn:flowglyph:ir:{IR_VERSION}:{name}"
         schema["$schema"] = "https://json-schema.org/draft/2020-12/schema"
         path = target / f"{name}.schema.json"
-        path.write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n")
+        path.write_text(
+            json.dumps(schema, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+        )
         written.append(path)
     return written

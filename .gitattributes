@@ -1,0 +1,4 @@
+# Catalogs, golden files and fixtures are compared byte for byte, so every platform checks out LF.
+* text=auto eol=lf
+*.zip binary
+*.png binary

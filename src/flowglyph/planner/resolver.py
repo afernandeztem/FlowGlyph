@@ -51,7 +51,9 @@ class PlanReport:
         target.mkdir(parents=True, exist_ok=True)
         proposal = target / "workflow.plan.yaml"
         result = target / "workflow.ir.yaml"
-        proposal.write_text(_yaml(self.plan.model_dump(mode="json")), encoding="utf-8")
+        proposal.write_text(
+            _yaml(self.plan.model_dump(mode="json")), encoding="utf-8", newline="\n"
+        )
         document = {
             "status": "ok" if self.ok else "needs attention",
             "problems": self.problems,
@@ -60,7 +62,7 @@ class PlanReport:
             "capability": self.capability.model_dump(mode="json"),
             "workflow": self.workflow.model_dump(mode="json"),
         }
-        result.write_text(_yaml(document), encoding="utf-8")
+        result.write_text(_yaml(document), encoding="utf-8", newline="\n")
         return proposal, result
 
 

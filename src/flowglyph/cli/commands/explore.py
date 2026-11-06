@@ -115,7 +115,7 @@ def idempotency(
     if output_format != "table":
         text = report.render(selected, output_format)
         if out:
-            out.write_text(text, encoding="utf-8")
+            out.write_text(text, encoding="utf-8", newline="\n")
             console.print(f"Wrote {len(selected)} rows to {escape(str(out))}")
         else:
             sys.stdout.write(text)

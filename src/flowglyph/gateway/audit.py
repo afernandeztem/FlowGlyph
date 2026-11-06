@@ -25,5 +25,5 @@ class AuditLog:
         """Append one event."""
         entry = {"time": round(time.time(), 3), "event": event, **fields}
         line = json.dumps(entry, sort_keys=True, default=str)
-        with self._lock, self.path.open("a", encoding="utf-8") as handle:
+        with self._lock, self.path.open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(line + "\n")

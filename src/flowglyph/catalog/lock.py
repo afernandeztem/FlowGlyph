@@ -91,4 +91,4 @@ class Lock(BaseModel):
     def write(self, path: str | Path) -> None:
         """Write the lock file with stable formatting, so it diffs cleanly."""
         text = json.dumps(self.model_dump(mode="json"), indent=2, sort_keys=True)
-        Path(path).write_text(text + "\n", encoding="utf-8")
+        Path(path).write_text(text + "\n", encoding="utf-8", newline="\n")

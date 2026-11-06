@@ -95,3 +95,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   elsewhere, and quotes its arguments for the shell.
 - The OpenAI-compatible planner refuses a base URL that is not `http` or `https`, so
   `OPENAI_BASE_URL` cannot point the standard library at local files.
+- Catalogs, lock files, wikis and plans are written with LF line endings on every platform, so a
+  catalog saved on Windows is byte-identical to one saved on Linux or macOS.

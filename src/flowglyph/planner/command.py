@@ -148,7 +148,7 @@ class CommandPlanModel:
         with tempfile.TemporaryDirectory(prefix="flowglyph-plan-") as scratch:
             schema_file = Path(scratch) / "plan.schema.json"
             output_file = Path(scratch) / "plan.json"
-            schema_file.write_text(json.dumps(plan_json_schema()), encoding="utf-8")
+            schema_file.write_text(json.dumps(plan_json_schema()), encoding="utf-8", newline="\n")
             argv = self.command(schema_file, output_file)
             try:
                 completed = subprocess.run(

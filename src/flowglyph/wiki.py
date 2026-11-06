@@ -120,7 +120,7 @@ def build_wiki(
     catalog.save(root / DATA_DIRECTORY)
     schema = root / "AGENTS.md"
     if not schema.exists():
-        schema.write_text(SCHEMA, encoding="utf-8")
+        schema.write_text(SCHEMA, encoding="utf-8", newline="\n")
     callers = _callers(catalog)
     by_category = _group(catalog, lambda c: c.category)
     by_source = _group(catalog, _source_key)
@@ -138,7 +138,9 @@ def build_wiki(
         _write(page, _source_page(source, members, catalog))
         written.add(page)
     removed = _retire(root, written)
-    (root / "index.md").write_text(_index(catalog, by_category, by_source), encoding="utf-8")
+    (root / "index.md").write_text(
+        _index(catalog, by_category, by_source), encoding="utf-8", newline="\n"
+    )
     _write(root / "overview.md", _overview(catalog, by_source))
     entry = _log_entry(catalog, subject or catalog.lock.origin or "sources", removed)
     _append_log(root, entry)
@@ -339,7 +341,9 @@ def _write(page: Path, generated: str) -> None:
         current = page.read_text(encoding="utf-8")
         if NOTES_MARKER in current:
             notes = current[current.index(NOTES_MARKER) :]
-    page.write_text(generated.rstrip("\n") + "\n\n" + notes.rstrip("\n") + "\n", encoding="utf-8")
+    page.write_text(
+        generated.rstrip("\n") + "\n\n" + notes.rstrip("\n") + "\n", encoding="utf-8", newline="\n"
+    )
 
 
 def _retire(root: Path, written: set[Path]) -> list[str]:
@@ -355,7 +359,7 @@ def _retire(root: Path, written: set[Path]) -> list[str]:
             if notes.strip() and notes.strip() != _NOTES_TEMPLATE.strip():
                 title = text.split("\n", 1)[0] if text.startswith("# ") else f"# {page.stem}"
                 banner = f"{title}\n\n> **Removed from the sources.** Kept because it has notes.\n"
-                page.write_text(banner + "\n" + notes, encoding="utf-8")
+                page.write_text(banner + "\n" + notes, encoding="utf-8", newline="\n")
             else:
                 page.unlink()
             removed.append(relative)
@@ -393,8 +397,10 @@ def _lint_entry(issues: Iterable[LintIssue]) -> str:
 def _append_log(root: Path, entry: str) -> None:
     log = root / "log.md"
     if not log.exists():
-        log.write_text("# Log\n\nAppend-only. Newest entries at the bottom.\n", encoding="utf-8")
-    with log.open("a", encoding="utf-8") as handle:
+        log.write_text(
+            "# Log\n\nAppend-only. Newest entries at the bottom.\n", encoding="utf-8", newline="\n"
+        )
+    with log.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write("\n" + entry)
 
 

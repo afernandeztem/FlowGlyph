@@ -130,7 +130,9 @@ class Catalog:
         cards = target / "capabilities"
         cards.mkdir(parents=True, exist_ok=True)
         lines = [self.capabilities[key].model_dump_json() for key in sorted(self.capabilities)]
-        (target / "catalog.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        (target / "catalog.jsonl").write_text(
+            "\n".join(lines) + "\n", encoding="utf-8", newline="\n"
+        )
         graph = {
             "ir_version": IR_VERSION,
             "workflows": [
@@ -138,7 +140,7 @@ class Catalog:
             ],
         }
         (target / "graph.json").write_text(
-            json.dumps(graph, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            json.dumps(graph, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
         )
         self.lock.write(target / LOCK_FILE)
         expected = {markdown.card_filename(c) for c in self}
@@ -147,8 +149,12 @@ class Catalog:
                 stale.unlink()
         for capability in self:
             text = markdown.render_capability(capability, self.workflows, self.capabilities)
-            (cards / markdown.card_filename(capability)).write_text(text, encoding="utf-8")
-        (target / "INDEX.md").write_text(markdown.render_index(self), encoding="utf-8")
+            (cards / markdown.card_filename(capability)).write_text(
+                text, encoding="utf-8", newline="\n"
+            )
+        (target / "INDEX.md").write_text(
+            markdown.render_index(self), encoding="utf-8", newline="\n"
+        )
         return target
 
 
