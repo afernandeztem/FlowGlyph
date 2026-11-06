@@ -22,7 +22,7 @@ type Status = Literal["safe", "keyed", "declared", "review"]
 _STATUS_HELP = {
     "safe": "no side effects, or naturally idempotent",
     "keyed": "retry-safe when called with its idempotency key",
-    "declared": "idempotency declared by a person",
+    "declared": "idempotency declared by the source or by a person",
     "review": "has side effects and no retry guarantee: declare one in the overrides",
 }
 

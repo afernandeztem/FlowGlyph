@@ -1,4 +1,4 @@
-"""The request sent to planner backends: requirements plus L0 cards of the candidates."""
+"""The request sent to planner backends: the requirements and a card for each candidate."""
 
 import json
 from collections.abc import Sequence

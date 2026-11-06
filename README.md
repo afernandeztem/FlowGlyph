@@ -145,7 +145,7 @@ V4 service and save it, or download it from the SAP Business Accelerator Hub. Fi
 ### How effects and idempotency are decided
 
 Nothing is guessed by a model. Each adapter applies the semantics of its platform, and every
-answer records whether it was inferred or declared by a person.
+answer records whether it was inferred, or declared by the source itself or by a person.
 
 | Source | Rule |
 |---|---|

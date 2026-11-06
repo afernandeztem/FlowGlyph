@@ -2,8 +2,9 @@
 
 The language model only proposes a `Plan`. A deterministic resolver then checks every
 capability, argument and reference against the catalog, so a capability the model invents is
-reported, never accepted. `ClaudePlanModel` needs `pip install 'flowglyph[llm]'`; any object
-implementing `PlanModel` can replace it.
+reported, never accepted. Backends for the Claude API, coding assistants' command lines and
+OpenAI-compatible servers are in `flowglyph.planner.backends`; any object implementing
+`PlanModel` can be used instead.
 """
 
 import re
