@@ -5,8 +5,9 @@ wheel, publishes them to PyPI with Trusted Publishing, and creates a GitHub rele
 
 ## Before the first public release
 
-1. Create the GitHub repository and replace `flowglyph/flowglyph` in `pyproject.toml`,
-   `CONTRIBUTING.md` and `.github/ISSUE_TEMPLATE/config.yml` with its real owner and name.
+1. The repository is `afernandeztem/FlowGlyph`, private until the first release. Make it public in its
+   settings. If it moves, replace `afernandeztem/FlowGlyph` in `pyproject.toml`, `README.md`,
+   `CONTRIBUTING.md` and `.github/ISSUE_TEMPLATE/config.yml`.
 2. Enable private vulnerability reporting in the repository's security settings.
 3. On PyPI, add a pending trusted publisher for `flowglyph`: workflow `release.yml`,
    environment `pypi`. Create the `pypi` environment in GitHub with required reviewers.

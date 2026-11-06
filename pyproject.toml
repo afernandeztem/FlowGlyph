@@ -46,10 +46,10 @@ sap = "flowglyph.adapters.sap:SapODataAdapter"
 "sap-cpi" = "flowglyph.adapters.sap_cpi:SapCpiAdapter"
 
 [project.urls]
-Homepage = "https://github.com/flowglyph/flowglyph"
-Documentation = "https://github.com/flowglyph/flowglyph/tree/main/docs"
-Issues = "https://github.com/flowglyph/flowglyph/issues"
-Changelog = "https://github.com/flowglyph/flowglyph/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/afernandeztem/FlowGlyph"
+Documentation = "https://github.com/afernandeztem/FlowGlyph/tree/main/docs"
+Issues = "https://github.com/afernandeztem/FlowGlyph/issues"
+Changelog = "https://github.com/afernandeztem/FlowGlyph/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [

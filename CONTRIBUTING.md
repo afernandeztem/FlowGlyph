@@ -9,8 +9,8 @@ You need [uv](https://docs.astral.sh/uv/) 0.13 or newer. Node 26 is only needed 
 regenerate the README diagrams.
 
 ```bash
-git clone https://github.com/flowglyph/flowglyph
-cd flowglyph
+git clone https://github.com/afernandeztem/FlowGlyph
+cd FlowGlyph
 make install   # uv sync --all-extras + pre-commit hooks
 make check     # ruff, pyright, pytest
 ```
