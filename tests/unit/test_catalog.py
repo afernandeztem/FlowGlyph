@@ -78,6 +78,19 @@ def test_new_required_input_is_major(project: Path):
     assert diff_locks(first.lock, second.lock)[0].bump is Bump.MAJOR
 
 
+def test_deprecation_is_minor_and_placement_is_not_versioned(project: Path):
+    first = flowglyph.extract(project)
+    (project / "flowglyph.overrides.yaml").write_text(
+        f"capabilities:\n  {MAIN}:\n    tags: [finance]\n    entry_point: false\n",
+        encoding="utf-8",
+    )
+    assert reextract(project, first).changes == ()
+    (project / "flowglyph.overrides.yaml").write_text(
+        f"capabilities:\n  {MAIN}:\n    deprecated: true\n", encoding="utf-8"
+    )
+    assert reextract(project, first).get(MAIN).version == "1.1.0"
+
+
 def test_removed_capabilities_are_reported(project: Path):
     first = flowglyph.extract(project)
     (project / "Steps" / "ValidateVendor.xaml").unlink()

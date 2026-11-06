@@ -1,6 +1,6 @@
 # Automation IR specification
 
-Version 0.2.0. Machine-readable schemas: [`schemas/capability.schema.json`](../schemas/capability.schema.json)
+Version 0.3.0. Machine-readable schemas: [`schemas/capability.schema.json`](../schemas/capability.schema.json)
 and [`schemas/workflow.schema.json`](../schemas/workflow.schema.json).
 
 The IR describes *what an automation does* independently of *how it is implemented* and *how
@@ -31,6 +31,8 @@ output_schema:
 effects: {reads: yes, mutates_state: no, destructive: no, external: yes}
 idempotency: {mode: natural, provenance: inferred, confidence: 0.8, inferred_by: heuristic}
 security: {scopes: [], approval_required: false}
+trigger: {kind: call, channel: Invoke Workflow File, address: Framework/InitAllSettings.xaml}
+entry_point: false
 source:
   provider: uipath
   artifact: InitiAllSettings
@@ -48,6 +50,12 @@ invocable: true
 | `effects` | See [Effects](#effects). |
 | `idempotency` | See [Idempotency](#idempotency). |
 | `security` | Scopes the caller needs and whether a human must approve each run. |
+| `trigger` | How the capability is started. See [Trigger](#trigger). |
+| `entry_point` | Whether it is the main workflow of its project, the one an orchestrator starts. |
+| `configuration` | Names of externalized parameters it depends on, such as SAP CPI `{{parameters}}`. Never their values. |
+| `used_in` | For documentation-only capabilities such as activity types: the artifacts they appear in. |
+| `deprecated` | Whether the source marks the capability as deprecated. |
+| `tags` | Free labels copied from the source, such as OpenAPI tags. FlowGlyph attaches no meaning to them. |
 | `notes` | Problems found while extracting, such as an `out_` argument declared as input. |
 | `invocable` | Whether a gateway may run the capability directly. |
 
@@ -67,8 +75,8 @@ harmless, and the IR does not pretend it can: consumers must treat `unknown` as 
 `yes`. A workflow's effects are the combination of its activities' effects and, transitively,
 those of the workflows it invokes.
 
-The compact form used in L0 cards writes `R`, `W`, `D`, `X` for yes and lower case for
-unknown: `RwX` reads, may write, and is external.
+The compact form used in L0 cards (`flowglyph.views.effects_code`) writes `R`, `W`, `D`, `X`
+for yes and lower case for unknown: `RwX` reads, may write, and is external.
 
 ### Idempotency
 
@@ -84,6 +92,16 @@ unknown: `RwX` reads, may write, and is external.
 actually deduplicated is a runtime fact reported by the gateway, never stored in the IR.
 
 `compensation` names the capability that undoes this one, when there is one.
+
+### Trigger
+
+| Field | Meaning |
+|---|---|
+| `kind` | `call` (started on demand), `schedule` (by a timer) or `event` (by a message the caller does not send directly). |
+| `channel` | The protocol or adapter a start arrives through: `HTTP`, `OData V4`, `ProcessDirect`, `Orchestrator`, `Timer`. |
+| `address` | Where it listens: an HTTP method and route, an OData entity set, a ProcessDirect address, a workflow file. |
+
+Activity types have no trigger: they only run as part of a workflow.
 
 ## Workflow
 
@@ -125,9 +143,12 @@ their children flattened in document order; their edges do not represent real co
 
 | Level | What | Size | Use |
 |---|---|---|---|
-| L0 | `Capability.card()`: id, one-line description, parameter names, effects code, idempotency mode | tens of bytes | Discovery across thousands of capabilities. |
+| L0 | `flowglyph.views.l0_card`: id, one-line description, parameter names, effects code, idempotency mode | tens of bytes | Discovery across thousands of capabilities. |
 | L1 | The Markdown card | a few hundred tokens | Choosing between candidates and filling arguments. |
 | L2 | The full Capability document | full contract | Validation and execution. |
+
+The IR models carry only domain rules (`Effects.combine`, `Workflow.simulate`). How they are
+shown lives in `flowglyph.views` ([ADR-0005](adr/0005-typed-capability-facts-and-views.md)).
 
 ## Versioning
 
@@ -136,9 +157,12 @@ their children flattened in document order; their edges do not represent real co
 | Change | Bump |
 |---|---|
 | Input or output removed, retyped, or an input becomes required | major |
-| Optional input or new output added, or effects, idempotency or security changed | minor |
+| Optional input or new output added, effects, idempotency or security changed, or marked deprecated | minor |
 | Only titles, descriptions or parameter descriptions changed | patch |
 | Only layout, designer metadata or comments changed | none |
+
+Trigger, entry point, configuration, usage and tags describe where a capability sits, not its
+contract, so changing them does not bump the version.
 
 The lock file records, per artifact, its content hash, and per capability, its version and the
 hashes of its contract, metadata and documentation. It contains no timestamps, so extracting
