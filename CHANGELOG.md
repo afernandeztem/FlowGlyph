@@ -93,3 +93,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `[in_target]`. Source text is now escaped.
 - The approval command the gateway suggests includes `--state` when the gateway keeps its state
   elsewhere, and quotes its arguments for the shell.
+- The OpenAI-compatible planner refuses a base URL that is not `http` or `https`, so
+  `OPENAI_BASE_URL` cannot point the standard library at local files.

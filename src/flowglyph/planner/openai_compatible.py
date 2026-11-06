@@ -3,6 +3,7 @@
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections.abc import Sequence
 from typing import Any, cast
@@ -34,11 +35,16 @@ class OpenAICompatiblePlanModel:
         api_key: str | None = None,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ) -> None:
-        """Configure the endpoint and model."""
+        """Configure the endpoint and model.
+
+        Raises:
+            PlannerError: If the base URL is not an `http` or `https` URL.
+        """
         self.model = model
-        self.base_url = (base_url or os.environ.get("OPENAI_BASE_URL") or DEFAULT_BASE_URL).rstrip(
-            "/"
-        )
+        url = base_url or os.environ.get("OPENAI_BASE_URL") or DEFAULT_BASE_URL
+        if urllib.parse.urlsplit(url).scheme not in {"http", "https"}:
+            raise PlannerError(f"the planner base URL must use http or https, not {url!r}")
+        self.base_url = url.rstrip("/")
         self.api_key = api_key if api_key is not None else os.environ.get("OPENAI_API_KEY")
         self.timeout_seconds = timeout_seconds
 
@@ -67,6 +73,7 @@ class OpenAICompatiblePlanModel:
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
+        # The scheme was checked in __init__, so urllib cannot be pointed at local files.
         request = urllib.request.Request(  # noqa: S310
             f"{self.base_url}/chat/completions",
             data=json.dumps(self.request_body(requirements, candidates)).encode(),

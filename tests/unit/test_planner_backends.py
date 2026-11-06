@@ -225,3 +225,9 @@ def test_plugins_register_through_entry_points(monkeypatch: pytest.MonkeyPatch):
 
     monkeypatch.setattr(backends, "entry_points", entry_points)
     assert backends.planner_backend("my-sdk", "x1") == "planner for x1"
+
+
+@pytest.mark.parametrize("url", ["file:///etc", "ftp://example.com/v1", "localhost:11434/v1"])
+def test_openai_compatible_backends_only_speak_http(url: str):
+    with pytest.raises(PlannerError, match="http or https"):
+        OpenAICompatiblePlanModel("llama3.1", base_url=url)
