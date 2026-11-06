@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Bundle-Name: Nightly Stock Report
+Bundle-SymbolicName: Nightly_Stock_Report
+Bundle-Version: 3.0.1
+SAP-BundleType: IntegrationFlow

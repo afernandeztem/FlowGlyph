@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Bundle-Name: Notify Customer
+Bundle-SymbolicName: Notify_Customer
+Bundle-Version: 1.0.0
+SAP-BundleType: IntegrationFlow

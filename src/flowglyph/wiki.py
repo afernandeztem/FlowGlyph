@@ -156,6 +156,9 @@ def lint_wiki(directory: str | Path) -> list[LintIssue]:
             issues.append(LintIssue("warning", page, _REVIEW_MESSAGE))
         if capability.invocable and not capability.description:
             issues.append(LintIssue("info", page, "has no description in its source"))
+        for note in capability.notes:
+            level = "warning" if note.startswith("warning: ") else "info"
+            issues.append(LintIssue(level, page, note.removeprefix(f"{level}: ")))
         is_root = "entry-point" in capability.tags or capability.source.provider != "uipath"
         if capability.kind == "workflow" and capability.id not in called and not is_root:
             issues.append(LintIssue("info", page, _ORPHAN_MESSAGE))

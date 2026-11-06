@@ -8,5 +8,10 @@ UiPath ReFrameWork (https://github.com/UiPath/ReFrameWork),
 Copyright 2019 UiPath, licensed under the MIT License.
 See tests/fixtures/reframework/LICENSE.
 
+Test fixtures under tests/fixtures/sap-cpi/btp-spend-analysis/ are integration flows
+taken from SAP-archive/btp-spend-analysis (https://github.com/SAP-archive/btp-spend-analysis),
+Copyright SAP SE or an SAP affiliate company, licensed under the Apache License 2.0.
+See tests/fixtures/sap-cpi/btp-spend-analysis/LICENSE.
+
 UiPath and SAP are trademarks of their respective owners.
 FlowGlyph is not affiliated with or endorsed by them.

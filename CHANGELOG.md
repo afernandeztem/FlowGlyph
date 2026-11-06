@@ -56,6 +56,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   checkout is named after the repository.
 - Services or APIs published twice in one source, such as the same SAP service as OData V2 and
   V4, keep separate ids. SAP metadata that uses the `sap:` prefix without declaring it is read.
+- SAP Cloud Integration adapter (`--adapter sap-cpi`): iFlows exported as `.zip` (read in
+  memory, with size and compression limits) or unpacked. One capability per endpoint, effects from
+  receivers and steps, ProcessDirect calls resolved across iFlows (from steps, message end events,
+  local processes and exception subprocesses), idempotency declared by the iFlow itself, and a
+  design review whose findings reach `wiki lint`. Parameter values are never read.
+- `wiki lint` lists the notes adapters attach to capabilities.
 
 ### Changed
 

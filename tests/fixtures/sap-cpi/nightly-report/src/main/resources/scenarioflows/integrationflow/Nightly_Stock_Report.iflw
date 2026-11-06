@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic integration flow written for FlowGlyph's tests. -->
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd" id="Definitions_1">
+  <bpmn2:collaboration id="Collaboration_1">
+    <bpmn2:participant id="Participant_Stock" ifl:type="EndpointRecevier" name="Stock API"/>
+    <bpmn2:messageFlow id="MessageFlow_Stock" name="HTTP" sourceRef="ServiceTask_1" targetRef="Participant_Stock">
+      <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>HTTP</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>httpMethod</key><value>GET</value></ifl:property>
+        <ifl:property><key>httpAddressWithoutQuery</key><value>{{STOCK_URL}}</value></ifl:property>
+        <ifl:property><key>httpRequestTimeout</key><value>30000</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:messageFlow>
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_1" name="Integration Process">
+    <bpmn2:subProcess id="SubProcess_Error" name="Exception Subprocess" triggeredByEvent="true">
+      <bpmn2:startEvent id="StartEvent_Error"><bpmn2:errorEventDefinition/></bpmn2:startEvent>
+    </bpmn2:subProcess>
+    <bpmn2:startEvent id="StartEvent_1" name="Every night">
+      <bpmn2:extensionElements><ifl:property><key>activityType</key><value>StartTimerEvent</value></ifl:property></bpmn2:extensionElements>
+      <bpmn2:timerEventDefinition/>
+    </bpmn2:startEvent>
+    <bpmn2:serviceTask id="ServiceTask_1" name="Read stock">
+      <bpmn2:extensionElements><ifl:property><key>activityType</key><value>ExternalCall</value></ifl:property></bpmn2:extensionElements>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="EndEvent_1" name="End"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="ServiceTask_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="ServiceTask_1" targetRef="EndEvent_1"/>
+  </bpmn2:process>
+</bpmn2:definitions>

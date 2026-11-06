@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic integration flow written for FlowGlyph's tests. -->
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd" id="Definitions_1">
+  <bpmn2:collaboration id="Collaboration_1">
+    <bpmn2:participant id="Participant_In" ifl:type="EndpointSender" name="Orders"/>
+    <bpmn2:participant id="Participant_Mail" ifl:type="EndpointRecevier" name="Mail server"/>
+    <bpmn2:messageFlow id="MessageFlow_In" name="ProcessDirect" sourceRef="Participant_In" targetRef="StartEvent_1">
+      <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>ProcessDirect</value></ifl:property>
+        <ifl:property><key>direction</key><value>Sender</value></ifl:property>
+        <ifl:property><key>address</key><value>/notify</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:messageFlow>
+    <bpmn2:messageFlow id="MessageFlow_Mail" name="Mail" sourceRef="EndEvent_1" targetRef="Participant_Mail">
+      <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>Mail</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>server</key><value>{{SMTP_HOST}}</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:messageFlow>
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_1" name="Integration Process">
+    <bpmn2:startEvent id="StartEvent_1" name="Start"><bpmn2:messageEventDefinition/></bpmn2:startEvent>
+    <bpmn2:callActivity id="CallActivity_Store" name="Remember notification">
+      <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>DBstorage</value></ifl:property>
+        <ifl:property><key>operation</key><value>put</value></ifl:property>
+        <ifl:property><key>storageName</key><value>notifications</value></ifl:property>
+        <ifl:property><key>messageId</key><value>${header.OrderNumber}</value></ifl:property>
+        <ifl:property><key>override</key><value>false</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:callActivity>
+    <bpmn2:endEvent id="EndEvent_1" name="Send mail"><bpmn2:messageEventDefinition/></bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="CallActivity_Store"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="CallActivity_Store" targetRef="EndEvent_1"/>
+  </bpmn2:process>
+</bpmn2:definitions>

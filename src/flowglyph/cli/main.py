@@ -123,7 +123,7 @@ def extract(
     )
     console.print(
         f"[bold green]Extracted[/] {invocable} invocable capabilities and "
-        f"{len(catalog) - invocable} activity types{origin} into [bold]{out}[/]"
+        f"{len(catalog) - invocable} that cannot be run on their own{origin} into [bold]{out}[/]"
     )
     for diagnostic in catalog.diagnostics:
         style = _LEVEL_STYLE[diagnostic.level]

@@ -20,7 +20,8 @@ understand, search and run safely.**
 
 ## Why
 
-Companies run thousands of automations: UiPath robots, SAP OData services, internal APIs. The
+Companies run thousands of automations: UiPath robots, SAP integration flows and OData services,
+internal APIs. The
 knowledge of what each one does is scattered across XML files, and none of them answers the
 two questions that matter before anything, or anyone, presses the button: **what will this
 change, and is it safe to run twice?**
@@ -117,14 +118,24 @@ flowglyph adapters
 |---|---|---|
 | `uipath` | UiPath Studio projects: `project.json` and every `.xaml` | a workflow, typed from its arguments, with its graph of steps; plus one entry per activity type in use |
 | `sap` | SAP OData `$metadata` documents (EDMX, OData V2 and V4) from SAP S/4HANA, SAP Gateway or SAP BTP | an entity operation (query, read, create, update, delete), a function import, a function or an action |
+| `sap-cpi` | SAP Cloud Integration (SAP Integration Suite) iFlows, exported as `.zip` or unpacked | an endpoint the iFlow exposes (HTTPS, SOAP, OData, IDoc, ProcessDirect...), with the iFlow's steps as its graph |
 | `openapi` | OpenAPI 3.0 and 3.1 documents, JSON or YAML | an API operation |
 
 By default every adapter is tried and everything found is extracted. Pick one with `--adapter`:
 
 ```bash
-flowglyph extract ./landscape --adapter sap      # only the SAP services
+flowglyph extract ./landscape --adapter sap      # only the SAP OData services
+flowglyph extract ./landscape --adapter sap-cpi  # only the SAP Cloud Integration iFlows
 flowglyph idempotency ./landscape -a uipath      # only the robots
 ```
+
+For SAP Cloud Integration, export the integration flows from the Integration Suite design
+workspace (or keep them unpacked in git, as most teams do) and point FlowGlyph at the folder.
+Besides the catalog, the adapter reviews each iFlow's design and keeps the findings on its
+capability, where `wiki lint` shows them: a main process without an exception subprocess,
+receivers over plain HTTP or without a timeout, hard-coded addresses, routers without a default
+route, splitters that do not stream, the whole body copied into a property, CSRF protection
+turned off. Values in `parameters.prop` are never read, only the names of the parameters.
 
 To get the metadata of an SAP service, open
 `https://<host>/sap/opu/odata/sap/<SERVICE_NAME>/$metadata` (OData V2) or the `$metadata` of the
@@ -139,6 +150,7 @@ answer records whether it was inferred or declared by a person.
 | Source | Rule |
 |---|---|
 | UiPath | Each activity is classified by an [editable taxonomy](src/flowglyph/adapters/uipath/taxonomy.yaml) (Excel, mail, Orchestrator, UI, file system...). A workflow has the effects of its activities and of every workflow it invokes. UI automation is never assumed harmless. |
+| SAP Cloud Integration | Receivers decide the effects: an HTTP `GET` reads, `POST` writes, `DELETE` destroys; mail, SFTP, IDoc and SOAP receivers send; Data Store writes change tenant state. ProcessDirect calls between iFlows become calls in the graph, so an iFlow inherits the effects of the iFlows it hands over to. Idempotency the iFlow declares itself (an idempotent process call, an exactly-once adapter) is taken as declared; a Data Store write without overwrite makes it conditional. |
 | SAP OData | Query and read are read-only and idempotent. Update and delete are idempotent; delete is destructive. Create and actions are not idempotent. Operations the service forbids (`sap:creatable="false"`, V4 `InsertRestrictions`...) are not generated at all. |
 | OpenAPI | HTTP semantics (RFC 9110): `GET` reads, `PUT` and `DELETE` are idempotent, `POST` is retry-safe only when the operation accepts an `Idempotency-Key` header. |
 
@@ -383,7 +395,7 @@ Every command has `--help`.
 
 | | FlowGlyph | UiPath and SAP native MCP servers | XAML parsers such as `xaml-parser` | Generic OpenAPI to MCP converters |
 |---|---|---|---|---|
-| Sources | UiPath, SAP OData, OpenAPI, pluggable | their own platform | UiPath | OpenAPI |
+| Sources | UiPath, SAP Cloud Integration, SAP OData, OpenAPI, pluggable | their own platform | UiPath | OpenAPI |
 | Vendor-neutral model | yes, the Automation IR | no | no | no |
 | Effects and retry safety | tri-state effects, idempotency with provenance, enforced by a gateway | hints | no | hints from HTTP verbs at best |
 | Contract versioning | semver from a lock file, with the git commit | platform versions | no | no |
@@ -394,7 +406,7 @@ Every command has `--help`.
 ## Roadmap
 
 - [x] Automation IR with joins, versioned catalog, CLI
-- [x] Adapters for UiPath, SAP OData and OpenAPI; extraction from folders and git repositories
+- [x] Adapters for UiPath, SAP Cloud Integration, SAP OData and OpenAPI; extraction from folders and git repositories
 - [x] Idempotency report and LLM wiki
 - [x] MCP gateway with policy, idempotency ledger and audit log (dry-run execution)
 - [x] Planner with any model provider or coding assistant
