@@ -229,3 +229,17 @@ def test_wiki_commands(project: Path, tmp_path: Path):
     assert code == 1
     code, output = invoke("wiki", "lint", tmp_path)
     assert code == 2
+
+
+def test_diagnostics_keep_bracketed_expressions(project: Path, tmp_path: Path):
+    main = project / "Main.xaml"
+    text = main.read_text(encoding="utf-8")
+    main.write_text(
+        text.replace(
+            'WorkflowFileName="Steps\\BookInvoice.xaml"', 'WorkflowFileName="[in_target]"'
+        ),
+        encoding="utf-8",
+    )
+    code, output = invoke("extract", project, "-o", tmp_path / "out")
+    assert code == 0, output
+    assert "by the expression [in_target]" in output
