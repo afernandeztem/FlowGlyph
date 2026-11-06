@@ -1,10 +1,13 @@
+import shlex
 import shutil
 from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
+import flowglyph
 from flowglyph.cli.main import app
+from flowglyph.gateway import Gateway
 
 runner = CliRunner()
 
@@ -243,3 +246,21 @@ def test_diagnostics_keep_bracketed_expressions(project: Path, tmp_path: Path):
     code, output = invoke("extract", project, "-o", tmp_path / "out")
     assert code == 0, output
     assert "by the expression [in_target]" in output
+
+
+def test_the_suggested_approval_command_approves_the_run(
+    synthetic: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    catalog_dir = flowglyph.extract(synthetic.parent / "openapi" / "payments.yaml").save(
+        tmp_path / "my catalog"
+    )
+    gateway = Gateway(catalog_dir, state_dir=tmp_path / "state")
+    delete = "openapi/Payments_API/deleteInvoice"
+    held = gateway.run(delete, {"invoiceId": "INV-118"}, idempotency_key="it's-118")
+    assert held.reason is not None
+    command = shlex.split(held.reason.split("`")[1])
+    assert command[:2] == ["flowglyph", "approve"]
+    monkeypatch.chdir(tmp_path)
+    code, output = invoke(*command[1:])
+    assert code == 0, output
+    assert gateway.run(delete, {"invoiceId": "INV-118"}, idempotency_key="it's-118").ok

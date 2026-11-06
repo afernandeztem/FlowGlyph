@@ -1,6 +1,7 @@
 """The gateway: validates arguments, applies policy, deduplicates runs and executes them."""
 
 import json
+import shlex
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -76,7 +77,8 @@ class Gateway:
     ) -> None:
         """Serve the catalog saved in `catalog_dir`, keeping state in `state_dir`."""
         self.catalog_dir = Path(catalog_dir)
-        state = Path(state_dir) if state_dir else self.catalog_dir / ".flowglyph"
+        self.state_dir = Path(state_dir) if state_dir else None
+        state = self.state_dir or self.catalog_dir / ".flowglyph"
         self.policy = policy
         self.executor = executor or DryRunExecutor()
         self.ledger = Ledger(state / "ledger.sqlite")
@@ -162,11 +164,12 @@ class Gateway:
         if not capability.invocable:
             errors = [f"{capability.id} is documentation only and cannot be run on its own"]
             return _result(capability, "invalid", errors=errors), decision
+        if decision.action == "deny":
+            # Before validation, so an agent never fixes arguments for a call it may not make.
+            return _result(capability, "denied", reason=decision.reason), decision
         errors = validate_arguments(capability, arguments)
         if errors:
             return _result(capability, "invalid", errors=errors), decision
-        if decision.action == "deny":
-            return _result(capability, "denied", reason=decision.reason), decision
         return None, decision
 
     def _run_once(
@@ -197,7 +200,10 @@ class Gateway:
 
     def approval_command(self, key: str) -> str:
         """The command a person runs to approve the run waiting under `key`."""
-        return f"`flowglyph approve {self.catalog_dir} '{key}'`"
+        arguments = ["flowglyph", "approve", str(self.catalog_dir), key]
+        if self.state_dir is not None:
+            arguments += ["--state", str(self.state_dir)]
+        return f"`{shlex.join(arguments)}`"
 
     def _existing(self, capability: Capability, run: Run | None, ticket: Ticket) -> RunResult:
         ledger = {"idempotency_key": ticket.key, "enforcement": "ledger"}

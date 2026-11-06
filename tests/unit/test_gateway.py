@@ -108,6 +108,7 @@ def test_deny_rules_stop_execution(catalog_dir: Path):
         "executePayment", {"X-Tenant": "es", "body": {"invoiceId": "1", "amount": 10}}
     )
     assert (result.status, result.reason) == ("denied", "manual")
+    assert gateway.run("executePayment", {}).status == "denied"
 
 
 def test_failures_are_recorded_and_retryable(catalog_dir: Path):
