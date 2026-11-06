@@ -97,3 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `OPENAI_BASE_URL` cannot point the standard library at local files.
 - Catalogs, lock files, wikis and plans are written with LF line endings on every platform, so a
   catalog saved on Windows is byte-identical to one saved on Linux or macOS.
+- Repositories read from a Windows path are cached under their own name instead of the whole
+  path, and git runs with long paths enabled, so deep repositories clone on Windows.
+- On Windows, command-line planner backends refuse a `.cmd` or `.bat` launcher when the
+  arguments it would receive contain cmd.exe syntax, such as the JSON Schema, instead of letting
+  cmd.exe cut them short or redirect them. Arguments without it, such as file paths, still work.

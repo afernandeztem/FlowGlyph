@@ -71,20 +71,21 @@ def test_repositories_are_cloned_and_updated(
     git("add", ".", cwd=upstream)
     git("commit", "-q", "-m", "first", cwd=upstream)
 
-    first = sources.resolve(f"file://{upstream}")
+    url = upstream.as_uri()
+    first = sources.resolve(url)
     assert first.path.is_relative_to(tmp_path / "cache")
     assert first.path.name == "upstream", "the checkout is named after the repository"
     assert (first.path / "invoices" / "Main.xaml").is_file()
-    assert first.origin == f"file://{upstream}"
+    assert first.origin == url
 
     (upstream / "invoices" / "Steps" / "BookInvoice.xaml").unlink()
     git("commit", "-q", "-am", "second", cwd=upstream)
-    second = sources.resolve(f"file://{upstream}")
+    second = sources.resolve(url)
     assert second.revision != first.revision
     assert not (second.path / "invoices" / "Steps" / "BookInvoice.xaml").exists()
 
-    catalog = flowglyph.extract(f"file://{upstream}")
-    assert catalog.lock.origin == f"file://{upstream}"
+    catalog = flowglyph.extract(url)
+    assert catalog.lock.origin == url
     assert catalog.lock.revision == second.revision
 
 
@@ -105,3 +106,17 @@ def test_browser_links_to_folders_are_understood(monkeypatch: pytest.MonkeyPatch
     assert calls == [("https://github.com/UiPath/ReFrameWork.git", "master", "Framework")]
     assert resolved.path == tmp_path / "Framework"
     assert resolved.revision == "abc123"
+
+
+@pytest.mark.parametrize(
+    ("url", "name"),
+    [
+        ("https://github.com/UiPath/ReFrameWork.git", "ReFrameWork"),
+        ("https://gitlab.com/group/sub/repo/", "repo"),
+        ("file:///C:/Users/me/work/flows", "flows"),
+        ("C:\\Users\\me\\work\\flows", "flows"),
+        ("git@github.com:SAP/cloud sdk.git", "cloud_sdk"),
+    ],
+)
+def test_checkouts_are_named_after_the_repository(url: str, name: str):
+    assert sources.checkout_name(url) == name

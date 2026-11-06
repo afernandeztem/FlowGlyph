@@ -1,6 +1,7 @@
 """Planning through a coding assistant's command line, configured by a `CommandSpec` preset."""
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -19,6 +20,9 @@ from flowglyph.planner.prompt import SYSTEM_PROMPT, request_text
 DEFAULT_TIMEOUT_SECONDS = 600
 _JSON_OBJECT = re.compile(r"\{.*\}", re.DOTALL)
 _LOGIN_WORDS = ("auth", "login", "logged in", "log in", "sign in", "credential", "401")
+_ON_WINDOWS = os.name == "nt"
+_BATCH_SUFFIXES = (".bat", ".cmd")
+_CMD_METACHARACTERS = frozenset('"&|<>^%!\r\n')
 
 
 @dataclass(frozen=True)
@@ -150,6 +154,7 @@ class CommandPlanModel:
             output_file = Path(scratch) / "plan.json"
             schema_file.write_text(json.dumps(plan_json_schema()), encoding="utf-8", newline="\n")
             argv = self.command(schema_file, output_file)
+            self._refuse_unsafe_batch_file(executable, argv[1:])
             try:
                 completed = subprocess.run(
                     [executable, *argv[1:]],
@@ -169,6 +174,22 @@ class CommandPlanModel:
             if uses_file and not output:
                 raise PlannerError(self._failure(completed.stderr or completed.stdout))
             return self._read(output if uses_file else completed.stdout, completed.stderr)
+
+    def _refuse_unsafe_batch_file(self, executable: str, arguments: Sequence[str]) -> None:
+        """Windows runs `.cmd` and `.bat` files through cmd.exe, which re-parses arguments.
+
+        Quotes, `<`, `>`, `&` and `|` in an argument would be read as cmd.exe syntax, so a JSON
+        Schema passed on the command line could be cut short or redirected. Arguments without
+        them, such as file paths, pass through unchanged.
+        """
+        if not (_ON_WINDOWS and executable.lower().endswith(_BATCH_SUFFIXES)):
+            return
+        if any(_CMD_METACHARACTERS.intersection(argument) for argument in arguments):
+            raise PlannerError(
+                f"{self.spec.name}: {executable} is a batch file, and cmd.exe cannot pass it the "
+                "plan schema intact; install the tool's native executable or plan with another "
+                "backend, such as --via anthropic or --via openai-compatible"
+            )
 
     def _read(self, stdout: str, stderr: str) -> Plan:
         payload: Any = _loads(stdout)

@@ -10,6 +10,11 @@ from flowglyph.planner import PlannerError
 from flowglyph.planner.claude_code import ClaudeCodePlanModel
 from flowglyph.planner.model import Plan
 
+# These tests fake each assistant with a script that starts with a shebang line, which only
+# POSIX systems run. The code under test is the same on Windows, where batch-file safety is
+# covered by test_batch_files_never_receive_cmd_syntax in test_planner_backends.py.
+posix_only = pytest.mark.skipif(os.name == "nt", reason="fake tools are shebang scripts")
+
 PLAN = {
     "goal": "Book invoice",
     "inputs": [{"name": "invoice", "type": "object", "description": "Invoice"}],
@@ -46,6 +51,7 @@ def call(directory: Path) -> dict[str, object]:
     return json.loads((directory / "call.json").read_text())
 
 
+@posix_only
 def test_runs_headless_without_tools_and_reads_the_structured_output(tmp_path: Path):
     script = fake_claude(tmp_path, {"type": "result", "is_error": False, "structured_output": PLAN})
     plan = ClaudeCodePlanModel(executable=str(script), effort="medium").propose(
@@ -64,11 +70,13 @@ def test_runs_headless_without_tools_and_reads_the_structured_output(tmp_path: P
     assert "<requirements>\nBook the invoice.\n</requirements>" in str(recorded["stdin"])
 
 
+@posix_only
 def test_falls_back_to_a_json_result_text(tmp_path: Path):
     script = fake_claude(tmp_path, {"is_error": False, "result": json.dumps(PLAN)})
     assert ClaudeCodePlanModel(executable=str(script)).propose("x", []).goal == "Book invoice"
 
 
+@posix_only
 @pytest.mark.parametrize(
     ("envelope", "raw", "message"),
     [
@@ -95,6 +103,7 @@ def test_missing_cli_is_explained(tmp_path: Path):
         ClaudeCodePlanModel(executable=str(tmp_path / "nope")).propose("x", [])
 
 
+@posix_only
 def test_the_cli_can_plan_through_claude_code(
     tmp_path: Path, synthetic: Path, monkeypatch: pytest.MonkeyPatch
 ):

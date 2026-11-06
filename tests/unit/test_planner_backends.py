@@ -1,5 +1,7 @@
 import json
+import os
 import stat
+import subprocess
 import sys
 import threading
 from collections.abc import Iterator
@@ -9,11 +11,16 @@ from typing import Any
 
 import pytest
 
-from flowglyph.planner import PlannerError
+from flowglyph.planner import PlannerError, command
 from flowglyph.planner.backends import available_planners, planner_backend
 from flowglyph.planner.command import PRESETS, CommandPlanModel, CommandSpec
 from flowglyph.planner.model import Plan, plan_json_schema
 from flowglyph.planner.openai_compatible import OpenAICompatiblePlanModel
+
+# These tests fake each assistant with a script that starts with a shebang line, which only
+# POSIX systems run. The code under test is the same on Windows, where batch-file safety is
+# covered by test_batch_files_never_receive_cmd_syntax below.
+posix_only = pytest.mark.skipif(os.name == "nt", reason="fake tools are shebang scripts")
 
 PLAN = {
     "goal": "List invoices",
@@ -49,7 +56,7 @@ def executable(directory: Path, name: str, body: str) -> Path:
 
 
 def on_path(monkeypatch: pytest.MonkeyPatch, directory: Path) -> None:
-    monkeypatch.setenv("PATH", f"{directory}:{Path(sys.executable).parent}")
+    monkeypatch.setenv("PATH", f"{directory}{os.pathsep}{Path(sys.executable).parent}")
 
 
 def recorded(directory: Path) -> dict[str, Any]:
@@ -74,6 +81,7 @@ def test_the_schema_is_strict_everywhere():
     assert "join" in schema["$defs"]["PlannedStep"]["required"]
 
 
+@posix_only
 def test_codex_writes_the_plan_to_the_output_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     executable(
         tmp_path,
@@ -93,6 +101,7 @@ def test_codex_writes_the_plan_to_the_output_file(tmp_path: Path, monkeypatch: p
     assert "You design automation workflows" in call["stdin"]
 
 
+@posix_only
 def test_gemini_answers_inside_a_markdown_fence(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     fenced = "Here is the plan:\n```json\n" + json.dumps(PLAN) + "\n```"
     executable(tmp_path, "gemini", f"print(json.dumps({{'response': {fenced!r}}}))")
@@ -101,6 +110,7 @@ def test_gemini_answers_inside_a_markdown_fence(tmp_path: Path, monkeypatch: pyt
     assert "validates against this JSON Schema" in recorded(tmp_path)["stdin"]
 
 
+@posix_only
 def test_login_problems_say_how_to_sign_in(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     executable(
         tmp_path,
@@ -112,6 +122,7 @@ def test_login_problems_say_how_to_sign_in(tmp_path: Path, monkeypatch: pytest.M
         CommandPlanModel("cursor").propose("x", [])
 
 
+@posix_only
 def test_any_other_tool_can_be_described(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     executable(tmp_path, "my-assistant", f"print({json.dumps(json.dumps(PLAN))})")
     on_path(monkeypatch, tmp_path)
@@ -231,3 +242,20 @@ def test_plugins_register_through_entry_points(monkeypatch: pytest.MonkeyPatch):
 def test_openai_compatible_backends_only_speak_http(url: str):
     with pytest.raises(PlannerError, match="http or https"):
         OpenAICompatiblePlanModel("llama3.1", base_url=url)
+
+
+def test_batch_files_never_receive_cmd_syntax(monkeypatch: pytest.MonkeyPatch):
+    def which(name: str) -> str:
+        return f"C:\\tools\\{name}.cmd"
+
+    def run(arguments: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        Path(arguments[arguments.index("-o") + 1]).write_text(json.dumps(PLAN))
+        return subprocess.CompletedProcess(arguments, 0, "", "")
+
+    monkeypatch.setattr(command, "_ON_WINDOWS", True)
+    monkeypatch.setattr(command.shutil, "which", which)
+    monkeypatch.setattr(command.subprocess, "run", run)
+    with pytest.raises(PlannerError, match="cannot pass it the plan schema intact"):
+        CommandPlanModel("claude-code").propose("x", [])
+    plan = CommandPlanModel("codex", model="gpt-5-codex").propose("List drafts.", [])
+    assert plan.goal == "List invoices"

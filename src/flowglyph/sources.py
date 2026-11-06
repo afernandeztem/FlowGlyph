@@ -75,7 +75,7 @@ def _checkout(url: str, ref: str | None, subdir: str = "") -> Path:
     if shutil.which("git") is None:
         raise CatalogError("reading a repository needs git on PATH")
     key = hashlib.sha256(f"{url}@{ref or ''}:{subdir}".encode()).hexdigest()[:16]
-    name = re.sub(r"[^\w.-]+", "_", url.rstrip("/").removesuffix(".git").rsplit("/", 1)[-1])
+    name = checkout_name(url)
     target = cache_directory() / "sources" / key / name
     if (target / ".git").is_dir():
         _git("fetch", "--depth", "1", "origin", ref or "HEAD", cwd=target)
@@ -90,10 +90,18 @@ def _checkout(url: str, ref: str | None, subdir: str = "") -> Path:
     return target
 
 
+def checkout_name(url: str) -> str:
+    """The folder a repository is checked out into: its name, safe on every file system."""
+    last = re.split(r"[/\\]", url.rstrip("/\\").removesuffix(".git"))[-1]
+    return re.sub(r"[^\w.-]+", "_", last) or "repository"
+
+
 def _git(*arguments: str, cwd: Path | None = None) -> str:
     environment = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_LFS_SKIP_SMUDGE": "1"}
     completed = subprocess.run(
-        ["git", *arguments],  # noqa: S607
+        # Windows limits paths to 260 characters unless git is told otherwise, and automation
+        # repositories nest deeply.
+        ["git", "-c", "core.longpaths=true", *arguments],  # noqa: S607
         cwd=cwd,
         capture_output=True,
         text=True,
