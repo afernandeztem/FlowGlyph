@@ -1,3 +1,5 @@
+"""Planning through the Claude API with structured output."""
+
 from collections.abc import Sequence
 from typing import Any, Literal
 

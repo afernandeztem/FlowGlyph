@@ -1,3 +1,5 @@
+"""The parts of an iFlow's BPMN document FlowGlyph reads: channels, processes, steps, flows."""
+
 from dataclasses import dataclass, field
 from xml.etree import ElementTree as ET
 

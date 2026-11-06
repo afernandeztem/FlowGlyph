@@ -1,3 +1,5 @@
+"""Content hashes for lock files, stable across runs and machines."""
+
 import hashlib
 import json
 from typing import Any

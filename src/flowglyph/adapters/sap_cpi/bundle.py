@@ -1,3 +1,5 @@
+"""Reading an iFlow artifact, zipped or unpacked: manifest, `.iflw` files and parameters."""
+
 import re
 import zipfile
 from dataclasses import dataclass

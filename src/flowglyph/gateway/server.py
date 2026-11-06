@@ -1,3 +1,5 @@
+"""The gateway as an MCP server: tools for discovery (L0, L1, L2) and for running capabilities."""
+
 import hashlib
 import json
 import re

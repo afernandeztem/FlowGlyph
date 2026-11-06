@@ -1,3 +1,5 @@
+"""The request sent to planner backends: requirements plus L0 cards of the candidates."""
+
 import json
 from collections.abc import Sequence
 from typing import Any

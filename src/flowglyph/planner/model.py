@@ -1,3 +1,5 @@
+"""The plan an LLM proposes, and the strict JSON Schema every backend must follow."""
+
 from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field

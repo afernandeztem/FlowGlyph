@@ -1,3 +1,5 @@
+"""Checking a proposed plan against the catalog: the deterministic half of planning."""
+
 import json
 import re
 from dataclasses import dataclass, field

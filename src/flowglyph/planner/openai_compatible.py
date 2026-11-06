@@ -1,3 +1,5 @@
+"""Planning through any server that speaks the OpenAI chat completions API."""
+
 import json
 import os
 import urllib.error

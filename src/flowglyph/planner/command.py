@@ -1,3 +1,5 @@
+"""Planning through a coding assistant's command line, configured by a `CommandSpec` preset."""
+
 import json
 import re
 import shutil

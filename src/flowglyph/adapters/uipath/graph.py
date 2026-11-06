@@ -1,3 +1,5 @@
+"""The workflow graph of a XAML workflow: invocations, steps with effects and decisions."""
+
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from xml.etree import ElementTree as ET

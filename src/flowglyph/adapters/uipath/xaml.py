@@ -1,3 +1,5 @@
+"""XAML helpers: loading, tag names, activity detection and argument types."""
+
 import re
 from collections.abc import Iterator
 from pathlib import Path

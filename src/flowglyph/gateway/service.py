@@ -1,3 +1,5 @@
+"""The gateway: validates arguments, applies policy, deduplicates runs and executes them."""
+
 import json
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field

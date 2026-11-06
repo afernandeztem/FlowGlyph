@@ -1,3 +1,5 @@
+"""Planning through the Claude Code CLI with the account it is signed in with."""
+
 from dataclasses import replace
 
 from flowglyph.planner.command import (

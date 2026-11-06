@@ -1,3 +1,5 @@
+"""BM25 ranking over capabilities, with weighted fields and no dependencies."""
+
 import math
 from collections import Counter
 from collections.abc import Sequence

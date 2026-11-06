@@ -1,3 +1,5 @@
+"""Rules that allow, deny or hold for approval each run, by capability id and effects."""
+
 from dataclasses import dataclass
 from fnmatch import fnmatchcase
 from pathlib import Path

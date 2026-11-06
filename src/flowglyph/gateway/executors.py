@@ -1,3 +1,5 @@
+"""What actually runs a capability. The `Executor` protocol and the dry-run executor."""
+
 from typing import Any, ClassVar, Protocol, runtime_checkable
 
 from flowglyph.ir import Capability

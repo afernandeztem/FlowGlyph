@@ -1,3 +1,5 @@
+"""Tokenizing and trimming text for search and summaries."""
+
 import re
 
 _CAMEL_BOUNDARY = re.compile(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")

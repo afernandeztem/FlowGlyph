@@ -1,3 +1,5 @@
+"""The L1 representation: Markdown cards for capabilities and the catalog index."""
+
 import json
 import re
 from collections import defaultdict

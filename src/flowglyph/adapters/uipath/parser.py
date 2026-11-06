@@ -1,3 +1,5 @@
+"""Reading one XAML workflow into its arguments, effects, graph and activity usage."""
+
 import re
 from collections import Counter
 from dataclasses import dataclass, field

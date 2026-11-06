@@ -1,3 +1,5 @@
+"""Categories of UiPath activities and the effects each implies, loaded from `taxonomy.yaml`."""
+
 import re
 from dataclasses import dataclass
 from functools import cache

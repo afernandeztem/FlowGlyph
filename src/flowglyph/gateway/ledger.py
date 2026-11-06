@@ -1,3 +1,5 @@
+"""The idempotency ledger: one row per key, claimed atomically in SQLite."""
+
 import json
 import sqlite3
 import time

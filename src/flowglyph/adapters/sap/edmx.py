@@ -1,3 +1,5 @@
+"""The parts of an OData EDMX document FlowGlyph reads, for both OData V2 and V4."""
+
 from dataclasses import dataclass, field
 from xml.etree import ElementTree as ET
 

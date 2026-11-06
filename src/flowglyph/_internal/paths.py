@@ -1,3 +1,5 @@
+"""Short names that tell apart artifacts sharing a name in different folders."""
+
 import re
 from pathlib import PurePosixPath
 

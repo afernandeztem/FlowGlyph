@@ -1,3 +1,5 @@
+"""Resolving local `$ref` pointers in an OpenAPI document; recursive schemas are cut short."""
+
 from collections.abc import Mapping
 from typing import Any, cast
 

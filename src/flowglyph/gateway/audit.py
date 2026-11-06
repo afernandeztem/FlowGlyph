@@ -1,3 +1,5 @@
+"""An append-only JSON Lines record of every decision the gateway takes."""
+
 import json
 import threading
 import time
