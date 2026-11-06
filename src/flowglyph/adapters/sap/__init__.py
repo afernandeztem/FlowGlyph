@@ -52,8 +52,8 @@ _ACTION = Effects(
     reads=Tri.UNKNOWN, mutates_state=Tri.UNKNOWN, destructive=Tri.UNKNOWN, external=Tri.YES
 )
 _CREATE_NOTE = (
-    "OData has no standard idempotency key for creation: declare one, such as an external "
-    "reference field, in flowglyph.overrides.yaml"
+    "OData defines no idempotency key for creation; services usually reject duplicates on an "
+    "external reference field instead"
 )
 
 

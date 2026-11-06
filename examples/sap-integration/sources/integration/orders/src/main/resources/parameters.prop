@@ -1,0 +1,3 @@
+#Synthetic parameters for FlowGlyph tests
+ERP_URL=https\://erp.example.com
+ERP_Credential=TOP_SECRET_VALUE_THAT_MUST_NOT_LEAK

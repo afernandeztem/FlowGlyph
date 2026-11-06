@@ -1,0 +1,128 @@
+{
+  "ir_version": "0.3.0",
+  "workflows": [
+    {
+      "calls": [
+        "uipath/Invoices/Steps/ValidateVendor",
+        "uipath/Invoices/Steps/RequestApproval",
+        "uipath/Invoices/Steps/BookInvoice"
+      ],
+      "capability": "uipath/Invoices/Main",
+      "edges": [
+        {
+          "condition": "amount > in_Threshold",
+          "source": "If_1",
+          "target": "Invoke_2"
+        },
+        {
+          "condition": null,
+          "source": "Invoke_1",
+          "target": "If_1"
+        },
+        {
+          "condition": null,
+          "source": "Invoke_2",
+          "target": "Invoke_3"
+        },
+        {
+          "condition": null,
+          "source": "If_1",
+          "target": "Invoke_3"
+        },
+        {
+          "condition": null,
+          "source": "Invoke_3",
+          "target": "Invoke_4"
+        }
+      ],
+      "id": "uipath/Invoices/Main",
+      "nodes": [
+        {
+          "capability": "uipath/Invoices/Steps/ValidateVendor",
+          "id": "Invoke_1",
+          "join": "all",
+          "kind": "invoke",
+          "label": "Validate vendor",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "If_1",
+          "join": "all",
+          "kind": "decision",
+          "label": "If amount > in_Threshold",
+          "note": null
+        },
+        {
+          "capability": "uipath/Invoices/Steps/RequestApproval",
+          "id": "Invoke_2",
+          "join": "all",
+          "kind": "invoke",
+          "label": "Request approval",
+          "note": null
+        },
+        {
+          "capability": "uipath/Invoices/Steps/BookInvoice",
+          "id": "Invoke_3",
+          "join": "any",
+          "kind": "invoke",
+          "label": "Book invoice",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "Invoke_4",
+          "join": "all",
+          "kind": "invoke",
+          "label": "Archive",
+          "note": null
+        }
+      ],
+      "unresolved_calls": [
+        "Steps/Missing.xaml"
+      ]
+    },
+    {
+      "calls": [],
+      "capability": "uipath/Invoices/Steps/BookInvoice",
+      "edges": [],
+      "id": "uipath/Invoices/Steps/BookInvoice",
+      "nodes": [
+        {
+          "capability": "uipath/activity/AddQueueItem",
+          "id": "node_1",
+          "join": "all",
+          "kind": "activity",
+          "label": "Queue booking",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/Invoices/Steps/RequestApproval",
+      "edges": [],
+      "id": "uipath/Invoices/Steps/RequestApproval",
+      "nodes": [
+        {
+          "capability": "uipath/activity/SendMail",
+          "id": "node_1",
+          "join": "all",
+          "kind": "activity",
+          "label": "Mail approver",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "uipath/Invoices/Steps/ValidateVendor",
+      "edges": [],
+      "id": "uipath/Invoices/Steps/ValidateVendor",
+      "nodes": [],
+      "unresolved_calls": []
+    }
+  ]
+}

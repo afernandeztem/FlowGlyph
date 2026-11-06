@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic integration flow written for FlowGlyph's tests. -->
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1">
+  <bpmn2:collaboration id="Collaboration_1" name="Default Collaboration">
+    <bpmn2:participant id="Participant_Shop" ifl:type="EndpointSender" name="Shop"/>
+    <bpmn2:participant id="Participant_ERP" ifl:type="EndpointRecevier" name="ERP"/>
+    <bpmn2:participant id="Participant_Stock" ifl:type="EndpointRecevier" name="Stock"/>
+    <bpmn2:participant id="Participant_Notify" ifl:type="EndpointRecevier" name="Notify"/>
+    <bpmn2:participant id="Participant_Process_1" ifl:type="IntegrationProcess" name="Integration Process" processRef="Process_1"/>
+    <bpmn2:messageFlow id="MessageFlow_In" name="HTTPS" sourceRef="Participant_Shop" targetRef="StartEvent_1">
+      <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>HTTPS</value></ifl:property>
+        <ifl:property><key>direction</key><value>Sender</value></ifl:property>
+        <ifl:property><key>urlPath</key><value>/orders</value></ifl:property>
+        <ifl:property><key>userRole</key><value>ESBMessaging.send</value></ifl:property>
+        <ifl:property><key>xsrfProtection</key><value>0</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:messageFlow>
+    <bpmn2:messageFlow id="MessageFlow_ERP" name="HTTP" sourceRef="ServiceTask_Book" targetRef="Participant_ERP">
+      <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>HTTP</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>httpMethod</key><value>POST</value></ifl:property>
+        <ifl:property><key>httpAddressWithoutQuery</key><value>{{ERP_URL}}/orders</value></ifl:property>
+        <ifl:property><key>httpRequestTimeout</key><value>60000</value></ifl:property>
+        <ifl:property><key>credentialName</key><value>{{ERP_Credential}}</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:messageFlow>
+    <bpmn2:messageFlow id="MessageFlow_Stock" name="HTTP" sourceRef="ServiceTask_Stock" targetRef="Participant_Stock">
+      <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>HTTP</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>httpMethod</key><value>GET</value></ifl:property>
+        <ifl:property><key>httpAddressWithoutQuery</key><value>http://legacy.example.com/stock</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:messageFlow>
+    <bpmn2:messageFlow id="MessageFlow_Notify" name="ProcessDirect" sourceRef="EndEvent_1" targetRef="Participant_Notify">
+      <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>ProcessDirect</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>address</key><value>/notify</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:messageFlow>
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_1" name="Integration Process">
+    <bpmn2:subProcess id="SubProcess_Error" name="Exception Subprocess">
+      <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>ErrorEventSubProcessTemplate</value></ifl:property>
+      </bpmn2:extensionElements>
+      <bpmn2:startEvent id="StartEvent_Error" name="Error Start"><bpmn2:errorEventDefinition/></bpmn2:startEvent>
+      <bpmn2:endEvent id="EndEvent_Error" name="Error End"/>
+      <bpmn2:sequenceFlow id="SequenceFlow_Error" sourceRef="StartEvent_Error" targetRef="EndEvent_Error"/>
+    </bpmn2:subProcess>
+    <bpmn2:startEvent id="StartEvent_1" name="Start"><bpmn2:messageEventDefinition/></bpmn2:startEvent>
+    <bpmn2:callActivity id="CallActivity_Keep" name="Keep original order">
+      <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>Enricher</value></ifl:property>
+        <ifl:property><key>propertyTable</key><value>&lt;row&gt;&lt;cell&gt;originalOrder&lt;/cell&gt;&lt;cell&gt;${in.body}&lt;/cell&gt;&lt;/row&gt;</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:callActivity>
+    <bpmn2:callActivity id="CallActivity_Dedup" name="Process each order once">
+      <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>ProcessCallElement</value></ifl:property>
+        <ifl:property><key>subActivityType</key><value>IdempotentProcessCall</value></ifl:property>
+        <ifl:property><key>messageId</key><value>${header.OrderNumber}</value></ifl:property>
+        <ifl:property><key>processId</key><value>Process_1</value></ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:callActivity>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_Type" name="Order type"/>
+    <bpmn2:serviceTask id="ServiceTask_Book" name="Book in ERP">
+      <bpmn2:extensionElements><ifl:property><key>activityType</key><value>ExternalCall</value></ifl:property></bpmn2:extensionElements>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="ServiceTask_Stock" name="Check stock">
+      <bpmn2:extensionElements><ifl:property><key>activityType</key><value>ExternalCall</value></ifl:property></bpmn2:extensionElements>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="EndEvent_1" name="Notify"><bpmn2:messageEventDefinition/></bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="CallActivity_Keep"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="CallActivity_Keep" targetRef="CallActivity_Dedup"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="CallActivity_Dedup" targetRef="ExclusiveGateway_Type"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_4" name="Standard" sourceRef="ExclusiveGateway_Type" targetRef="ServiceTask_Book">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">${header.OrderType} = 'STD'</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="SequenceFlow_5" name="Back order" sourceRef="ExclusiveGateway_Type" targetRef="ServiceTask_Stock">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">${header.OrderType} = 'BACK'</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="SequenceFlow_6" sourceRef="ServiceTask_Stock" targetRef="ServiceTask_Book"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_7" sourceRef="ServiceTask_Book" targetRef="EndEvent_1"/>
+  </bpmn2:process>
+</bpmn2:definitions>

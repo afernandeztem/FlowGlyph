@@ -156,6 +156,11 @@ answer records whether it was inferred, or declared by the source itself or by a
 
 ## Recipes
 
+Two complete walkthroughs, with real output, live in `examples/`:
+[an SAP landscape](examples/sap-integration) (OData services and Cloud Integration iFlows
+through report, overrides, wiki and gateway) and
+[supplier invoice intake](examples/invoice-processing) (UiPath and OpenAPI, planned and served).
+
 ### 1. Only the functions and their idempotency
 
 ```bash
@@ -368,8 +373,9 @@ detail (L0 to search, L1 to choose, L2 to call), so they never load more contrac
 **The gateway** is the only part that executes, and the only part that has to be trusted:
 annotations and idempotency modes describe intent, the gateway enforces it.
 
-More in [docs/architecture.md](docs/architecture.md) and the decision records in
-[docs/adr](docs/adr).
+More in [docs/architecture.md](docs/architecture.md) (bounded contexts and the rules between
+them), [docs/glossary.md](docs/glossary.md) (every term FlowGlyph uses) and the
+[decision records](docs/adr/README.md).
 
 ## Command reference
 
@@ -417,7 +423,7 @@ Every command has `--help`.
 ## Contributing
 
 Contributions are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains the setup (`make install`,
-`make check`), the code style and how to write an adapter or a planner backend. Diagrams are
+`make check`), the code style, and how to write an adapter, with a complete example. Diagrams are
 edited in [Excalidraw](https://excalidraw.com) from the `.excalidraw` files in `docs/assets/` and
 rendered with `make diagrams`. Security issues: see [SECURITY.md](SECURITY.md).
 

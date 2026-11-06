@@ -62,6 +62,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   local processes and exception subprocesses), idempotency declared by the iFlow itself, and a
   design review whose findings reach `wiki lint`. Parameter values are never read.
 - `wiki lint` lists the notes adapters attach to capabilities.
+- `examples/sap-integration`: OData services and Cloud Integration iFlows taken through the
+  report, overrides, the wiki and the gateway, with real output. `make examples` regenerates the
+  committed example catalogs, and a test fails when they are out of date.
+- Documentation: an architecture guide by bounded context, a glossary, decision records 0005 to
+  0010, and guides with tested examples for writing an adapter or a planner backend.
 
 ### Changed
 
@@ -72,8 +77,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Marking a capability deprecated is now a minor version bump, as semver requires.
 - `flowglyph.catalog` is a package (`lock`, `versioning`, `overrides`, `extraction`, `model`);
   its public names are unchanged.
-
+- The gateway applies deny rules before validating arguments, so an agent is not asked to fix
+  the arguments of a call it may not make.
+- The command line is split into one module per context; `flowglyph.cli.main:app` is unchanged.
 - IR 0.2.0: nodes have a `join` (`all` or `any`) and skipped steps propagate, so a workflow
   says what runs after an optional step. `Workflow.simulate` evaluates the rules. The UiPath
   adapter marks branch merges as `any`; the planner chooses a join per step and warns about
   steps that would be skipped with an optional predecessor.
+
+### Fixed
+
+- XML sources that declare a DTD after the first 4 KiB, for example behind a long comment, are
+  refused like any other DTD.
+- The command line printed source text as Rich markup, so diagnostics lost expressions such as
+  `[in_target]`. Source text is now escaped.
+- The approval command the gateway suggests includes `--state` when the gateway keeps its state
+  elsewhere, and quotes its arguments for the shell.

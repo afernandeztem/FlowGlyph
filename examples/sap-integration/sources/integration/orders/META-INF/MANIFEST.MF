@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Orders Inbound
+Bundle-SymbolicName: Orders_Inbound; singleton:=true
+Bundle-Version: 1.2.0
+SAP-BundleType: IntegrationFlow
+SAP-NodeType: IFLMAP

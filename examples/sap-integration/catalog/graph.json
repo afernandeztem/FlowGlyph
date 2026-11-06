@@ -1,0 +1,103 @@
+{
+  "ir_version": "0.3.0",
+  "workflows": [
+    {
+      "calls": [],
+      "capability": "sap-cpi/Nightly_Stock_Report",
+      "edges": [],
+      "id": "sap-cpi/Nightly_Stock_Report",
+      "nodes": [
+        {
+          "capability": null,
+          "id": "ServiceTask_1",
+          "join": "all",
+          "kind": "activity",
+          "label": "Read stock (HTTP GET {{STOCK_URL}})",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [],
+      "capability": "sap-cpi/Notify_Customer",
+      "edges": [],
+      "id": "sap-cpi/Notify_Customer",
+      "nodes": [
+        {
+          "capability": null,
+          "id": "CallActivity_Store",
+          "join": "all",
+          "kind": "activity",
+          "label": "Remember notification",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    },
+    {
+      "calls": [
+        "sap-cpi/Notify_Customer"
+      ],
+      "capability": "sap-cpi/Orders_Inbound",
+      "edges": [
+        {
+          "condition": null,
+          "source": "CallActivity_Dedup",
+          "target": "ExclusiveGateway_Type"
+        },
+        {
+          "condition": "${header.OrderType} = 'STD'",
+          "source": "ExclusiveGateway_Type",
+          "target": "ServiceTask_Book"
+        },
+        {
+          "condition": "${header.OrderType} = 'BACK'",
+          "source": "ExclusiveGateway_Type",
+          "target": "ServiceTask_Stock"
+        },
+        {
+          "condition": null,
+          "source": "ServiceTask_Stock",
+          "target": "ServiceTask_Book"
+        }
+      ],
+      "id": "sap-cpi/Orders_Inbound",
+      "nodes": [
+        {
+          "capability": null,
+          "id": "CallActivity_Dedup",
+          "join": "all",
+          "kind": "container",
+          "label": "Process each order once: local process Integration Process",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "ExclusiveGateway_Type",
+          "join": "all",
+          "kind": "decision",
+          "label": "Order type",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "ServiceTask_Book",
+          "join": "any",
+          "kind": "activity",
+          "label": "Book in ERP (HTTP POST {{ERP_URL}}/orders)",
+          "note": null
+        },
+        {
+          "capability": null,
+          "id": "ServiceTask_Stock",
+          "join": "all",
+          "kind": "activity",
+          "label": "Check stock (HTTP GET http://legacy.example.com/stock)",
+          "note": null
+        }
+      ],
+      "unresolved_calls": []
+    }
+  ]
+}

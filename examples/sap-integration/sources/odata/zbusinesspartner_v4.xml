@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic OData V4 service written for FlowGlyph's tests. -->
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Capabilities.V1.xml">
+    <edmx:Include Namespace="Org.OData.Capabilities.V1" Alias="Capabilities"/>
+  </edmx:Reference>
+  <edmx:DataServices>
+    <Schema Namespace="zbusinesspartner" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="BusinessPartnerType">
+        <Key>
+          <PropertyRef Name="BusinessPartner"/>
+        </Key>
+        <Property Name="BusinessPartner" Type="Edm.String" Nullable="false" MaxLength="10"/>
+        <Property Name="FullName" Type="Edm.String" MaxLength="81"/>
+        <Property Name="Country" Type="Edm.String" MaxLength="3"/>
+        <Property Name="CreatedOn" Type="Edm.Date"/>
+        <Property Name="Revenue" Type="Edm.Decimal" Scale="2"/>
+      </EntityType>
+      <Action Name="block" IsBound="true">
+        <Parameter Name="_it" Type="zbusinesspartner.BusinessPartnerType" Nullable="false"/>
+        <Parameter Name="Reason" Type="Edm.String" Nullable="false"/>
+        <ReturnType Type="zbusinesspartner.BusinessPartnerType"/>
+      </Action>
+      <Function Name="checkDuplicates" IsBound="false">
+        <Parameter Name="FullName" Type="Edm.String" Nullable="false"/>
+        <ReturnType Type="Collection(zbusinesspartner.BusinessPartnerType)"/>
+      </Function>
+      <EntityContainer Name="Container">
+        <EntitySet Name="BusinessPartner" EntityType="zbusinesspartner.BusinessPartnerType"/>
+        <FunctionImport Name="checkDuplicates" Function="zbusinesspartner.checkDuplicates"/>
+      </EntityContainer>
+      <Annotations Target="zbusinesspartner.Container/BusinessPartner">
+        <Annotation Term="Capabilities.DeleteRestrictions">
+          <Record>
+            <PropertyValue Property="Deletable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.UpdateRestrictions">
+          <Record>
+            <PropertyValue Property="Updatable" Bool="true"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

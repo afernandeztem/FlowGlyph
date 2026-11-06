@@ -1,0 +1,20 @@
+# What the sources cannot say, declared by the people who own these processes.
+capabilities:
+  sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/create:
+    idempotency:
+      mode: key
+      key_fields: [body]
+      scope: one supplier invoice reference per supplier
+      ttl_seconds: 2592000
+    description: >-
+      Post a supplier invoice. The service rejects a second invoice with the same
+      SupplierInvoiceIDByInvcgParty for the same InvoicingParty, so retries with the
+      same body are safe.
+  sap/ZSUPPLIER_INVOICE_SRV/Release:
+    idempotency: {mode: natural}
+    security: {approval_required: true}
+  sap-cpi/Notify_Customer:
+    idempotency:
+      mode: key
+      key_fields: [body]
+      scope: the Data Store entry keyed by the order number

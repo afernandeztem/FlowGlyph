@@ -1,0 +1,11 @@
+default: allow
+rules:
+  - capabilities: "sap/zbusinesspartner/BusinessPartner/block"
+    action: deny
+    reason: blocking a business partner is a decision for the credit team
+  - capabilities: "sap/*/Release"
+    action: require_approval
+    reason: releasing an invoice lets it be paid
+  - if_effects: [destructive]
+    action: require_approval
+    reason: may destroy data
