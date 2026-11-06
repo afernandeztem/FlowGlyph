@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from flowglyph._internal.xml import parse_xml
 from flowglyph.adapters.uipath.xaml import argument_direction, json_schema_for, load
 from flowglyph.errors import AdapterError
 
@@ -32,3 +33,10 @@ def test_argument_direction():
 def test_documents_with_a_dtd_are_rejected(synthetic: Path):
     with pytest.raises(AdapterError, match="DTD"):
         load(synthetic / "doctype.xaml")
+
+
+def test_a_dtd_after_a_long_comment_is_still_rejected():
+    padding = b"<!--" + b" " * 8192 + b"-->"
+    document = padding + b'<!DOCTYPE lolz [<!ENTITY lol "lol">]><Activity>&lol;</Activity>'
+    with pytest.raises(AdapterError, match="DTD"):
+        parse_xml(document, "padded.xaml")

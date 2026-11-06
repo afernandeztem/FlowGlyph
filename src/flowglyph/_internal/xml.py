@@ -1,7 +1,12 @@
+"""XML parsing for untrusted sources: documents that declare a DTD are refused."""
+
 from pathlib import Path
 from xml.etree import ElementTree as ET
+from xml.parsers import expat
 
 from flowglyph.errors import AdapterError
+
+_LAST_CHUNK = True
 
 
 def load_xml(path: Path) -> ET.Element:
@@ -19,11 +24,24 @@ def parse_xml(data: bytes, name: str) -> ET.Element:
     Raises:
         AdapterError: If the data is not well-formed XML or declares a DTD.
     """
-    if b"<!DOCTYPE" in data[:4096].upper():
-        raise AdapterError(f"{name}: XML documents must not declare a DTD")
+    _refuse_dtd(data, name)
     try:
-        # ElementTree never resolves external entities, and the bundled expat (2.4.1+)
-        # limits entity expansion, so with DTDs rejected above this input is safe to parse.
+        # ElementTree never resolves external entities, and with DTDs refused there are no
+        # internal entities to expand, so this input is safe to parse.
         return ET.fromstring(data)  # noqa: S314
     except ET.ParseError as error:
+        raise AdapterError(f"{name}: {error}") from error
+
+
+def _refuse_dtd(data: bytes, name: str) -> None:
+    """Scan the whole document with expat, which reports a DOCTYPE wherever it appears."""
+
+    def refuse(*_: object) -> None:
+        raise AdapterError(f"{name}: XML documents must not declare a DTD")
+
+    scanner = expat.ParserCreate()
+    scanner.StartDoctypeDeclHandler = refuse
+    try:
+        scanner.Parse(data, _LAST_CHUNK)
+    except expat.ExpatError as error:
         raise AdapterError(f"{name}: {error}") from error
