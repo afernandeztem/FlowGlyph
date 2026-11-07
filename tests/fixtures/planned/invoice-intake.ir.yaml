@@ -1,0 +1,145 @@
+status: needs attention
+problems: []
+unresolved:
+- archive_pdf
+warnings:
+- 'request_approval has side effects: run it with an idempotency key so retries are safe'
+capability:
+  id: plan/supplier-invoice-intake-validate-vendor-approve-if-over-10-000-eur-create-invoice-idempotently-archive-pdf
+  version: 1.0.0
+  kind: workflow
+  title: 'Supplier invoice intake: validate vendor, approve if over 10,000 EUR, create invoice idempotently,
+    archive PDF'
+  description: 'Check that the vendor exists in our records.
+
+    Ask the finance approver before going on when the amount is above 10,000 EUR.
+
+    Create the invoice in the payments system, with the invoice reference as idempotency key so a retry
+    never books it twice.
+
+    Archive the invoice PDF once the invoice is created. No candidate capability does this; a document
+    archive capability that takes the PDF location (and ideally the invoice reference) is missing.'
+  category: workflow
+  semantics:
+    verb: null
+    entity: null
+    domain: null
+  input_schema:
+    type: object
+    properties:
+      vendor_id:
+        type: string
+        description: Identifier of the vendor on the incoming invoice
+      amount:
+        type: number
+        description: Invoice amount in EUR
+      invoice_reference:
+        type: string
+        description: Unique invoice reference, used as the idempotency key when creating the invoice
+      invoice:
+        type: object
+        description: Invoice data to send as the body of the payments system create request
+      invoice_pdf_path:
+        type: string
+        description: Location of the invoice PDF to archive
+      finance_approver:
+        type: string
+        description: Finance approver to ask when the amount is above 10,000 EUR
+    required:
+    - vendor_id
+    - amount
+    - invoice_reference
+    - invoice
+    - invoice_pdf_path
+    - finance_approver
+    additionalProperties: false
+  output_schema:
+    type: object
+    properties: {}
+  effects:
+    reads: unknown
+    mutates_state: 'yes'
+    destructive: 'no'
+    external: 'yes'
+  idempotency:
+    mode: none
+    key_fields: []
+    scope: null
+    ttl_seconds: null
+    compensation: null
+    provenance: inferred
+    confidence: 0.5
+    inferred_by: heuristic
+  security:
+    scopes: []
+    approval_required: false
+  errors: []
+  tags: []
+  notes:
+  - The amount arrives already in EUR. No currency conversion is done.
+  - 'If the vendor does not exist, the workflow stops: no approval, no invoice creation, no archiving.'
+  - RequestApproval has no outputs, so I assumed it waits until the approver decides and fails if they
+    reject, which stops the steps after it.
+  - An amount of exactly 10,000 EUR does not need approval (strictly above).
+  - The finance approver arrives as a run-time input because the requirements do not name one.
+  - I used createInvoice from the Payments API instead of uipath/Invoices/Main or BookInvoice, because
+    it is the only candidate with key-based idempotency, which a retry-safe booking needs.
+  - The candidate list has no capability for archiving the PDF, so that step has none assigned.
+  source:
+    provider: planner
+    artifact: 'Supplier invoice intake: validate vendor, approve if over 10,000 EUR, create invoice idempotently,
+      archive PDF'
+    location: workflow.plan.yaml
+    source_hash: sha256:e15b406d31f49bab26274ce92e74b3bb
+    artifact_version: null
+  invocable: true
+workflow:
+  id: plan/supplier-invoice-intake-validate-vendor-approve-if-over-10-000-eur-create-invoice-idempotently-archive-pdf
+  capability: plan/supplier-invoice-intake-validate-vendor-approve-if-over-10-000-eur-create-invoice-idempotently-archive-pdf
+  nodes:
+  - id: validate_vendor
+    kind: invoke
+    label: Check that the vendor exists in our records.
+    capability: uipath/Invoices/Steps/ValidateVendor
+    note: null
+    join: all
+  - id: request_approval
+    kind: invoke
+    label: Ask the finance approver before going on when the amount is above 10,000 EUR.
+    capability: uipath/Invoices/Steps/RequestApproval
+    note: null
+    join: all
+  - id: create_invoice
+    kind: invoke
+    label: Create the invoice in the payments system, with the invoice reference as idempotency key so
+      a retry never books it twice.
+    capability: openapi/Payments_API/createInvoice
+    note: null
+    join: any
+  - id: archive_pdf
+    kind: opaque
+    label: Archive the invoice PDF once the invoice is created. No candidate capability does this; a document
+      archive capability that takes the PDF location (and ideally the invoice reference) is missing.
+    capability: null
+    note: no capability in the catalog does this yet
+    join: all
+  edges:
+  - source: validate_vendor
+    target: request_approval
+    condition: validate_vendor.out_Exists == true && amount > 10000
+  - source: validate_vendor
+    target: create_invoice
+    condition: validate_vendor.out_Exists == true
+  - source: request_approval
+    target: create_invoice
+    condition: validate_vendor.out_Exists == true
+  - source: create_invoice
+    target: archive_pdf
+    condition: null
+  calls:
+  - uipath/Invoices/Steps/ValidateVendor
+  - uipath/Invoices/Steps/RequestApproval
+  - openapi/Payments_API/createInvoice
+  unresolved_calls:
+  - Archive the invoice PDF once the invoice is created. No candidate capability does this; a document
+    archive capability that takes the PDF location (and ideally the invoice reference) is missing.

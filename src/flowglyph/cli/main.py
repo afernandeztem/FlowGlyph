@@ -6,7 +6,7 @@ import typer
 
 import flowglyph
 from flowglyph.cli._shared import console
-from flowglyph.cli.commands import catalog, explore, gateway, plan, wiki
+from flowglyph.cli.commands import catalog, compile, explore, gateway, plan, wiki
 
 app = typer.Typer(
     name="flowglyph",
@@ -25,6 +25,7 @@ for command in (
     gateway.approve,
     gateway.approvals,
     plan.plan,
+    compile.compile,
     catalog.adapters,
     explore.idempotency,
 ):

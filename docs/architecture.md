@@ -41,6 +41,7 @@ contexts below it in this table, never those above.
 | **Knowledge** | `flowglyph.wiki` | The *LLM wiki*: generated pages, preserved notes, lint. | Catalog, Reporting |
 | **Execution** | `flowglyph.gateway` | Running capabilities safely: argument validation, *policy*, *ledger*, audit, MCP. | Catalog, Views |
 | **Planning** | `flowglyph.planner` | Turning requirements into a workflow over existing capabilities. | Catalog, Views |
+| **Compilation** | `flowglyph.compilers` | Turning a workflow back into a document a tool runs: BPMN 2.0, UiPath XAML. | Catalog, Model |
 | **Interface** | `flowglyph.cli` | The `flowglyph` command. Thin: it parses options and prints. | everything above |
 
 `flowglyph._internal` is a shared kernel of small helpers (hashing, XML, BM25, Markdown cards)

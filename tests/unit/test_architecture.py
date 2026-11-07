@@ -19,6 +19,7 @@ ALLOWED: dict[str, set[str]] = {
     "wiki": {"ir", "views", "_internal", "catalog", "report"},
     "gateway": {"ir", "views", "errors", "_internal", "catalog"},
     "planner": {"ir", "views", "errors", "_internal", "catalog"},
+    "compilers": {"ir", "errors", "catalog"},
 }
 
 
