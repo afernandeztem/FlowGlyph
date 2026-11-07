@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `HOWTO.md`: every tool, what it does and how to use it, checked against the CLI by the
   test suite.
+- README: the handover folder of a client taken to a new robot in six commands, with the real
+  output of each; `docs/use-cases/`: the same six as stories of their own, with who each is
+  for and how to tell it. Their commands are checked against the CLI by the test suite.
 - Automation IR (`Capability`, `Workflow`, `Effects`, `Idempotency`) with JSON Schemas.
 - UiPath adapter: typed arguments with defaults and annotations, a taxonomy of activities with
   tri-state effects, workflow graphs with branches, transitive effects through invocations.

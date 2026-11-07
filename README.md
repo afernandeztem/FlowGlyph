@@ -43,7 +43,7 @@ how to use it.
 
 ```bash
 pip install flowglyph                    # the library: only pydantic and PyYAML
-uv tool install "flowglyph[cli]"         # the flowglyph command
+uv tool install "flowglyph[cli]"         # the command line
 pip install "flowglyph[all]"             # everything: CLI, MCP gateway, Anthropic planner
 ```
 
@@ -92,6 +92,119 @@ Look at `GetTransactionData`: it **writes**. Its *Get Transaction Item* activity
 item *In Progress*, so calling it twice takes two different items. A retry is not a repeat. That
 is the kind of fact FlowGlyph puts in front of you, from the sources alone, before an agent
 retries something it should not.
+
+## From a client's package to a new robot
+
+What a client hands over is rarely a catalog: a UiPath project, the OpenAPI document of the
+payments API and the process definition in Word, in one folder. This is that folder taken to a
+new robot in six commands. Every output is real; the sources are in `tests/fixtures`, the
+process document is a two-page Word file with a table of steps.
+
+**1. Read everything that exists.** One command, every format it finds.
+
+```bash
+flowglyph extract ./handover -o catalog
+```
+
+```text
+Extracted 11 invocable capabilities and 7 that cannot be run on their own into catalog
+  warning payments-api.yaml: PATCH /invoices/{invoiceId} has no operationId, using patch_invoices_invoiceId
+  warning Invoices/Main.xaml: invoked workflow not found in the project: Steps/Missing.xaml
+```
+
+**2. Settle what the sources cannot say.** The report lists what still needs a decision. You
+write the decision once, next to the sources, and it becomes part of the catalog.
+
+```bash
+flowglyph idempotency ./handover --review
+```
+
+```text
+ Capability                                     Kind       Effects  Idempotency  Status
+ openapi/Payments_API/executePayment            operation  rWX      none         review
+ openapi/Payments_API/patch_invoices_invoiceId  operation  rWdX     none         review
+ uipath/Invoices/Main                           workflow   WX       none         review
+ uipath/Invoices/Steps/BookInvoice              workflow   WX       none         review
+ uipath/Invoices/Steps/RequestApproval          workflow   WX       none         review
+5 capabilities, 5 to review.
+```
+
+```yaml
+# handover/flowglyph.overrides.yaml
+capabilities:
+  uipath/Invoices/Steps/BookInvoice:
+    idempotency: {mode: key, key_fields: [in_Invoice]}
+  uipath/Invoices/Steps/RequestApproval:
+    description: Emails the finance approver; a second email is harmless.
+    idempotency: {mode: natural}
+  openapi/Payments_API/executePayment:
+    security: {approval_required: true}
+```
+
+Run the report again: three rows are left, and `BookInvoice` and `RequestApproval` read
+`declared`.
+
+**3. Give the agents the picture.** A wiki for people and LLMs, and the files a coding agent
+reads before touching the project, both from the sources alone.
+
+```bash
+flowglyph wiki build ./handover -o wiki
+flowglyph context ./handover --catalog catalog
+```
+
+```text
+Wiki 30 pages in wiki
+Context Invoices: 9 files written, 0 unchanged, in handover/Invoices
+```
+
+`handover/Invoices/AGENTS.md` now states that `Main.xaml` takes `in_Threshold: number`, that
+`BookInvoice` writes to an Orchestrator queue and must not be retried blindly, and
+`.flowglyph/activities/AddQueueItem.md` holds the XAML this project uses for that activity.
+
+**4. Design the new workflow from the client's own document.** A model proposes the steps
+from the Word file; FlowGlyph checks each one against the catalog.
+
+```bash
+flowglyph plan ./handover/supplier-invoice-pdd.docx catalog -o plan --via claude-code
+```
+
+```text
+Book emailed supplier invoices without creating duplicates, then archive the PDF
+ Step               Capability                             Intent
+ validate_vendor    uipath/Invoices/Steps/ValidateVendor   Check that the vendor on the invoice exists in our records.
+ notify_purchasing  missing                                Notify purchasing that the vendor is unknown and stop processing the invoice.
+ request_approval   uipath/Invoices/Steps/RequestApproval  Ask the finance approver for approval before booking a high-value invoice.
+ create_invoice     openapi/Payments_API/createInvoice     Create the invoice in the payments system, keyed by the invoice reference so a retry never books it twice.
+ archive_pdf        missing                                Archive the invoice PDF in the document store with a 10-year retention period.
+```
+
+Two steps are **missing**, and that is the point: nothing in the sources notifies purchasing or
+archives a PDF, so the plan doubles as the gap list, and nothing was invented to fill it.
+
+**5. Open it in Studio.**
+
+```bash
+flowglyph compile plan/workflow.ir.yaml --catalog catalog --to xaml -o Main.xaml
+```
+
+```text
+  warning conditions are copied as written; rewrite them as Visual Basic expressions in Studio
+Compiled plan/book-emailed-supplier-invoices-without-creating-duplicates-then-archive-the-pdf into Main.xaml
+```
+
+A Flowchart with the three resolved steps as `InvokeWorkflowFile` calls, their arguments ready
+to bind, and a `Comment` placeholder where each missing step goes. Those two are what the coding agent
+builds next, from the activity cards; `flowglyph skill` tells it how.
+
+**6. Or let an agent run what exists, safely.**
+
+```bash
+flowglyph serve catalog --policy policy.yaml
+```
+
+Every call goes through the contract, your policy, the idempotency ledger and the audit log,
+and `executePayment` waits for a person. Each of these six steps is also a story of its own,
+with who it is for and what to show, in [docs/use-cases](docs/use-cases/README.md).
 
 ## Pick what you need
 
