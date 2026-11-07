@@ -1,5 +1,7 @@
 import json
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 from typing import ClassVar
 
@@ -209,3 +211,13 @@ def test_catalog_changes_are_picked_up_without_restart(
     flowglyph.extract(project).save(gateway.catalog_dir)
     with pytest.raises(FlowGlyphError):
         gateway.catalog.get("Steps/RequestApproval")
+
+
+def test_importing_the_gateway_without_its_extra_says_what_to_install():
+    code = "import sys; sys.modules['jsonschema'] = None; import flowglyph.gateway"
+    completed = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=False
+    )
+    assert completed.returncode == 1
+    assert "FlowGlyphError: the gateway needs extra packages" in completed.stderr
+    assert "pip install 'flowglyph[mcp]'" in completed.stderr

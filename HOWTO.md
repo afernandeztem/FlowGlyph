@@ -432,7 +432,7 @@ Everything is also a library:
 | `catalog.save(directory)` | writes the catalog |
 | `report.rows(catalog, statuses=["review"])` | the idempotency report as rows (`from flowglyph import report`) |
 | `compilers.compile_workflow(...)` | compiles a workflow, like `compile` (`from flowglyph import compilers`) |
-| `Gateway(catalog_dir).run(id, arguments)` | runs a capability through the gateway, without MCP (`from flowglyph.gateway import Gateway`) |
+| `Gateway(catalog_dir).run(id, arguments)` | runs a capability through the gateway, without MCP (`from flowglyph.gateway import Gateway`; needs `flowglyph[mcp]`) |
 
 ```python
 import flowglyph
