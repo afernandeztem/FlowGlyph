@@ -9,9 +9,9 @@
 Turn UiPath, SAP, BPMN, n8n and OpenAPI workflows into reusable, searchable functions for
 humans and AI agents.
 
-[![PyPI](https://img.shields.io/pypi/v/flowglyph.svg)](https://pypi.org/project/flowglyph/)
+[![PyPI](https://img.shields.io/pypi/v/flowglyph)](https://pypi.org/project/flowglyph/)
 [![CI](https://github.com/afernandeztem/FlowGlyph/actions/workflows/ci.yml/badge.svg)](https://github.com/afernandeztem/FlowGlyph/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/pypi/pyversions/flowglyph.svg)](https://pypi.org/project/flowglyph/)
+[![Python](https://img.shields.io/pypi/pyversions/flowglyph)](https://pypi.org/project/flowglyph/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Typed](https://img.shields.io/badge/typing-strict-success)](pyproject.toml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
