@@ -1,7 +1,8 @@
 # Releasing
 
-Releases are cut from tags by `.github/workflows/release.yml`, which builds the sdist and
-wheel, publishes them to PyPI with Trusted Publishing, and creates a GitHub release.
+Releases are cut from tags by `.github/workflows/release.yml`, which runs the test suite,
+checks that the plugin manifests carry the tagged version, builds the sdist and wheel,
+publishes them to PyPI with Trusted Publishing, and creates a GitHub release.
 
 ## Before the first public release
 
@@ -18,5 +19,16 @@ wheel, publishes them to PyPI with Trusted Publishing, and creates a GitHub rele
 1. `make check` and `make diagrams` with no diff.
 2. Optionally run the planner evaluation: `make test-llm` (billed).
 3. Move the `Unreleased` entries in `CHANGELOG.md` under the new version and date.
-4. Commit, then tag with a signed-off commit: `git tag -s v0.1.0 -m "FlowGlyph 0.1.0"`.
-5. `git push --follow-tags`. The workflow does the rest.
+4. Bump the plugin manifests to the new version: `.claude-plugin/plugin.json`,
+   `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`
+   and `gemini-extension.json`. The release workflow refuses a tag they do not match.
+5. Commit, then tag with a signed-off commit: `git tag -s v0.1.0 -m "FlowGlyph 0.1.0"`.
+6. `git push --follow-tags`. The workflow does the rest.
+
+After the first tag, add the link reference Keep a Changelog expects at the end of
+`CHANGELOG.md`, and extend it on every release:
+
+```markdown
+[Unreleased]: https://github.com/afernandeztem/FlowGlyph/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/afernandeztem/FlowGlyph/releases/tag/v0.1.0
+```
