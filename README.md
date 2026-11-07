@@ -349,8 +349,8 @@ flowglyph plan requirements.md catalog -o plan --via claude-code
 ```
 
 Describe what you need in plain language. A model proposes a plan using only the capabilities in
-the catalog; a deterministic resolver then checks every capability, argument, reference and
-dependency. A step that nothing in the catalog can do is reported as **missing** instead of being
+the catalog; a deterministic resolver then checks every capability, argument, reference, type
+and dependency. A step that nothing in the catalog can do is reported as **missing** instead of being
 invented, so the plan doubles as a gap analysis. See
 [examples/invoice-processing](examples/invoice-processing).
 

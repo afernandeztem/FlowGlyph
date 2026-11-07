@@ -144,6 +144,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The planner accepted arguments of the wrong type: a string output bound to an integer input,
+  a literal `"yes"` for a boolean, a string workflow input for a number. The resolver now compares
+  the type of every workflow input, step output and literal with the input it feeds and reports
+  each mismatch as a problem. `integer` fits `number`, `null` fits a nullable input, and `any`
+  on either side is not checked.
 - XML sources that declare a DTD after the first 4 KiB, for example behind a long comment, are
   refused like any other DTD.
 - The command line printed source text as Rich markup, so diagnostics lost expressions such as

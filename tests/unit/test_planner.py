@@ -21,6 +21,7 @@ from flowglyph.planner import (
 )
 from flowglyph.planner.claude import ClaudePlanModel
 
+MAIN = "uipath/Invoices/Main"
 VALIDATE = "uipath/Invoices/Steps/ValidateVendor"
 APPROVAL = "uipath/Invoices/Steps/RequestApproval"
 CREATE = "openapi/Payments_API/createInvoice"
@@ -55,6 +56,10 @@ def step(
 
 def from_input(name: str, value: str) -> PlannedArgument:
     return PlannedArgument(name=name, source="workflow_input", value=value)
+
+
+def literal(name: str, value: str) -> PlannedArgument:
+    return PlannedArgument(name=name, source="literal", value=value)
 
 
 def good_plan() -> Plan:
@@ -184,6 +189,63 @@ def test_broken_steps_are_explained(catalog: Catalog, broken: PlannedStep, probl
     proposal = good_plan()
     proposal.steps[0] = broken
     assert problem in plan(REQUIREMENTS, catalog, FakeModel(proposal)).problems
+
+
+@pytest.mark.parametrize(
+    ("argument", "problem"),
+    [
+        (
+            from_input("in_Threshold", "vendor_id"),
+            f"main.in_Threshold: {MAIN} expects number, but input vendor_id is string",
+        ),
+        (
+            PlannedArgument(
+                name="in_InvoicePath", source="step_output", value="check_vendor.out_Exists"
+            ),
+            (
+                f"main.in_InvoicePath: {MAIN} expects string or null, "
+                "but check_vendor.out_Exists is boolean"
+            ),
+        ),
+        (
+            literal("in_Threshold", '"10000"'),
+            f"main.in_Threshold: {MAIN} expects number, but literal '\"10000\"' is string",
+        ),
+        (
+            literal("in_Threshold", "null"),
+            f"main.in_Threshold: {MAIN} expects number, but literal 'null' is null",
+        ),
+    ],
+)
+def test_arguments_of_the_wrong_type_are_rejected(
+    catalog: Catalog, argument: PlannedArgument, problem: str
+):
+    proposal = good_plan()
+    proposal.steps.append(step("main", MAIN, literal("in_InvoicePath", '"in/a.pdf"'), argument))
+    report = plan(REQUIREMENTS, catalog, FakeModel(proposal))
+    assert report.problems == [problem]
+    assert not report.ok
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        (literal("in_InvoicePath", '"in/a.pdf"'), from_input("in_Threshold", "amount")),
+        (literal("in_InvoicePath", '"in/a.pdf"'), literal("in_Threshold", "10000")),
+        (literal("in_InvoicePath", '"in/a.pdf"'), literal("in_Threshold", "10000.5")),
+        (literal("in_InvoicePath", "null"),),
+        (PlannedArgument(name="in_InvoicePath", source="step_output", value="create.body"),),
+    ],
+    ids=["same type", "integer fits number", "number", "null fits nullable", "any fits"],
+)
+def test_arguments_of_a_compatible_type_pass(
+    catalog: Catalog, arguments: tuple[PlannedArgument, ...]
+):
+    proposal = good_plan()
+    proposal.inputs.append(PlannedInput(name="amount", type="number", description="Amount"))
+    proposal.steps.append(step("main", MAIN, *arguments))
+    report = plan(REQUIREMENTS, catalog, FakeModel(proposal))
+    assert report.problems == []
 
 
 def test_outputs_must_exist(catalog: Catalog):
