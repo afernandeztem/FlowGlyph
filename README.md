@@ -35,7 +35,8 @@ lets agents use your automations without being able to break the rules, or a pla
 designs new workflows from the capabilities you already have.
 
 **New here?** The [guide](docs/guide.md) walks through every feature in order, one or two
-commands at a time, with samples you can run from a clone.
+commands at a time, with samples you can run from a clone. [HOWTO.md](HOWTO.md) is the reference: every
+tool, what it does and how to use it.
 
 ## Install
 
