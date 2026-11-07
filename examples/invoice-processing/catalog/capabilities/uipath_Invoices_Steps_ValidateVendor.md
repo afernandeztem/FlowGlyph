@@ -21,7 +21,7 @@ Validate vendor
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `in_VendorId` | string | yes |  |
+| `in_VendorId` | string or null | yes |  |
 
 ## Outputs
 
@@ -40,7 +40,10 @@ Validate vendor
     "type": "object",
     "properties": {
       "in_VendorId": {
-        "type": "string",
+        "type": [
+          "string",
+          "null"
+        ],
         "x-clr-type": "InArgument(x:String)",
         "x-direction": "in"
       }

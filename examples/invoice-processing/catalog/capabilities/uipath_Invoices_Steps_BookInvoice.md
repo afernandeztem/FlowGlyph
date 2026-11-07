@@ -21,13 +21,13 @@ Book invoice
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `in_Invoice` | object | yes |  |
+| `in_Invoice` | object or null | yes |  |
 
 ## Outputs
 
 | Name | Type | Description |
 |---|---|---|
-| `out_InvoiceId` | string |  |
+| `out_InvoiceId` | string or null |  |
 
 ## Steps
 
@@ -41,7 +41,10 @@ Book invoice
     "type": "object",
     "properties": {
       "in_Invoice": {
-        "type": "object",
+        "type": [
+          "object",
+          "null"
+        ],
         "x-clr-type": "InArgument(scg:Dictionary(x:String, x:Object))",
         "x-direction": "in"
       }
@@ -55,7 +58,10 @@ Book invoice
     "type": "object",
     "properties": {
       "out_InvoiceId": {
-        "type": "string",
+        "type": [
+          "string",
+          "null"
+        ],
         "x-clr-type": "OutArgument(x:String)"
       }
     }

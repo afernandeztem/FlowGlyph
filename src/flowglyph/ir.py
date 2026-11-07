@@ -9,7 +9,7 @@ import json
 from collections.abc import Callable
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -138,6 +138,7 @@ class Parameter(_Model):
     type: str
     required: bool
     description: str | None = None
+    nullable: bool = False
 
 
 class Capability(_Model):
@@ -244,15 +245,25 @@ class Workflow(_Model):
 def _parameters(schema: JsonSchema) -> list[Parameter]:
     properties: dict[str, JsonSchema] = schema.get("properties", {})
     required = set(schema.get("required", []))
-    return [
-        Parameter(
-            name=name,
-            type=str(spec.get("type", "any")),
-            required=name in required,
-            description=spec.get("description"),
+    parameters: list[Parameter] = []
+    for name, spec in properties.items():
+        declared: object = spec.get("type", "any")
+        types = (
+            [str(each) for each in cast("list[object]", declared)]
+            if isinstance(declared, list)
+            else [str(declared)]
         )
-        for name, spec in properties.items()
-    ]
+        concrete = [each for each in types if each != "null"] or ["null"]
+        parameters.append(
+            Parameter(
+                name=name,
+                type=concrete[0],
+                required=name in required,
+                description=spec.get("description"),
+                nullable="null" in types,
+            )
+        )
+    return parameters
 
 
 def export_json_schemas(directory: str | Path) -> list[Path]:

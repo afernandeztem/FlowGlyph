@@ -21,7 +21,7 @@ Request approval
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `in_Approver` | string | yes |  |
+| `in_Approver` | string or null | yes |  |
 
 ## Outputs
 
@@ -39,7 +39,10 @@ None.
     "type": "object",
     "properties": {
       "in_Approver": {
-        "type": "string",
+        "type": [
+          "string",
+          "null"
+        ],
         "x-clr-type": "InArgument(x:String)",
         "x-direction": "in"
       }

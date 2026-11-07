@@ -962,7 +962,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Framework/GetAppCredentials": {
-      "contract_hash": "sha256:74d90ad111b8d72b6097821efeaf7576",
+      "contract_hash": "sha256:b2f62c6f6e67cd01d26a69c18a463b91",
       "documentation_hash": "sha256:279a31e106defbdbf21c680893bb4f58",
       "metadata_hash": "sha256:d651e529c316a679330a887149459d54",
       "signature": {
@@ -981,7 +981,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Framework/GetTransactionData": {
-      "contract_hash": "sha256:8d4e6a12b61d173db40139a0ec32ba1a",
+      "contract_hash": "sha256:d69b2b818517af40bff8b2c3e98e13fa",
       "documentation_hash": "sha256:5c032664e8e1bac4a530699b583f3c97",
       "metadata_hash": "sha256:d651e529c316a679330a887149459d54",
       "signature": {
@@ -1010,7 +1010,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Framework/InitAllApplications": {
-      "contract_hash": "sha256:29d770f6319a8dd076fe7b67c147c08a",
+      "contract_hash": "sha256:230ab58d00dd77c530e0a18ec4bd1be4",
       "documentation_hash": "sha256:75d4d1b3ae7fb722c3e26f3ef2d5eed1",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {
@@ -1026,7 +1026,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Framework/InitAllSettings": {
-      "contract_hash": "sha256:e723f32d981d283c57f47050ed7a863b",
+      "contract_hash": "sha256:c92c4efd9dd1ead8d48a4b54b238a32e",
       "documentation_hash": "sha256:73abe0f222e302d452fabc8444e800d1",
       "metadata_hash": "sha256:d492af6f63249d95786604f0f0d5c95f",
       "signature": {
@@ -1059,7 +1059,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Framework/SetTransactionStatus": {
-      "contract_hash": "sha256:19522a6f15f924b0f779fb650e473637",
+      "contract_hash": "sha256:663858fd1ffc28dfddc9d637e296a8dc",
       "documentation_hash": "sha256:6944d74ae3f8f6050f462ea4ddc62cfb",
       "metadata_hash": "sha256:a4d37a045c33dab5badd7b58c7160468",
       "signature": {
@@ -1107,7 +1107,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Framework/TakeScreenshot": {
-      "contract_hash": "sha256:a64d11aceea7b83bf420d67c2b302cc9",
+      "contract_hash": "sha256:32d5d83058973b2ba3f4675d2ad8fd94",
       "documentation_hash": "sha256:edf772082381222b1c85099faa268c18",
       "metadata_hash": "sha256:a4d37a045c33dab5badd7b58c7160468",
       "signature": {
@@ -1127,7 +1127,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Main": {
-      "contract_hash": "sha256:c452b7ecd7ce7f37a37ddd0acd97472a",
+      "contract_hash": "sha256:6591808ee71c9f541167a2a3ec44bcbc",
       "documentation_hash": "sha256:efceabefe39297cd177dea8a8e4e8861",
       "metadata_hash": "sha256:a4d37a045c33dab5badd7b58c7160468",
       "signature": {
@@ -1143,7 +1143,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Process": {
-      "contract_hash": "sha256:b9d1de499cc540bd7edfb04422d947a0",
+      "contract_hash": "sha256:6593e88f7b639ddd5be5f451a4df077f",
       "documentation_hash": "sha256:bec8af7ee66c6babe06f1f0c50c64391",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {
@@ -1163,7 +1163,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Tests/RunAllTests": {
-      "contract_hash": "sha256:aa0740a5d7773c536eb9553fa4b6d67c",
+      "contract_hash": "sha256:2a891279897c73e4adbb4c5d5927b663",
       "documentation_hash": "sha256:1195e0c25902fb81641a5fd7f164aa13",
       "metadata_hash": "sha256:a4d37a045c33dab5badd7b58c7160468",
       "signature": {
@@ -1183,7 +1183,7 @@
       "version": "1.0.0"
     },
     "uipath/reframework/Tests/RunAllTests_Logging": {
-      "contract_hash": "sha256:a10080f79d8c0db44d7d370f2cc14a84",
+      "contract_hash": "sha256:10ab50f8650764ebf0557bd4e747fb9d",
       "documentation_hash": "sha256:698497a8694b4dd1fa38265eca1726d6",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {

@@ -72,9 +72,9 @@ def _parameter_table(parameters: list[Parameter], *, inputs: bool) -> list[str]:
         description = _cell(parameter.description or "")
         if inputs:
             required = "yes" if parameter.required else "no"
-            rows.append(f"| `{parameter.name}` | {parameter.type} | {required} | {description} |")
+            rows.append(f"| `{parameter.name}` | {_type(parameter)} | {required} | {description} |")
         else:
-            rows.append(f"| `{parameter.name}` | {parameter.type} | {description} |")
+            rows.append(f"| `{parameter.name}` | {_type(parameter)} | {description} |")
     return rows
 
 
@@ -200,3 +200,7 @@ def render_index(catalog: "Catalog") -> str:
         "",
     ]
     return "\n".join(lines)
+
+
+def _type(parameter: Parameter) -> str:
+    return f"{parameter.type} or null" if parameter.nullable else parameter.type

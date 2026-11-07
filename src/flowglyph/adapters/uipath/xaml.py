@@ -32,14 +32,21 @@ NON_ACTIVITY_TYPES = frozenset(
 
 _CLR_TO_JSON = {
     "String": "string",
+    "Char": "string",
+    "Guid": "string",
+    "Byte": "integer",
+    "Int16": "integer",
     "Int32": "integer",
     "Int64": "integer",
+    "Single": "number",
     "Double": "number",
     "Decimal": "number",
     "Boolean": "boolean",
     "DateTime": "string",
     "TimeSpan": "string",
 }
+_VALUE_TYPES = frozenset(_CLR_TO_JSON) - {"String"}
+_NULLABLE = re.compile(r"Nullable\((?P<inner>.*)\)$")
 _ARRAY_TYPES = frozenset({"List", "IEnumerable", "Collection"})
 _ARGUMENT_TYPE = re.compile(r"\s*(?P<direction>In|Out|InOut)Argument\((?P<inner>.*)\)\s*$")
 
@@ -112,12 +119,21 @@ def argument_direction(clr_type: str) -> str:
 
 
 def json_schema_for(clr_type: str) -> JsonSchema:
-    """JSON Schema for a XAML argument type, keeping the original type as `x-clr-type`."""
+    """JSON Schema for a XAML argument type, keeping the original type as `x-clr-type`.
+
+    .NET reference types (strings, arrays, objects) can always be `Nothing`, so their schema
+    accepts `null`; value types such as `Int32` only do inside `Nullable(...)`.
+    """
     match = _ARGUMENT_TYPE.match(clr_type)
     inner = match["inner"] if match else clr_type
+    nullable_value = _NULLABLE.search(inner)
+    if nullable_value:
+        inner = nullable_value["inner"]
     base = inner.split("(")[0].split(":")[-1].split(".")[-1]
     if inner.endswith("[]") or base in _ARRAY_TYPES:
         json_type = "array"
     else:
         json_type = _CLR_TO_JSON.get(base, "object")
-    return {"type": json_type, "x-clr-type": clr_type}
+    is_value = base in _VALUE_TYPES and not inner.endswith("[]")
+    nullable = bool(nullable_value) or not is_value
+    return {"type": [json_type, "null"] if nullable else json_type, "x-clr-type": clr_type}

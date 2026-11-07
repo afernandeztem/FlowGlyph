@@ -150,7 +150,7 @@
       "version": "1.0.0"
     },
     "uipath/Invoices/Main": {
-      "contract_hash": "sha256:1b4255c118e5c4b4d1110e67561d0193",
+      "contract_hash": "sha256:194b9bee1c46fcbaf15d604f660ef765",
       "documentation_hash": "sha256:5a7d3715a8c67fe330b0a506834b0f50",
       "metadata_hash": "sha256:44a426919c6a716706c26f30f262bc01",
       "signature": {
@@ -172,7 +172,7 @@
       "version": "1.0.0"
     },
     "uipath/Invoices/Steps/BookInvoice": {
-      "contract_hash": "sha256:6ba1257ec892823aff5e252f6405f316",
+      "contract_hash": "sha256:2e594215174275ca96a80d1726960a10",
       "documentation_hash": "sha256:04ad3b4f5fc6d170b7ecb8761ed58d5b",
       "metadata_hash": "sha256:44a426919c6a716706c26f30f262bc01",
       "signature": {
@@ -190,7 +190,7 @@
       "version": "1.0.0"
     },
     "uipath/Invoices/Steps/RequestApproval": {
-      "contract_hash": "sha256:5745b4800d06186b078314f3daa89edf",
+      "contract_hash": "sha256:ed7372db148172f3757b680a3d26ee91",
       "documentation_hash": "sha256:48bf0998c740c53f91d4543b55a33c62",
       "metadata_hash": "sha256:44a426919c6a716706c26f30f262bc01",
       "signature": {
@@ -206,7 +206,7 @@
       "version": "1.0.0"
     },
     "uipath/Invoices/Steps/ValidateVendor": {
-      "contract_hash": "sha256:13d228bfeba06107cdef1119ad168d67",
+      "contract_hash": "sha256:beedab923197821a3b3f4614ee326e2e",
       "documentation_hash": "sha256:140df4427937f18be12b669aae6d13c4",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {

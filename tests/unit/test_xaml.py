@@ -10,17 +10,20 @@ from flowglyph.errors import AdapterError
 @pytest.mark.parametrize(
     ("clr_type", "json_type"),
     [
-        ("InArgument(x:String)", "string"),
+        ("InArgument(x:String)", ["string", "null"]),
         ("InArgument(x:Int32)", "integer"),
         ("OutArgument(x:Decimal)", "number"),
-        ("InArgument(x:String[])", "array"),
-        ("InArgument(scg:List(x:String))", "array"),
-        ("InArgument(scg:Dictionary(x:String, x:Object))", "object"),
-        ("InOutArgument(sd:DataTable)", "object"),
-        ("InArgument(ui:QueueItem)", "object"),
+        ("InArgument(x:Boolean)", "boolean"),
+        ("InArgument(s:Nullable(x:Int32))", ["integer", "null"]),
+        ("InArgument(x:Int32[])", ["array", "null"]),
+        ("InArgument(scg:List(x:String))", ["array", "null"]),
+        ("InArgument(scg:Dictionary(x:String, x:Object))", ["object", "null"]),
+        ("InOutArgument(sd:DataTable)", ["object", "null"]),
+        ("InArgument(ui:QueueItem)", ["object", "null"]),
+        ("InArgument(s:Exception)", ["object", "null"]),
     ],
 )
-def test_json_schema_for_argument_types(clr_type: str, json_type: str):
+def test_json_schema_for_argument_types(clr_type: str, json_type: str | list[str]):
     assert json_schema_for(clr_type) == {"type": json_type, "x-clr-type": clr_type}
 
 

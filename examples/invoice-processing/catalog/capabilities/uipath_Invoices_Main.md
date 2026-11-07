@@ -21,14 +21,14 @@ Validate an invoice and book it, asking for approval above the threshold.
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `in_InvoicePath` | string | yes | Path of the invoice PDF. |
+| `in_InvoicePath` | string or null | yes | Path of the invoice PDF. |
 | `in_Threshold` | number | no |  |
 
 ## Outputs
 
 | Name | Type | Description |
 |---|---|---|
-| `out_InvoiceId` | string |  |
+| `out_InvoiceId` | string or null |  |
 
 ## Steps
 
@@ -54,7 +54,10 @@ Unresolved invocations:
     "type": "object",
     "properties": {
       "in_InvoicePath": {
-        "type": "string",
+        "type": [
+          "string",
+          "null"
+        ],
         "x-clr-type": "InArgument(x:String)",
         "description": "Path of the invoice PDF.",
         "x-direction": "in"
@@ -75,7 +78,10 @@ Unresolved invocations:
     "type": "object",
     "properties": {
       "out_InvoiceId": {
-        "type": "string",
+        "type": [
+          "string",
+          "null"
+        ],
         "x-clr-type": "OutArgument(x:String)"
       }
     }
