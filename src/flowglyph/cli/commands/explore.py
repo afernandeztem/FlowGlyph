@@ -96,7 +96,7 @@ def idempotency(
     ] = None,
     provider: Annotated[
         list[str] | None,
-        typer.Option(help="Only these providers: uipath, openapi, sap, sap-cpi. Repeatable."),
+        typer.Option(help="Only these providers, such as uipath, sap or n8n. Repeatable."),
     ] = None,
     side_effects: Annotated[
         bool, typer.Option("--side-effects", help="Only capabilities that change state.")

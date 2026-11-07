@@ -1,14 +1,13 @@
 """Reading an iFlow artifact, zipped or unpacked: manifest, `.iflw` files and parameters."""
 
 import re
-import zipfile
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
+from flowglyph._internal import archives
 from flowglyph.errors import AdapterError
 
-MAX_ENTRY_BYTES = 20_000_000
-MAX_COMPRESSION_RATIO = 200
+_WANTED = (".iflw", "MANIFEST.MF", "parameters.prop")
 _MANIFEST = "META-INF/MANIFEST.MF"
 _PARAMETER_LINE = re.compile(r"^\s*([^#!=\s][^=:]*?)\s*[=:]")
 
@@ -36,11 +35,7 @@ def read_zip(path: Path, location: str) -> Bundle:
     Raises:
         AdapterError: If the archive is corrupt, too large or not an SAP artifact.
     """
-    try:
-        with zipfile.ZipFile(path) as archive:
-            files = {info.filename: _read_entry(archive, info) for info in archive.infolist()}
-    except (zipfile.BadZipFile, OSError) as error:
-        raise AdapterError(f"{path}: {error}") from error
+    files = archives.read_zip(path, str(path), lambda name: name.endswith(_WANTED))
     return _bundle(location, files)
 
 
@@ -58,16 +53,6 @@ def read_directory(root: Path, location: str) -> Bundle:
 def manifest_type(data: bytes) -> str | None:
     """The `SAP-BundleType` of a manifest, if it is an SAP artifact manifest."""
     return _manifest(data).get("SAP-BundleType")
-
-
-def _read_entry(archive: zipfile.ZipFile, info: zipfile.ZipInfo) -> bytes:
-    if info.is_dir():
-        return b""
-    ratio = info.file_size / max(info.compress_size, 1)
-    if info.file_size > MAX_ENTRY_BYTES or ratio > MAX_COMPRESSION_RATIO:
-        raise AdapterError(f"{info.filename} is too large to read safely")
-    wanted = info.filename.endswith((".iflw", "MANIFEST.MF", "parameters.prop"))
-    return archive.read(info) if wanted else b""
 
 
 def _bundle(location: str, files: dict[str, bytes]) -> Bundle:
