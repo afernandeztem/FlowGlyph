@@ -10,9 +10,13 @@ publishes them to PyPI with Trusted Publishing, and creates a GitHub release.
    settings. If it moves, replace `afernandeztem/FlowGlyph` in `pyproject.toml`, `README.md`,
    `CONTRIBUTING.md` and `.github/ISSUE_TEMPLATE/config.yml`.
 2. Enable private vulnerability reporting in the repository's security settings.
-3. On PyPI, add a pending trusted publisher for `flowglyph`: workflow `release.yml`,
+3. The README references its images and the walkthrough GIF by relative path, which GitHub
+   renders in a private repository and PyPI does not. Once the repository is public, make them
+   absolute (`https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/...`)
+   so the PyPI page shows them too.
+4. On PyPI, add a pending trusted publisher for `flowglyph`: workflow `release.yml`,
    environment `pypi`. Create the `pypi` environment in GitHub with required reviewers.
-4. Check that the name is still free on PyPI.
+5. Check that the name is still free on PyPI.
 
 ## Every release
 
