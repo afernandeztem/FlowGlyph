@@ -85,6 +85,7 @@ Every piece works on its own. Start with the first row and stop wherever you hav
 | Give people and LLMs a wiki of the automations | `flowglyph wiki build <source> -o wiki` | linked pages, an index, a log and an `AGENTS.md` for the LLM |
 | Let an AI agent use the automations safely | `flowglyph serve catalog` | an MCP server with policy, idempotency and audit |
 | Design a new workflow from a description | `flowglyph plan requirements.md catalog` | a checked workflow, with the missing pieces named |
+| Turn a workflow into BPMN or UiPath | `flowglyph compile plan/workflow.ir.yaml --to bpmn` | a `.bpmn` or `.xaml` its tool opens |
 | Fail CI when a contract breaks | `flowglyph diff old.lock catalog --fail-on major` | a non-zero exit on breaking changes |
 | Build my own tooling | `import flowglyph` | the same features as a typed Python API |
 
@@ -361,7 +362,25 @@ OPENAI_BASE_URL=http://localhost:11434/v1 flowglyph plan requirements.md catalog
   --via openai-compatible --model llama3.1
 ```
 
-### 6. Use it from Python
+### 6. Turn a workflow back into BPMN or a UiPath workflow
+
+```bash
+flowglyph compile plan/workflow.ir.yaml --catalog catalog --to bpmn --engine camunda8 -o invoice.bpmn
+flowglyph compile plan/workflow.ir.yaml --catalog catalog --to xaml -o Main.xaml
+flowglyph compile catalog uipath/Invoices/Main --to bpmn          # any workflow already in a catalog
+```
+
+Any workflow graph, planned or extracted, compiles into a document its tool opens:
+
+| `--to` | You get | Steps become |
+|---|---|---|
+| `bpmn` | BPMN 2.0 with a diagram, for any modeler; `--engine camunda7` or `camunda8` adds what that engine needs to run it | tasks, exclusive gateways, call activities for BPMN processes, a parallel join where a step waits for all its predecessors |
+| `xaml` | a UiPath Studio workflow: a Sequence for a straight line, a Flowchart when it branches | Invoke Workflow File for UiPath workflows, with their arguments listed to bind; a Comment naming any other capability |
+
+The compiler says what it could not carry over exactly, such as conditions written in another
+expression language, instead of guessing.
+
+### 7. Use it from Python
 
 ```python
 import flowglyph
@@ -444,6 +463,7 @@ them), [docs/glossary.md](docs/glossary.md) (every term FlowGlyph uses) and the
 | `flowglyph approvals CATALOG` | runs waiting for a person | |
 | `flowglyph approve CATALOG KEY` | approve one of them | |
 | `flowglyph plan REQUIREMENTS SOURCE` | design a workflow | `--via`, `--model`, `--effort`, `-o` |
+| `flowglyph compile WORKFLOW [CAPABILITY]` | compile into BPMN or XAML | `--to bpmn/xaml`, `--engine`, `--catalog`, `-o` |
 
 Every command has `--help`.
 
@@ -469,7 +489,7 @@ Every command has `--help`.
 - [x] Executors that run against UiPath Orchestrator, SAP OData and HTTP APIs
 - [x] More adapters: BPMN (Camunda 7 and 8), SAP Build Process Automation, n8n
 - [ ] LLM enrichment cached by source hash
-- [ ] Compilers from workflow IR back to BPMN and XAML
+- [x] Compilers from workflow IR back to BPMN (plain, Camunda 7, Camunda 8) and UiPath XAML
 
 ## Contributing
 

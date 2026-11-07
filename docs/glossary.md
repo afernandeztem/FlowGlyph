@@ -162,6 +162,11 @@ and this page disagree, the code is wrong or this page is out of date: please op
   UiPath Orchestrator folder), how to authenticate with it, and the capability id patterns it
   runs. Credentials are named environment variables, never values.
 
+**Compiler**
+: Turns a workflow graph back into a tool's own format: BPMN 2.0, for any modeler or a Camunda
+  engine, or a UiPath workflow. It reports what it could not carry over exactly instead of
+  guessing.
+
 **Plan, resolver**
 : A *plan* is the workflow an LLM proposes from requirements. The *resolver* checks every step
   against the catalog, deterministically: a capability the model invents is reported, never

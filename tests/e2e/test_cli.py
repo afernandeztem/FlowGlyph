@@ -287,3 +287,20 @@ def test_serve_checks_connection_credentials_before_starting(
     code, output = invoke("serve", catalog_dir, "--connections", tmp_path / "nope.yaml")
     assert code == 2
     assert "does not exist" in output
+
+
+def test_compile_prints_or_writes_and_reports_what_it_could_not_carry(
+    project: Path, tmp_path: Path
+):
+    catalog_dir = flowglyph.extract(project).save(tmp_path / "catalog")
+    code, output = invoke("compile", catalog_dir, "uipath/Invoices/Main", "--to", "bpmn")
+    assert code == 0, output
+    assert "<bpmn:definitions" in output
+    assert "conditions are copied as written" in output
+    out = tmp_path / "Main.xaml"
+    code, output = invoke("compile", catalog_dir, "Main", "--to", "xaml", "-o", out)
+    assert code == 0, output
+    assert out.read_text(encoding="utf-8").startswith('<?xml version="1.0" encoding="utf-8"?>')
+    code, output = invoke("compile", catalog_dir, "--to", "bpmn")
+    assert code == 2
+    assert "name the workflow to compile" in output

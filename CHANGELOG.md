@@ -87,6 +87,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   decisions in the graph, with SAP's own branch conditions; automations and decisions are
   capabilities of their own. Archives are read in memory with size and compression limits,
   shared with the SAP Cloud Integration adapter.
+- Compilers (`flowglyph compile`, ADR-0013): any workflow graph, planned or extracted, compiles
+  into BPMN 2.0 with a diagram, plain or with the Camunda 7 (external task topics) or Camunda 8
+  (job types) extensions an engine needs, or into a UiPath Studio workflow: a Sequence for a
+  straight line, a Flowchart of FlowSteps and FlowDecisions when it branches, Invoke Workflow
+  File for UiPath workflows with their arguments listed, and a Comment for anything else. What
+  cannot be carried over exactly, such as conditions in another expression language, is
+  reported. Compiled BPMN reads back through the BPMN adapter into the same graph.
 - `examples/uipath-reframework`: UiPath's ReFrameWork template through the call tree, the
   idempotency report, overrides, a change made in Studio and its versions, the wiki and the
   gateway, with real output.

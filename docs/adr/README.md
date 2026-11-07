@@ -17,6 +17,7 @@ what follows from it. Records are not edited once accepted; a later record super
 | [0010](0010-provider-neutral-planner.md) | Planner backends are pluggable and provider-neutral | accepted |
 | [0011](0011-executors-and-connections.md) | Executors run through declared connections | accepted |
 | [0012](0012-process-engine-adapters.md) | BPMN, n8n and SAP Build Process Automation adapters | accepted |
+| [0013](0013-compilers.md) | Compiling workflow IR back into BPMN and UiPath XAML | accepted |
 
 To propose a new decision, copy the shape of the most recent record, number it next, and open a
 pull request with status `proposed`.
