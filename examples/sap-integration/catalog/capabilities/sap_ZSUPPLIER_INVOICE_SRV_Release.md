@@ -15,7 +15,7 @@ Release blocked invoice
 - **Source:** `odata/ZSUPPLIER_INVOICE_SRV.edmx#Release` (sap)
 - **Effects:** reads: unknown, mutates state: unknown, destructive: unknown, external: yes
 - **Idempotency:** natural, safe to retry (declared, confidence 1.0)
-- **Started by:** a call through OData V2 at `POST Release`
+- **Started by:** a call through OData V2 at `POST Release()`
 - **Approval:** required before every run
 
 ## Inputs
@@ -39,10 +39,12 @@ Release blocked invoice
     "type": "object",
     "properties": {
       "SupplierInvoice": {
-        "type": "string"
+        "type": "string",
+        "x-edm-type": "Edm.String"
       },
       "FiscalYear": {
-        "type": "string"
+        "type": "string",
+        "x-edm-type": "Edm.String"
       }
     },
     "required": [],

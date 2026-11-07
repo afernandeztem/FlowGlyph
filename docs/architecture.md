@@ -88,7 +88,7 @@ Each extension point is a `Protocol`, so implementations do not inherit from Flo
 | Port | Protocol | Built in | Plug in through |
 |---|---|---|---|
 | Read a source format | `flowglyph.adapters.Adapter` | `uipath`, `sap`, `sap-cpi`, `openapi` | entry point group `flowglyph.adapters`, or `register_adapter()` |
-| Run a capability | `flowglyph.gateway.Executor` | `DryRunExecutor` | `Gateway(executor=...)` |
+| Run a capability | `flowglyph.gateway.Executor` | `DryRunExecutor`; `ConnectedExecutor` over `HttpExecutor`, `ODataExecutor` and `OrchestratorExecutor` | `Gateway(executor=...)`, or a connections file with `flowglyph serve --connections` |
 | Propose a plan | `flowglyph.planner.PlanModel` | `anthropic`, `claude-code`, `codex`, `gemini`, `cursor`, `openai-compatible` | entry point group `flowglyph.planners`, or a `CommandSpec` for any CLI with a headless mode |
 
 ## Where state lives
@@ -104,6 +104,7 @@ commit.
 | Wiki | `<wiki>/*.md`, with the catalog in `<wiki>/_data/` | `flowglyph wiki build`; notes by people or an LLM |
 | Ledger | `<catalog>/.flowglyph/ledger.sqlite` | the gateway |
 | Audit log | `<catalog>/.flowglyph/audit.jsonl` | the gateway, append only |
+| Connections | `flowglyph.connections.yaml` | a person; credentials stay in environment variables |
 | Git cache | `~/.cache/flowglyph/sources/`, or `$FLOWGLYPH_CACHE/sources/` | `flowglyph.sources` |
 
 ## Principles

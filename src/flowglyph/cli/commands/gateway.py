@@ -2,6 +2,7 @@
 
 import asyncio
 import importlib
+import os
 from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING, Annotated, Literal
@@ -11,8 +12,10 @@ from rich.markup import escape
 from rich.table import Table
 
 from flowglyph.cli._shared import console, errors, fail
+from flowglyph.errors import FlowGlyphError
 
 if TYPE_CHECKING:
+    from flowglyph.gateway.executors import Executor
     from flowglyph.gateway.ledger import Ledger
 
 
@@ -28,17 +31,24 @@ def serve(
         Literal["auto", "all", "meta"],
         typer.Option(help="One MCP tool per capability (`all`), search tools only (`meta`)."),
     ] = "auto",
+    connections: Annotated[
+        Path | None,
+        typer.Option(
+            help="Run capabilities for real against the systems in this connections file. "
+            "Without it, every run is a dry run."
+        ),
+    ] = None,
 ) -> None:
-    """Serve the catalog to agents as an MCP server over stdio, with dry-run execution."""
+    """Serve the catalog to agents as an MCP server over stdio."""
     gateway = _gateway_module()
     server = importlib.import_module("flowglyph.gateway.server")
     if not (catalog_dir / "catalog.jsonl").is_file():
         fail(f"{catalog_dir} has no catalog; run `flowglyph extract`")
     rules = gateway.Policy.load(policy) if policy else gateway.DEFAULT_POLICY
-    instance = gateway.Gateway(catalog_dir, policy=rules, state_dir=state)
-    errors.print(
-        f"flowglyph gateway serving {escape(str(catalog_dir))} over stdio (dry-run executor)"
-    )
+    executor = _executor(connections)
+    instance = gateway.Gateway(catalog_dir, policy=rules, state_dir=state, executor=executor)
+    how = "dry runs" if connections is None else f"connections in {escape(str(connections))}"
+    errors.print(f"flowglyph gateway serving {escape(str(catalog_dir))} over stdio, {how}")
     asyncio.run(server.serve_stdio(instance, expose))
 
 
@@ -70,6 +80,26 @@ def approvals(
     for run in pending:
         table.add_row(escape(run.key), escape(run.capability), run.version)
     console.print(table)
+
+
+def _executor(connections: Path | None) -> "Executor | None":
+    """The connected executor for `connections`, after checking its credentials are present."""
+    if connections is None:
+        return None
+    executors = importlib.import_module("flowglyph.gateway.executors")
+    try:
+        loaded = executors.Connections.load(connections)
+    except FlowGlyphError as error:
+        fail(error)
+    missing = sorted(
+        variable
+        for variables in loaded.variables().values()
+        for variable in variables
+        if not os.environ.get(variable)
+    )
+    if missing:
+        fail(f"set these environment variables before serving: {', '.join(missing)}")
+    return executors.ConnectedExecutor(loaded)
 
 
 def _gateway_module() -> ModuleType:

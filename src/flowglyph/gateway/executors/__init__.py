@@ -1,4 +1,9 @@
-"""What actually runs a capability. The `Executor` protocol and the dry-run executor."""
+"""What actually runs a capability.
+
+`Executor` is the port; `DryRunExecutor` is the default and reports what would have been sent.
+`ConnectedExecutor` runs capabilities for real against the systems a connections file names:
+HTTP APIs, SAP OData services and UiPath Orchestrator.
+"""
 
 from typing import Any, ClassVar, Protocol, runtime_checkable
 
@@ -36,4 +41,22 @@ class DryRunExecutor:
         }
 
 
-EXECUTORS: dict[str, type[Executor]] = {DryRunExecutor.name: DryRunExecutor}
+from flowglyph.gateway.executors.connections import (  # noqa: E402
+    CONNECTIONS_FILE,
+    ConnectedExecutor,
+    Connections,
+)
+from flowglyph.gateway.executors.http import HttpExecutor  # noqa: E402
+from flowglyph.gateway.executors.odata import ODataExecutor  # noqa: E402
+from flowglyph.gateway.executors.orchestrator import OrchestratorExecutor  # noqa: E402
+
+__all__ = [
+    "CONNECTIONS_FILE",
+    "ConnectedExecutor",
+    "Connections",
+    "DryRunExecutor",
+    "Executor",
+    "HttpExecutor",
+    "ODataExecutor",
+    "OrchestratorExecutor",
+]

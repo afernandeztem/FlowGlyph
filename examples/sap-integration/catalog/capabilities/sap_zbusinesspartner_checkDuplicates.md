@@ -15,7 +15,7 @@ checkDuplicates
 - **Source:** `odata/zbusinesspartner_v4.xml#checkDuplicates` (sap)
 - **Effects:** reads: yes, mutates state: no, destructive: no, external: yes
 - **Idempotency:** natural, safe to retry (inferred, confidence 0.8)
-- **Started by:** a call through OData V4 at `GET checkDuplicates`
+- **Started by:** a call through OData V4 at `GET checkDuplicates()`
 
 ## Inputs
 
@@ -37,7 +37,8 @@ checkDuplicates
     "type": "object",
     "properties": {
       "FullName": {
-        "type": "string"
+        "type": "string",
+        "x-edm-type": "Edm.String"
       }
     },
     "required": [

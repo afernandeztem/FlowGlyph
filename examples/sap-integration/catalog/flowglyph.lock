@@ -61,7 +61,7 @@
       "version": "1.0.0"
     },
     "sap/ZSUPPLIER_INVOICE_SRV/GetDuplicateCandidates": {
-      "contract_hash": "sha256:7319d87aca9c72be47c1333a2020eb63",
+      "contract_hash": "sha256:b34af36f0c27b877a3afbfe73fb70b5e",
       "documentation_hash": "sha256:7f378683e268db2dc53d762e5e4ff69b",
       "metadata_hash": "sha256:c2d51de53ce8b68c4bb06f9eb16d81d9",
       "signature": {
@@ -83,7 +83,7 @@
       "version": "1.0.0"
     },
     "sap/ZSUPPLIER_INVOICE_SRV/Release": {
-      "contract_hash": "sha256:ce3ec94b084acb4dfb208af909b30d2e",
+      "contract_hash": "sha256:cd71e6913213340f070dbb954562eb67",
       "documentation_hash": "sha256:79661e86c0f87a0dcc4b488d3f3efc3e",
       "metadata_hash": "sha256:ecee6b9728213b0160f4b381a12fce64",
       "signature": {
@@ -139,7 +139,7 @@
       "version": "1.0.0"
     },
     "sap/ZSUPPLIER_INVOICE_SRV/Supplier/read": {
-      "contract_hash": "sha256:2af522d0b8d136c47f37c8bf6167da25",
+      "contract_hash": "sha256:2ed621aed6525b9d00d09fed434296c5",
       "documentation_hash": "sha256:7369cad3f1b3b6c9f9986e8d89a9297c",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
@@ -219,7 +219,7 @@
       "version": "1.0.0"
     },
     "sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/read": {
-      "contract_hash": "sha256:435bad0dc8e44013343b0e2c8dcc86ab",
+      "contract_hash": "sha256:ca16e93023a75075d1bdc3bb0af836df",
       "documentation_hash": "sha256:b38f6c9fe6b41a392fe8943f3f5551d0",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
@@ -249,7 +249,7 @@
       "version": "1.0.0"
     },
     "sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/update": {
-      "contract_hash": "sha256:067b42f8f00645d237d0fcddad095d28",
+      "contract_hash": "sha256:28d39f84310a90c3f051fffd0ca992c5",
       "documentation_hash": "sha256:5a0f180945191421e92a854f2eae58fc",
       "metadata_hash": "sha256:3353c0365afdb7ad88c60900b874f730",
       "signature": {
@@ -273,7 +273,7 @@
       "version": "1.0.0"
     },
     "sap/zbusinesspartner/BusinessPartner/block": {
-      "contract_hash": "sha256:320328465380d53ce229e191ecc9085f",
+      "contract_hash": "sha256:2325fc73e3bc379c0dc3b2277e17bb44",
       "documentation_hash": "sha256:7f03225dfbdc52882778171a004ae46e",
       "metadata_hash": "sha256:38248a1254b57a426fcfbc5adcd08c25",
       "signature": {
@@ -351,7 +351,7 @@
       "version": "1.0.0"
     },
     "sap/zbusinesspartner/BusinessPartner/read": {
-      "contract_hash": "sha256:fa5a92111f0bdf3ad35d249aac7f32b3",
+      "contract_hash": "sha256:0013fd687e846c1aedd59356a2a0d8e1",
       "documentation_hash": "sha256:b55ef848766f381637c04ff0d5363602",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
@@ -373,7 +373,7 @@
       "version": "1.0.0"
     },
     "sap/zbusinesspartner/BusinessPartner/update": {
-      "contract_hash": "sha256:dd5f9e2b21735190a0a5730000891571",
+      "contract_hash": "sha256:9a6418fc3c4cdbe8e9c96f9c010108e2",
       "documentation_hash": "sha256:6300d953686f54842561c747c0abe7bc",
       "metadata_hash": "sha256:3353c0365afdb7ad88c60900b874f730",
       "signature": {
@@ -393,7 +393,7 @@
       "version": "1.0.0"
     },
     "sap/zbusinesspartner/checkDuplicates": {
-      "contract_hash": "sha256:826079bec822fea0b6f389cc245f0bf0",
+      "contract_hash": "sha256:9a0e0e3f99d01eaf65ced602763f8ad4",
       "documentation_hash": "sha256:a7ec50fee56e52203b2d221e52a3d0b1",
       "metadata_hash": "sha256:c2d51de53ce8b68c4bb06f9eb16d81d9",
       "signature": {

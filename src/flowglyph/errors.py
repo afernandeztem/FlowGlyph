@@ -19,3 +19,7 @@ class CatalogError(FlowGlyphError):
 
 class ValidationError(FlowGlyphError):
     """Arguments or IR documents do not match their schema."""
+
+
+class ExecutionError(FlowGlyphError):
+    """A capability could not be run against the system it belongs to."""

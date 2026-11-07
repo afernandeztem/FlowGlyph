@@ -38,7 +38,8 @@ None.
       "BusinessPartner": {
         "type": "string",
         "x-edm-type": "Edm.String",
-        "maxLength": 10
+        "maxLength": 10,
+        "x-odata-key": true
       },
       "body": {
         "type": "object",

@@ -15,7 +15,7 @@ Find possible duplicates
 - **Source:** `odata/ZSUPPLIER_INVOICE_SRV.edmx#GetDuplicateCandidates` (sap)
 - **Effects:** reads: yes, mutates state: no, destructive: no, external: yes
 - **Idempotency:** natural, safe to retry (inferred, confidence 0.8)
-- **Started by:** a call through OData V2 at `GET GetDuplicateCandidates`
+- **Started by:** a call through OData V2 at `GET GetDuplicateCandidates()`
 
 ## Inputs
 
@@ -38,10 +38,12 @@ Find possible duplicates
     "type": "object",
     "properties": {
       "InvoicingParty": {
-        "type": "string"
+        "type": "string",
+        "x-edm-type": "Edm.String"
       },
       "InvoiceGrossAmount": {
-        "type": "number"
+        "type": "number",
+        "x-edm-type": "Edm.Decimal"
       }
     },
     "required": [],

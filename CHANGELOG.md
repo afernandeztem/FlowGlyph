@@ -65,6 +65,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `examples/sap-integration`: OData services and Cloud Integration iFlows taken through the
   report, overrides, the wiki and the gateway, with real output. `make examples` regenerates the
   committed example catalogs, and a test fails when they are out of date.
+- Executors (ADR-0011): `flowglyph serve --connections flowglyph.connections.yaml` runs
+  capabilities for real instead of dry-running them. An `http` connection calls OpenAPI
+  operations, placing each argument in the path, query, headers, cookies or body; an `odata`
+  connection calls SAP OData V2 and V4 services with CSRF handling, OData literals and SAP error
+  messages; a `uipath` connection starts the published process of a UiPath project as an
+  Orchestrator job and waits for its output arguments. Authentication: none, bearer, basic, a
+  header, or OAuth client credentials, with every secret read from a named environment variable.
+  Redirects are never followed and only `http(s)` URLs are called.
 - `examples/uipath-reframework`: UiPath's ReFrameWork template through the call tree, the
   idempotency report, overrides, a change made in Studio and its versions, the wiki and the
   gateway, with real output.
