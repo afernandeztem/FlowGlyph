@@ -59,14 +59,20 @@ None.
 7. **Set transaction status (SystemError)** (activity) -> [SetTransactionStatus](uipath_activity_SetTransactionStatus.md)
 8. **Retry current transaction** (opaque, runs if any predecessor ran)
 9. **Take Screenshot** (invoke) -> [TakeScreenshot](uipath_ReFrameWork_Framework_TakeScreenshot.md)
-10. **Close All Applications** (invoke) -> [CloseAllApplications](uipath_ReFrameWork_Framework_CloseAllApplications.md)
-11. **Kill All Processes** (invoke) -> [KillAllProcesses](uipath_ReFrameWork_Framework_KillAllProcesses.md)
+10. **Try closing applications** (decision)
+   Close all applications before returning to the Initialization state and opening them again.
+11. **Close All Applications** (invoke) -> [CloseAllApplications](uipath_ReFrameWork_Framework_CloseAllApplications.md)
+12. **Kill All Processes** (invoke) -> [KillAllProcesses](uipath_ReFrameWork_Framework_KillAllProcesses.md)
 
 Branches:
 
-- `If_2` -> `node_3` when `in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))`
+- `If_2` -> `node_2` when `in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))`
 - `If_3` -> `SetTransactionStatus_2` when `in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))`
 - `If_4` -> `SetTransactionStatus_3` when `in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))`
+- `If_4` -> `Flowchart_7` when `otherwise`
+- `TryCatch_6` -> `InvokeWorkflowFile_6` when `on Exception`
+- `If_3` -> `If_4` when `otherwise`
+- `If_2` -> `If_3` when `otherwise`
 
 ## Contract
 

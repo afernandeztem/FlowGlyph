@@ -35,12 +35,8 @@ Asset values will overwrite settings and constant values if they are defined wit
 ## Steps
 
 1. **Read range (Settings and Constants sheets)** (activity) -> [ReadRange](uipath_activity_ReadRange.md)
-2. **If Not String.IsNullOrEmpty(row("Name").ToString.Trim)** (decision)
-   Read non-empty rows in the sheet.
-3. **Read range (Assets sheet)** (activity) -> [ReadRange](uipath_activity_ReadRange.md)
-4. **Get Asset** (activity) -> [GetRobotAsset](uipath_activity_GetRobotAsset.md)
-5. **If Not String.IsNullOrEmpty(Row("Name").ToString.Trim)** (decision)
-   Logs a warn message in case the asset is specified in the Config file, but it could not be loaded from Orchestrator.
+2. **Read range (Assets sheet)** (activity) -> [ReadRange](uipath_activity_ReadRange.md)
+3. **Get Asset** (activity) -> [GetRobotAsset](uipath_activity_GetRobotAsset.md)
 
 ## Contract
 

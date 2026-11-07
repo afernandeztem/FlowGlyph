@@ -7,9 +7,10 @@ steps that remain keep their conditions.
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from flowglyph._internal.graph import follow, with_joins
 from flowglyph.adapters.sap_cpi.iflow import Channel, IFlow, Process, Step
 from flowglyph.adapters.sap_cpi.rules import step_effects
-from flowglyph.ir import Edge, Node, Workflow
+from flowglyph.ir import OTHERWISE, Edge, Node, Workflow
 
 _KEPT_ACTIVITIES = frozenset({"ExternalCall", "ProcessCallElement", "DBstorage", "Script"})
 
@@ -44,20 +45,11 @@ class GraphBuilder:
                 if step.id not in kept_ids:
                     self._resolve(self.iflow.receivers_of(step.id))
         edges = self._edges(kept_ids)
-        sources: defaultdict[str, set[str]] = defaultdict(set)
-        for edge in edges:
-            sources[edge.target].add(edge.source)
         parallel = {s.id for s in kept if s.kind == "parallelGateway"}
-        nodes = [
-            node.model_copy(update={"join": "any"})
-            if len(sources[node.id]) > 1 and node.id not in parallel
-            else node
-            for node in nodes
-        ]
         return Workflow(
             id=capability_id,
             capability=capability_id,
-            nodes=tuple(nodes),
+            nodes=tuple(with_joins(nodes, edges, parallel)),
             edges=tuple(edges),
             calls=tuple(dict.fromkeys(self.calls)),
             unresolved_calls=tuple(dict.fromkeys(self.unresolved)),
@@ -102,20 +94,9 @@ class GraphBuilder:
             source = self.process.step(flow.source)
             condition = flow.condition
             if source is not None and source.default_flow == flow.id:
-                condition = "otherwise"
+                condition = OTHERWISE
             outgoing[flow.source].append((flow.target, condition))
-        edges: list[Edge] = []
-        for start in kept:
-            seen: set[str] = set()
-            pending = [(target, condition) for target, condition in outgoing[start]]
-            while pending:
-                target, condition = pending.pop()
-                if target in kept:
-                    edges.append(Edge(source=start, target=target, condition=condition))
-                elif target not in seen:
-                    seen.add(target)
-                    pending.extend((nxt, condition or cond) for nxt, cond in outgoing[target])
-        return sorted(set(edges), key=lambda e: (e.source, e.target, e.condition or ""))
+        return follow(outgoing, kept)
 
 
 def _describe(channel: Channel) -> str:

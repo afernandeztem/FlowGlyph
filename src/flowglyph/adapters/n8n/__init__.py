@@ -9,9 +9,11 @@ import json
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, ClassVar, cast
 
+from flowglyph._internal.graph import follow, with_joins
 from flowglyph._internal.hashing import digest
 from flowglyph._internal.paths import distinguishing_names
 from flowglyph.adapters import Diagnostic, Extraction
@@ -143,9 +145,14 @@ def _files(path: Path) -> list[Path]:
 
 
 def _looks_like_n8n(file: Path) -> bool:
-    if file.stat().st_size > _MAX_BYTES:
-        return False
-    data = file.read_bytes()
+    stat = file.stat()
+    return stat.st_size <= _MAX_BYTES and _is_export(str(file), stat.st_mtime_ns, stat.st_size)
+
+
+@lru_cache(maxsize=1024)
+def _is_export(path: str, _mtime_ns: int, _size: int) -> bool:
+    # Detection, discovery and extraction all ask; parse each file once per version of it.
+    data = Path(path).read_bytes()
     return b'"connections"' in data and b"n8n-nodes-" in data and bool(_workflows(data))
 
 
@@ -232,17 +239,10 @@ def _graph(entry: _Entry, references: dict[str, str]) -> Workflow:
         elif node_effects(node) is not None:
             kept[name] = Node(id=name, kind="activity", label=f"{name} ({kind})")
     edges = _edges(entry.workflow, nodes, set(kept))
-    sources: defaultdict[str, set[str]] = defaultdict(set)
-    for edge in edges:
-        sources[edge.target].add(edge.source)
-    graph_nodes = [
-        node.model_copy(update={"join": "any"}) if len(sources[node.id]) > 1 else node
-        for node in kept.values()
-    ]
     return Workflow(
         id=entry.capability_id,
         capability=entry.capability_id,
-        nodes=tuple(graph_nodes),
+        nodes=tuple(with_joins(kept.values(), edges)),
         edges=tuple(edges),
         calls=tuple(dict.fromkeys(calls)),
         unresolved_calls=tuple(dict.fromkeys(unresolved)),
@@ -262,19 +262,7 @@ def _edges(
             condition = _branch(node, index, len(outputs))
             for target in cast("list[dict[str, Any]]", targets or []):
                 outgoing[source].append((str(target.get("node")), condition))
-    starts = kept | {name for name, node in nodes.items() if is_trigger(node)}
-    edges: set[Edge] = set()
-    for start in starts:
-        seen: set[str] = set()
-        pending = list(outgoing[start])
-        while pending:
-            target, condition = pending.pop()
-            if target in kept and start in kept:
-                edges.add(Edge(source=start, target=target, condition=condition))
-            elif target not in seen and target not in kept:
-                seen.add(target)
-                pending.extend((nxt, condition or cond) for nxt, cond in outgoing[target])
-    return sorted(edges, key=lambda e: (e.source, e.target, e.condition or ""))
+    return follow(outgoing, kept)
 
 
 def _branch(node: dict[str, Any], index: int, outputs: int) -> str | None:

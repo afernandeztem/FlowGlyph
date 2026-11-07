@@ -20,29 +20,49 @@
   "capabilities": {
     "uipath/ReFrameWork/Framework/CloseAllApplications": {
       "contract_hash": "sha256:6e86079c0903558fd7eaa455799bbb94",
-      "documentation_hash": "sha256:8a0036dcd3e23b7214db09e200cd2d69",
+      "documentation_hash": "sha256:8afcd377e1b3fbaef7a6923af26f7fa1",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
-      "signature": {
-        "inputs": {},
-        "outputs": {}
-      },
+      "signature": {},
       "source_hash": "sha256:7682e7bde43500e0068d4c06cdd784e4",
       "version": "1.0.0"
     },
     "uipath/ReFrameWork/Framework/GetAppCredentials": {
       "contract_hash": "sha256:b2f62c6f6e67cd01d26a69c18a463b91",
-      "documentation_hash": "sha256:279a31e106defbdbf21c680893bb4f58",
+      "documentation_hash": "sha256:b6843be3575c3886b245bb7a1cca5815",
       "metadata_hash": "sha256:16d2e267ab6f39271916d7cc72104f48",
       "signature": {
         "inputs": {
-          "in_Credential": [
-            "string",
-            true
+          "properties": {
+            "in_Credential": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "out_Password": "object",
-          "out_Username": "string"
+          "properties": {
+            "out_Password": {
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "out_Username": {
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
@@ -50,28 +70,66 @@
     },
     "uipath/ReFrameWork/Framework/GetTransactionData": {
       "contract_hash": "sha256:d69b2b818517af40bff8b2c3e98e13fa",
-      "documentation_hash": "sha256:5c032664e8e1bac4a530699b583f3c97",
+      "documentation_hash": "sha256:33abf048ac6131c60bd9bd53b8e640e4",
       "metadata_hash": "sha256:512d266a69d42c85b8150a8ae78ce9d5",
       "signature": {
         "inputs": {
-          "in_Config": [
-            "object",
-            true
-          ],
-          "in_TransactionNumber": [
-            "integer",
-            true
-          ],
-          "io_TransactionData": [
-            "object",
-            true
+          "properties": {
+            "in_Config": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "in_TransactionNumber": {
+              "required": true,
+              "types": [
+                "integer"
+              ]
+            },
+            "io_TransactionData": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "out_TransactionField1": "string",
-          "out_TransactionField2": "string",
-          "out_TransactionID": "string",
-          "out_TransactionItem": "object"
+          "properties": {
+            "out_TransactionField1": {
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "out_TransactionField2": {
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "out_TransactionID": {
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "out_TransactionItem": {
+              "types": [
+                "null",
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:8472f3191d4370f2b09674a89dc25a68",
@@ -79,37 +137,63 @@
     },
     "uipath/ReFrameWork/Framework/InitAllApplications": {
       "contract_hash": "sha256:230ab58d00dd77c530e0a18ec4bd1be4",
-      "documentation_hash": "sha256:75d4d1b3ae7fb722c3e26f3ef2d5eed1",
+      "documentation_hash": "sha256:315d20105cb2d04c5e0590ebf3549559",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {
         "inputs": {
-          "in_Config": [
-            "object",
-            true
+          "properties": {
+            "in_Config": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:1a0c1e342080c67b2e03d9bb28ac1f81",
       "version": "1.0.0"
     },
     "uipath/ReFrameWork/Framework/InitAllSettings": {
       "contract_hash": "sha256:c92c4efd9dd1ead8d48a4b54b238a32e",
-      "documentation_hash": "sha256:73abe0f222e302d452fabc8444e800d1",
+      "documentation_hash": "sha256:e43ad74e98890aa9cb39ff05700f2f6b",
       "metadata_hash": "sha256:d492af6f63249d95786604f0f0d5c95f",
       "signature": {
         "inputs": {
-          "in_ConfigFile": [
-            "string",
-            false
-          ],
-          "in_ConfigSheets": [
-            "array",
-            false
+          "properties": {
+            "in_ConfigFile": {
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_ConfigSheets": {
+              "types": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "out_Config": "object"
+          "properties": {
+            "out_Config": {
+              "types": [
+                "null",
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:7e56a4bdc6d26587123af6a9a7d6b85a",
@@ -117,184 +201,284 @@
     },
     "uipath/ReFrameWork/Framework/KillAllProcesses": {
       "contract_hash": "sha256:6e86079c0903558fd7eaa455799bbb94",
-      "documentation_hash": "sha256:b03a56de67a6a119b2127b4dce1c1ee1",
+      "documentation_hash": "sha256:0911ad839e94b7e8d1b096ffa3cf3fcb",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
-      "signature": {
-        "inputs": {},
-        "outputs": {}
-      },
+      "signature": {},
       "source_hash": "sha256:00beb093f524f8c7bca1e9b956706abf",
       "version": "1.0.0"
     },
     "uipath/ReFrameWork/Framework/SetTransactionStatus": {
       "contract_hash": "sha256:663858fd1ffc28dfddc9d637e296a8dc",
-      "documentation_hash": "sha256:6944d74ae3f8f6050f462ea4ddc62cfb",
+      "documentation_hash": "sha256:47c718735f332ce984897a3899376545",
       "metadata_hash": "sha256:056edbb8d7ef7cea38851077a71d9e39",
       "signature": {
         "inputs": {
-          "in_BusinessRuleException": [
-            "object",
-            true
-          ],
-          "in_Config": [
-            "object",
-            true
-          ],
-          "in_SystemError": [
-            "object",
-            true
-          ],
-          "in_TransactionField1": [
-            "string",
-            true
-          ],
-          "in_TransactionField2": [
-            "string",
-            true
-          ],
-          "in_TransactionID": [
-            "string",
-            true
-          ],
-          "in_TransactionItem": [
-            "object",
-            false
-          ],
-          "io_RetryNumber": [
-            "integer",
-            true
-          ],
-          "io_TransactionNumber": [
-            "integer",
-            true
+          "properties": {
+            "in_BusinessRuleException": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "in_Config": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "in_SystemError": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "in_TransactionField1": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_TransactionField2": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_TransactionID": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_TransactionItem": {
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "io_RetryNumber": {
+              "required": true,
+              "types": [
+                "integer"
+              ]
+            },
+            "io_TransactionNumber": {
+              "required": true,
+              "types": [
+                "integer"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:b598fdd628979d6c9e1f8907c3f493d1",
       "version": "1.1.0"
     },
     "uipath/ReFrameWork/Framework/TakeScreenshot": {
       "contract_hash": "sha256:32d5d83058973b2ba3f4675d2ad8fd94",
-      "documentation_hash": "sha256:edf772082381222b1c85099faa268c18",
+      "documentation_hash": "sha256:87df30b5d89fabe2abd4be48210f94dd",
       "metadata_hash": "sha256:a4d37a045c33dab5badd7b58c7160468",
       "signature": {
         "inputs": {
-          "in_Folder": [
-            "string",
-            true
-          ],
-          "io_FilePath": [
-            "string",
-            true
+          "properties": {
+            "in_Folder": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "io_FilePath": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:3b9cb7f204a01dc6cb7f206052fc04f2",
       "version": "1.0.0"
     },
     "uipath/ReFrameWork/Main": {
       "contract_hash": "sha256:6591808ee71c9f541167a2a3ec44bcbc",
-      "documentation_hash": "sha256:e6ced0bae5ed0604af1c8c456a2a041b",
+      "documentation_hash": "sha256:7188478a299d6567e00de2e3f39e8991",
       "metadata_hash": "sha256:49dd97ebd37657f8cfe4f2c7b27c66ee",
       "signature": {
         "inputs": {
-          "in_OrchestratorQueueName": [
-            "string",
-            true
+          "properties": {
+            "in_OrchestratorQueueName": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:dffd60f7e380b5ac700c517851815f40",
       "version": "1.1.0"
     },
     "uipath/ReFrameWork/Process": {
       "contract_hash": "sha256:6593e88f7b639ddd5be5f451a4df077f",
-      "documentation_hash": "sha256:bec8af7ee66c6babe06f1f0c50c64391",
+      "documentation_hash": "sha256:ebd533a13f173f5bb8e7fb577b638d5f",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {
         "inputs": {
-          "in_Config": [
-            "object",
-            true
-          ],
-          "in_TransactionItem": [
-            "object",
-            true
+          "properties": {
+            "in_Config": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "in_TransactionItem": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:bdb0950323b85b097264a797cecb28f0",
       "version": "1.0.0"
     },
     "uipath/ReFrameWork/Tests/RunAllTests": {
       "contract_hash": "sha256:2a891279897c73e4adbb4c5d5927b663",
-      "documentation_hash": "sha256:1195e0c25902fb81641a5fd7f164aa13",
+      "documentation_hash": "sha256:62c840975a3b768c50d7b8211227da03",
       "metadata_hash": "sha256:a4d37a045c33dab5badd7b58c7160468",
       "signature": {
         "inputs": {
-          "in_OutputExcel": [
-            "string",
-            true
-          ],
-          "in_TestLogFile": [
-            "string",
-            false
+          "properties": {
+            "in_OutputExcel": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_TestLogFile": {
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/ReFrameWork/Tests/RunAllTests_Logging": {
       "contract_hash": "sha256:10ab50f8650764ebf0557bd4e747fb9d",
-      "documentation_hash": "sha256:698497a8694b4dd1fa38265eca1726d6",
+      "documentation_hash": "sha256:638a10bb22eff1c6b7f49596d5c09b33",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {
         "inputs": {
-          "in_ActualOutcome": [
-            "string",
-            true
-          ],
-          "in_Exception": [
-            "object",
-            true
-          ],
-          "in_ExpectedOutcome": [
-            "string",
-            true
-          ],
-          "in_TestCounter": [
-            "integer",
-            true
-          ],
-          "in_TestLogFile": [
-            "string",
-            true
-          ],
-          "in_WorkflowFilename": [
-            "string",
-            true
-          ],
-          "io_FailedTestsCounter": [
-            "integer",
-            true
-          ],
-          "io_PassedTestsCounter": [
-            "integer",
-            true
-          ],
-          "out_Status": [
-            "string",
-            true
+          "properties": {
+            "in_ActualOutcome": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_Exception": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            },
+            "in_ExpectedOutcome": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_TestCounter": {
+              "required": true,
+              "types": [
+                "integer"
+              ]
+            },
+            "in_TestLogFile": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_WorkflowFilename": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "io_FailedTestsCounter": {
+              "required": true,
+              "types": [
+                "integer"
+              ]
+            },
+            "io_PassedTestsCounter": {
+              "required": true,
+              "types": [
+                "integer"
+              ]
+            },
+            "out_Status": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "out_Comments": "string"
+          "properties": {
+            "out_Comments": {
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:00ae1e30c13930933e375bc470cb0067",
@@ -302,949 +486,1001 @@
     },
     "uipath/ReFrameWork/Tests/TestWorkflowTemplate": {
       "contract_hash": "sha256:6e86079c0903558fd7eaa455799bbb94",
-      "documentation_hash": "sha256:3671b39d66122ad8c9338cd9d7d5e2e0",
+      "documentation_hash": "sha256:00b34c0972c345f6f7f68a8b7ced8899",
       "metadata_hash": "sha256:d492af6f63249d95786604f0f0d5c95f",
-      "signature": {
-        "inputs": {},
-        "outputs": {}
-      },
+      "signature": {},
       "source_hash": "sha256:02784925480453ed4145ab70f23e3081",
       "version": "1.0.0"
     },
     "uipath/activity/AddCredential": {
       "contract_hash": "sha256:2b7cc12e059485153e4770efd5b69f07",
-      "documentation_hash": "sha256:a03292c2f7ce165081282b8bb055532d",
+      "documentation_hash": "sha256:779ca5180b61997014f2d674c36c07c4",
       "metadata_hash": "sha256:8a6413c8d146f71fc4ebc948e49808e7",
       "signature": {
         "inputs": {
-          "CredentialType": [
-            "any",
-            true
-          ],
-          "Password": [
-            "any",
-            true
-          ],
-          "PersistanceType": [
-            "any",
-            true
-          ],
-          "Target": [
-            "any",
-            true
-          ],
-          "Username": [
-            "any",
-            true
+          "properties": {
+            "CredentialType": {
+              "required": true
+            },
+            "Password": {
+              "required": true
+            },
+            "PersistanceType": {
+              "required": true
+            },
+            "Target": {
+              "required": true
+            },
+            "Username": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/AddDataColumn": {
       "contract_hash": "sha256:441d789ca755d2facca022abcf84a89b",
-      "documentation_hash": "sha256:3b79baa5ded722922fc3b9741231aed6",
+      "documentation_hash": "sha256:0a7cc4bbf51008fc16efcf1d23653004",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "AllowDBNull": [
-            "any",
-            true
-          ],
-          "AutoIncrement": [
-            "any",
-            true
-          ],
-          "Column": [
-            "any",
-            true
-          ],
-          "ColumnName": [
-            "any",
-            true
-          ],
-          "DataTable": [
-            "any",
-            true
-          ],
-          "DefaultValue": [
-            "any",
-            true
-          ],
-          "MaxLength": [
-            "any",
-            true
-          ],
-          "Unique": [
-            "any",
-            true
+          "properties": {
+            "AllowDBNull": {
+              "required": true
+            },
+            "AutoIncrement": {
+              "required": true
+            },
+            "Column": {
+              "required": true
+            },
+            "ColumnName": {
+              "required": true
+            },
+            "DataTable": {
+              "required": true
+            },
+            "DefaultValue": {
+              "required": true
+            },
+            "MaxLength": {
+              "required": true
+            },
+            "Unique": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/activity/AddLogFields": {
       "contract_hash": "sha256:3280d4d47175d03188eb3d070bac322f",
-      "documentation_hash": "sha256:0702b86054f03c12b7386b6eb4eb6f4c",
+      "documentation_hash": "sha256:aa8dbf821efe0c8616791f0d9c2a5577",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Fields": [
-            "any",
-            true
+          "properties": {
+            "Fields": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:b598fdd628979d6c9e1f8907c3f493d1",
       "version": "1.0.0"
     },
     "uipath/activity/AppendLine": {
       "contract_hash": "sha256:093e79516537b8bf47fb42aea7b7cfd7",
-      "documentation_hash": "sha256:bb62b08fa365c4cf05bc655f67b51d07",
+      "documentation_hash": "sha256:a8cf6f58eea29d63e54607292cb57ecb",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "FileName": [
-            "any",
-            true
-          ],
-          "Text": [
-            "any",
-            true
+          "properties": {
+            "FileName": {
+              "required": true
+            },
+            "Text": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/activity/Assign": {
       "contract_hash": "sha256:7cbee2f05dd08fecfae684eabcc36f63",
-      "documentation_hash": "sha256:896c0d68228590d3b56cda969d16bbc3",
+      "documentation_hash": "sha256:f4ecc9730826633443e912566ba9f2ad",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "To": [
-            "any",
-            true
-          ],
-          "Value": [
-            "any",
-            true
+          "properties": {
+            "To": {
+              "required": true
+            },
+            "Value": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/Comment": {
       "contract_hash": "sha256:a63026b478eb245623e82e0fecf58e00",
-      "documentation_hash": "sha256:2e91c0076335ab13d22f74e805650af1",
+      "documentation_hash": "sha256:025e46f526f6ff184421836176ccecab",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Text": [
-            "any",
-            true
+          "properties": {
+            "Text": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:dffd60f7e380b5ac700c517851815f40",
       "version": "1.0.0"
     },
     "uipath/activity/CreateDirectory": {
       "contract_hash": "sha256:c79677d65ff12f44c0e1efa359395313",
-      "documentation_hash": "sha256:df6a52f45e321157b736cbbd48522541",
+      "documentation_hash": "sha256:82a172319a4217aa41d32504ac53cf81",
       "metadata_hash": "sha256:cb567be478f1054408ea31946d83c5c6",
       "signature": {
         "inputs": {
-          "ContinueOnError": [
-            "any",
-            true
-          ],
-          "Path": [
-            "any",
-            true
+          "properties": {
+            "ContinueOnError": {
+              "required": true
+            },
+            "Path": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:3b9cb7f204a01dc6cb7f206052fc04f2",
       "version": "1.0.0"
     },
     "uipath/activity/CreateFile": {
       "contract_hash": "sha256:d4335d65eb98a18678e004abce6a3dff",
-      "documentation_hash": "sha256:e45a67bb6a7e41a8b73ee0071f750edd",
+      "documentation_hash": "sha256:8053db3fd505144a2204d41164885bce",
       "metadata_hash": "sha256:cb567be478f1054408ea31946d83c5c6",
       "signature": {
         "inputs": {
-          "ContinueOnError": [
-            "any",
-            true
-          ],
-          "Name": [
-            "any",
-            true
-          ],
-          "Path": [
-            "any",
-            true
+          "properties": {
+            "ContinueOnError": {
+              "required": true
+            },
+            "Name": {
+              "required": true
+            },
+            "Path": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/activity/ExcelApplicationScope": {
       "contract_hash": "sha256:27a682de490eb38d7de92eeee7d5fb60",
-      "documentation_hash": "sha256:41c4ce17ec417527c31925a39cd5b27d",
+      "documentation_hash": "sha256:c1447ee79ce16eb1bcd741389e7a1ed5",
       "metadata_hash": "sha256:7c220712731c35fc7621c20f33a22d6d",
       "signature": {
         "inputs": {
-          "Body": [
-            "any",
-            true
-          ],
-          "Password": [
-            "any",
-            true
-          ],
-          "WorkbookPath": [
-            "any",
-            true
+          "properties": {
+            "Body": {
+              "required": true
+            },
+            "Password": {
+              "required": true
+            },
+            "WorkbookPath": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/activity/ExcelReadRange": {
       "contract_hash": "sha256:f2385446d54b09af449baa2b3d5094d3",
-      "documentation_hash": "sha256:c04024c48701674f567846e4bde8118c",
+      "documentation_hash": "sha256:f37b65d96e10c8d594217cedec4d0b39",
       "metadata_hash": "sha256:25c2732d1f687e13a64b9538e347a646",
       "signature": {
         "inputs": {
-          "AddHeaders": [
-            "any",
-            true
-          ],
-          "DataTable": [
-            "any",
-            true
-          ],
-          "Range": [
-            "any",
-            true
-          ],
-          "SheetName": [
-            "any",
-            true
+          "properties": {
+            "AddHeaders": {
+              "required": true
+            },
+            "DataTable": {
+              "required": true
+            },
+            "Range": {
+              "required": true
+            },
+            "SheetName": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/activity/ExcelWriteRange": {
       "contract_hash": "sha256:d51abda8ab76a646aa340f99841bb16c",
-      "documentation_hash": "sha256:ae2370fdbabf0573a84b194539d6e5c1",
+      "documentation_hash": "sha256:b9374132d92142397663a656eb5960a0",
       "metadata_hash": "sha256:200c8987edc2bda381b80542d0fde7c9",
       "signature": {
         "inputs": {
-          "AddHeaders": [
-            "any",
-            true
-          ],
-          "DataTable": [
-            "any",
-            true
-          ],
-          "SheetName": [
-            "any",
-            true
-          ],
-          "StartingCell": [
-            "any",
-            true
+          "properties": {
+            "AddHeaders": {
+              "required": true
+            },
+            "DataTable": {
+              "required": true
+            },
+            "SheetName": {
+              "required": true
+            },
+            "StartingCell": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/activity/FlowDecision": {
       "contract_hash": "sha256:5e44b5c5f91e7e786bcdb4f0d75b1e56",
-      "documentation_hash": "sha256:940f4fc00d2c03464f2da63fa92c6864",
+      "documentation_hash": "sha256:ded10f1056bdc991c06a5bd4f84fec6b",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Condition": [
-            "any",
-            true
-          ],
-          "False": [
-            "any",
-            true
-          ],
-          "True": [
-            "any",
-            true
+          "properties": {
+            "Condition": {
+              "required": true
+            },
+            "False": {
+              "required": true
+            },
+            "True": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:b598fdd628979d6c9e1f8907c3f493d1",
       "version": "1.0.0"
     },
     "uipath/activity/Flowchart": {
       "contract_hash": "sha256:1a999b0ccde52ff5c1fc6dbf774a2d61",
-      "documentation_hash": "sha256:c305045a50003b948ad43cc7ec2c44df",
+      "documentation_hash": "sha256:eaa826b3924139c804ca959882ffaceb",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "StartNode": [
-            "any",
-            true
+          "properties": {
+            "StartNode": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:b598fdd628979d6c9e1f8907c3f493d1",
       "version": "1.0.0"
     },
     "uipath/activity/ForEach": {
       "contract_hash": "sha256:e5df9ac3d898128d6e6581be752365ff",
-      "documentation_hash": "sha256:517b5689625dfebf4dca47585ed58824",
+      "documentation_hash": "sha256:920480e7a2c086dcd45b341d13d88a93",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Body": [
-            "any",
-            true
-          ],
-          "Values": [
-            "any",
-            true
+          "properties": {
+            "Body": {
+              "required": true
+            },
+            "Values": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/ForEachRow": {
       "contract_hash": "sha256:0b45dc1967298150fa9a5a2af2eb9e5d",
-      "documentation_hash": "sha256:26ae53d94e0e4d6fbd00c9af9afae62f",
+      "documentation_hash": "sha256:ab1d3f83076f7004e01b74714a66741a",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Body": [
-            "any",
-            true
-          ],
-          "DataTable": [
-            "any",
-            true
+          "properties": {
+            "Body": {
+              "required": true
+            },
+            "DataTable": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:7e56a4bdc6d26587123af6a9a7d6b85a",
       "version": "1.0.0"
     },
     "uipath/activity/GetQueueItem": {
       "contract_hash": "sha256:970b82aee62b4cb2bbf9dbb4bb0b8da9",
-      "documentation_hash": "sha256:24945e14e039cc4021e7717d7aaf9361",
+      "documentation_hash": "sha256:d77213587ba04d595740506c9b52593e",
       "metadata_hash": "sha256:5e776520376b53198a11d89669ce7aeb",
       "signature": {
         "inputs": {
-          "ContinueOnError": [
-            "any",
-            true
-          ],
-          "QueueType": [
-            "any",
-            true
-          ],
-          "TimeoutMS": [
-            "any",
-            true
-          ],
-          "TransactionItem": [
-            "any",
-            true
+          "properties": {
+            "ContinueOnError": {
+              "required": true
+            },
+            "QueueType": {
+              "required": true
+            },
+            "TimeoutMS": {
+              "required": true
+            },
+            "TransactionItem": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:8472f3191d4370f2b09674a89dc25a68",
       "version": "1.0.0"
     },
     "uipath/activity/GetRobotAsset": {
       "contract_hash": "sha256:217d6d6c58586aa797ca1df36e61d1d0",
-      "documentation_hash": "sha256:e4fcd38640e7aa9173008a2d21c1afed",
+      "documentation_hash": "sha256:306ae2f88b48b9611245f19e82d56e83",
       "metadata_hash": "sha256:25c2732d1f687e13a64b9538e347a646",
       "signature": {
         "inputs": {
-          "AssetName": [
-            "any",
-            true
-          ],
-          "TimeoutMS": [
-            "any",
-            true
-          ],
-          "Value": [
-            "any",
-            true
+          "properties": {
+            "AssetName": {
+              "required": true
+            },
+            "TimeoutMS": {
+              "required": true
+            },
+            "Value": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:7e56a4bdc6d26587123af6a9a7d6b85a",
       "version": "1.0.0"
     },
     "uipath/activity/GetRobotCredential": {
       "contract_hash": "sha256:cd591706581d35c5c60e555ab2f2f179",
-      "documentation_hash": "sha256:1c5634706163a84bab122238e87b6f7a",
+      "documentation_hash": "sha256:be1b53bb5c66042730b16bba8b67b712",
       "metadata_hash": "sha256:25c2732d1f687e13a64b9538e347a646",
       "signature": {
         "inputs": {
-          "AssetName": [
-            "any",
-            true
-          ],
-          "Password": [
-            "any",
-            true
-          ],
-          "TimeoutMS": [
-            "any",
-            true
-          ],
-          "Username": [
-            "any",
-            true
+          "properties": {
+            "AssetName": {
+              "required": true
+            },
+            "Password": {
+              "required": true
+            },
+            "TimeoutMS": {
+              "required": true
+            },
+            "Username": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/GetSecureCredential": {
       "contract_hash": "sha256:bb4ea27942f504ccb6a7344b84db988b",
-      "documentation_hash": "sha256:451d8595bee5cd9b66229b5752aa046e",
+      "documentation_hash": "sha256:7cabc92a247c735bb98046f2533a91f6",
       "metadata_hash": "sha256:852fc23fec600feb0f489934db429b40",
       "signature": {
         "inputs": {
-          "CredentialType": [
-            "any",
-            true
-          ],
-          "Password": [
-            "any",
-            true
-          ],
-          "PersistanceType": [
-            "any",
-            true
-          ],
-          "Result": [
-            "any",
-            true
-          ],
-          "Target": [
-            "any",
-            true
-          ],
-          "Username": [
-            "any",
-            true
+          "properties": {
+            "CredentialType": {
+              "required": true
+            },
+            "Password": {
+              "required": true
+            },
+            "PersistanceType": {
+              "required": true
+            },
+            "Result": {
+              "required": true
+            },
+            "Target": {
+              "required": true
+            },
+            "Username": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/If": {
       "contract_hash": "sha256:714fc91cbd0179ea945a6bc45cc593d2",
-      "documentation_hash": "sha256:436edccb9cea3f007a66d9962480f982",
+      "documentation_hash": "sha256:62eb7ad22bba43242c246c0fbdecbbd3",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Condition": [
-            "any",
-            true
-          ],
-          "Else": [
-            "any",
-            false
-          ],
-          "Then": [
-            "any",
-            true
+          "properties": {
+            "Condition": {
+              "required": true
+            },
+            "Else": {},
+            "Then": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/InvokeMethod": {
       "contract_hash": "sha256:605838a9900825083617b56624626d74",
-      "documentation_hash": "sha256:376d14759abff2f2b1a1ed367027be64",
+      "documentation_hash": "sha256:e3d131ad7e2cc177dac552694678be57",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "MethodName": [
-            "any",
-            true
-          ],
-          "TargetObject": [
-            "any",
-            true
+          "properties": {
+            "MethodName": {
+              "required": true
+            },
+            "TargetObject": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/InvokeWorkflowFile": {
       "contract_hash": "sha256:46d00a7a6d11710b701e7c4a430fea6d",
-      "documentation_hash": "sha256:aecf2c7731b23fc66816c35ba7686560",
+      "documentation_hash": "sha256:9a76d019db186bdcb1dce0c9fdc816fa",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Arguments": [
-            "any",
-            true
-          ],
-          "ContinueOnError": [
-            "any",
-            true
-          ],
-          "UnSafe": [
-            "any",
-            true
-          ],
-          "WorkflowFileName": [
-            "any",
-            true
+          "properties": {
+            "Arguments": {
+              "required": true
+            },
+            "ContinueOnError": {
+              "required": true
+            },
+            "UnSafe": {
+              "required": true
+            },
+            "WorkflowFileName": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:b598fdd628979d6c9e1f8907c3f493d1",
       "version": "1.0.0"
     },
     "uipath/activity/LogMessage": {
       "contract_hash": "sha256:f045654c234d6dc552a892b02263d101",
-      "documentation_hash": "sha256:699a93e4d26e7cf9642abcaa1d4272c3",
+      "documentation_hash": "sha256:af0ebfe10ed97997f3131143188d788b",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Level": [
-            "any",
-            true
-          ],
-          "Message": [
-            "any",
-            true
+          "properties": {
+            "Level": {
+              "required": true
+            },
+            "Message": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:7682e7bde43500e0068d4c06cdd784e4",
       "version": "1.0.0"
     },
     "uipath/activity/OpenApplication": {
       "contract_hash": "sha256:4b7df29c84624f40c9706334e1e66209",
-      "documentation_hash": "sha256:adb98944054173b484cabd0f55999e56",
+      "documentation_hash": "sha256:06694ebee392bdc5231acd01281e8374",
       "metadata_hash": "sha256:cb567be478f1054408ea31946d83c5c6",
       "signature": {
         "inputs": {
-          "ApplicationWindow": [
-            "any",
-            true
-          ],
-          "Arguments": [
-            "any",
-            true
-          ],
-          "Body": [
-            "any",
-            true
-          ],
-          "ContinueOnError": [
-            "any",
-            true
-          ],
-          "FileName": [
-            "any",
-            true
-          ],
-          "Selector": [
-            "any",
-            true
-          ],
-          "TimeoutMS": [
-            "any",
-            true
-          ],
-          "WorkingDirectory": [
-            "any",
-            true
+          "properties": {
+            "ApplicationWindow": {
+              "required": true
+            },
+            "Arguments": {
+              "required": true
+            },
+            "Body": {
+              "required": true
+            },
+            "ContinueOnError": {
+              "required": true
+            },
+            "FileName": {
+              "required": true
+            },
+            "Selector": {
+              "required": true
+            },
+            "TimeoutMS": {
+              "required": true
+            },
+            "WorkingDirectory": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:4b648384ba559189e90ab035f5b9462d",
       "version": "1.0.0"
     },
     "uipath/activity/ReadRange": {
       "contract_hash": "sha256:cf824c6a64635d0bb558122bdde7b811",
-      "documentation_hash": "sha256:050f2a18a1291739ee5b740a934e2ab9",
+      "documentation_hash": "sha256:bf4e7befdf0497dfdf93be82941f6434",
       "metadata_hash": "sha256:25c2732d1f687e13a64b9538e347a646",
       "signature": {
         "inputs": {
-          "AddHeaders": [
-            "any",
-            true
-          ],
-          "DataTable": [
-            "any",
-            true
-          ],
-          "Range": [
-            "any",
-            true
-          ],
-          "SheetName": [
-            "any",
-            true
-          ],
-          "WorkbookPath": [
-            "any",
-            true
+          "properties": {
+            "AddHeaders": {
+              "required": true
+            },
+            "DataTable": {
+              "required": true
+            },
+            "Range": {
+              "required": true
+            },
+            "SheetName": {
+              "required": true
+            },
+            "WorkbookPath": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:7e56a4bdc6d26587123af6a9a7d6b85a",
       "version": "1.0.0"
     },
     "uipath/activity/RemoveLogFields": {
       "contract_hash": "sha256:69d75d7f7aa15f2381d918e4400dc072",
-      "documentation_hash": "sha256:19fd2ca40f674fe52a550a3018b54256",
+      "documentation_hash": "sha256:240da36c4547f88b4475a231df644e41",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Fields": [
-            "any",
-            true
+          "properties": {
+            "Fields": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:b598fdd628979d6c9e1f8907c3f493d1",
       "version": "1.0.0"
     },
     "uipath/activity/RequestCredential": {
       "contract_hash": "sha256:94044a41ed61ded1eb082971aeaa8f9f",
-      "documentation_hash": "sha256:e7bd5aef27fe3c5e2c30272b355c7d74",
+      "documentation_hash": "sha256:6123350d29d99003e7c501b723fa8e6d",
       "metadata_hash": "sha256:25c2732d1f687e13a64b9538e347a646",
       "signature": {
         "inputs": {
-          "Message": [
-            "any",
-            true
-          ],
-          "Password": [
-            "any",
-            true
-          ],
-          "Result": [
-            "any",
-            true
-          ],
-          "Title": [
-            "any",
-            true
-          ],
-          "Username": [
-            "any",
-            true
+          "properties": {
+            "Message": {
+              "required": true
+            },
+            "Password": {
+              "required": true
+            },
+            "Result": {
+              "required": true
+            },
+            "Title": {
+              "required": true
+            },
+            "Username": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/SaveImage": {
       "contract_hash": "sha256:3e14b451318a447a0e8ba2d19cca2dbe",
-      "documentation_hash": "sha256:b744c3c16f4b1e8b4f8d7b088b1f4eb8",
+      "documentation_hash": "sha256:f73fa8f612417b67ae79e397750f170c",
       "metadata_hash": "sha256:200c8987edc2bda381b80542d0fde7c9",
       "signature": {
         "inputs": {
-          "FileName": [
-            "any",
-            true
-          ],
-          "Image": [
-            "any",
-            true
+          "properties": {
+            "FileName": {
+              "required": true
+            },
+            "Image": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:3b9cb7f204a01dc6cb7f206052fc04f2",
       "version": "1.0.0"
     },
     "uipath/activity/Sequence": {
       "contract_hash": "sha256:93a83a3f4c24e5dc71025aaf802d3360",
-      "documentation_hash": "sha256:aaa82488211a42195b64bc6057c7cf65",
+      "documentation_hash": "sha256:62f89649a4de82b69de109b658c8b9ee",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Variables": [
-            "any",
-            false
+          "properties": {
+            "Variables": {}
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:7682e7bde43500e0068d4c06cdd784e4",
       "version": "1.0.0"
     },
     "uipath/activity/SetTransactionStatus": {
       "contract_hash": "sha256:7738fc3c46b566aa060dac6ae27e26fb",
-      "documentation_hash": "sha256:7838635df90a77041e0fb42392e251b2",
+      "documentation_hash": "sha256:7071400535189574a8e89a30d7938fee",
       "metadata_hash": "sha256:cb567be478f1054408ea31946d83c5c6",
       "signature": {
         "inputs": {
-          "ContinueOnError": [
-            "any",
-            true
-          ],
-          "ErrorType": [
-            "any",
-            true
-          ],
-          "Output": [
-            "any",
-            true
-          ],
-          "Reason": [
-            "any",
-            true
-          ],
-          "ServiceBaseAddress": [
-            "any",
-            true
-          ],
-          "Status": [
-            "any",
-            true
-          ],
-          "TimeoutMS": [
-            "any",
-            true
-          ],
-          "TransactionItem": [
-            "any",
-            true
+          "properties": {
+            "ContinueOnError": {
+              "required": true
+            },
+            "ErrorType": {
+              "required": true
+            },
+            "Output": {
+              "required": true
+            },
+            "Reason": {
+              "required": true
+            },
+            "ServiceBaseAddress": {
+              "required": true
+            },
+            "Status": {
+              "required": true
+            },
+            "TimeoutMS": {
+              "required": true
+            },
+            "TransactionItem": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:b598fdd628979d6c9e1f8907c3f493d1",
       "version": "1.0.0"
     },
     "uipath/activity/ShouldStop": {
       "contract_hash": "sha256:1784458c5b80f93c0a20c8e8a8e410b5",
-      "documentation_hash": "sha256:1aa5395e45a6da7dde602e94b691c159",
+      "documentation_hash": "sha256:4deb4e139b6e11bcac084d93ffb9ef60",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Result": [
-            "any",
-            true
+          "properties": {
+            "Result": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:dffd60f7e380b5ac700c517851815f40",
       "version": "1.0.0"
     },
     "uipath/activity/State": {
       "contract_hash": "sha256:9aa2f7a4e36eb4ad8d15d96f035bb7b6",
-      "documentation_hash": "sha256:ad982ccfe02faa64c714b6aa570f78ed",
+      "documentation_hash": "sha256:c7f613eada8c53135fe2a42f6cc92dce",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Entry": [
-            "any",
-            true
-          ],
-          "IsFinal": [
-            "any",
-            false
-          ],
-          "Transitions": [
-            "any",
-            false
+          "properties": {
+            "Entry": {
+              "required": true
+            },
+            "IsFinal": {},
+            "Transitions": {}
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:dffd60f7e380b5ac700c517851815f40",
       "version": "1.0.0"
     },
     "uipath/activity/StateMachine": {
       "contract_hash": "sha256:08a75699b531e4772dbf5ef859787c50",
-      "documentation_hash": "sha256:e278b78483c8017b9d3d31fd7bdb3ecb",
+      "documentation_hash": "sha256:07bdb50d94196b48e7343b6c1bc93b83",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "InitialState": [
-            "any",
-            true
-          ],
-          "Variables": [
-            "any",
-            true
+          "properties": {
+            "InitialState": {
+              "required": true
+            },
+            "Variables": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:dffd60f7e380b5ac700c517851815f40",
       "version": "1.0.0"
     },
     "uipath/activity/Switch": {
       "contract_hash": "sha256:5cddcd42aeaa5657b0bb66aea3fe1144",
-      "documentation_hash": "sha256:15aa5db803c807467e6cd2dacc2ccebc",
+      "documentation_hash": "sha256:e9e08cb07ae8c0ab7b1de9113ae8a4a0",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Expression": [
-            "any",
-            true
+          "properties": {
+            "Expression": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:00ae1e30c13930933e375bc470cb0067",
       "version": "1.0.0"
     },
     "uipath/activity/TakeScreenshot": {
       "contract_hash": "sha256:779059921a4fc4e6532dd710dc8cf019",
-      "documentation_hash": "sha256:7bfd473700cf296937eb360fff8479cf",
+      "documentation_hash": "sha256:da63228654c995f7932ee401e154067a",
       "metadata_hash": "sha256:25c2732d1f687e13a64b9538e347a646",
       "signature": {
         "inputs": {
-          "Screenshot": [
-            "any",
-            true
-          ],
-          "Target": [
-            "any",
-            true
-          ],
-          "WaitBefore": [
-            "any",
-            true
+          "properties": {
+            "Screenshot": {
+              "required": true
+            },
+            "Target": {
+              "required": true
+            },
+            "WaitBefore": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:3b9cb7f204a01dc6cb7f206052fc04f2",
       "version": "1.0.0"
     },
     "uipath/activity/Throw": {
       "contract_hash": "sha256:ec41dc9854d8b7576b857b45214427c0",
-      "documentation_hash": "sha256:ac598cde5c5e5923f3e2cf39a9941076",
+      "documentation_hash": "sha256:57e57e531c50a9cc6bbb2004080d1686",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Exception": [
-            "any",
-            true
+          "properties": {
+            "Exception": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     },
     "uipath/activity/Transition": {
       "contract_hash": "sha256:2fe237538d825825b96b51b84bb0dfd8",
-      "documentation_hash": "sha256:ce12f904e244f1b13075a3c2ee86bb12",
+      "documentation_hash": "sha256:5a0e5746984f262f211b54cdf5076711",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Action": [
-            "any",
-            false
-          ],
-          "Condition": [
-            "any",
-            true
-          ],
-          "To": [
-            "any",
-            true
+          "properties": {
+            "Action": {},
+            "Condition": {
+              "required": true
+            },
+            "To": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:dffd60f7e380b5ac700c517851815f40",
       "version": "1.0.0"
     },
     "uipath/activity/TryCatch": {
       "contract_hash": "sha256:c707945e58b3785b3b1736eaece43327",
-      "documentation_hash": "sha256:867f9d41bf6b930827792fe60899f49a",
+      "documentation_hash": "sha256:5df7a8b640eda53d60ab64e2fbc5a39b",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Catches": [
-            "any",
-            true
-          ],
-          "Finally": [
-            "any",
-            false
-          ],
-          "Try": [
-            "any",
-            true
-          ],
-          "Variables": [
-            "any",
-            false
+          "properties": {
+            "Catches": {
+              "required": true
+            },
+            "Finally": {},
+            "Try": {
+              "required": true
+            },
+            "Variables": {}
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:bd062299c1902e0534fafac577f0df15",
       "version": "1.0.0"
     }
   },
-  "ir_version": "0.4.0",
-  "origin": null,
-  "revision": null
+  "ir_version": "0.4.0"
 }

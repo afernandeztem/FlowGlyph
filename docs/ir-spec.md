@@ -11,7 +11,7 @@ an agent calls it*. It has two documents: **Capability** and **Workflow**.
 One operation. Example, extracted from the UiPath ReFrameWork:
 
 ```yaml
-id: uipath/reframework/Framework/InitAllSettings
+id: uipath/ReFrameWork/Framework/InitAllSettings
 version: 1.0.0
 kind: workflow
 title: InitiAllSettings
@@ -77,7 +77,7 @@ harmless, and the IR does not pretend it can: consumers must treat `unknown` as 
 those of the workflows it invokes.
 
 The compact form used in L0 cards (`flowglyph.views.effects_code`) writes `R`, `W`, `D`, `X`
-for yes and lower case for unknown: `RwX` reads, may write, and is external.
+for yes and lower case when it may (the sources do not say): `RwX` reads, may write, and is external.
 
 ### Idempotency
 
@@ -111,15 +111,17 @@ The implementation graph of a workflow capability.
 | Field | Meaning |
 |---|---|
 | `nodes` | Steps: `invoke` (calls another capability), `activity` (a step with effects), `decision` (a branch), `container` (a scope with effects of its own) and `opaque` (a state machine, flowchart or parallel block whose internal control flow is not modelled yet). |
-| `edges` | Control flow. `condition` is set on edges leaving a decision. |
+| `edges` | Control flow. `condition` is set on edges leaving a decision; `otherwise` marks the edge taken when no other condition of that decision holds (an `Else`, a `Default`, a BPMN default flow). A TryCatch is a decision whose handlers are reached `on <ExceptionType>`. |
 | `nodes[].join` | `all` or `any`: how many incoming edges must be taken for the node to run. |
 | `calls` | Capability ids this workflow invokes. |
 | `unresolved_calls` | Invocations that could not be matched to a capability, including targets computed at runtime. |
 
 ### What runs
 
-An edge is *taken* when its source ran and its condition holds. A node with `join: all`, the
-default, runs only when every incoming edge is taken; a node with `join: any` needs only one.
+An edge is *taken* when its source ran and its condition holds; an `otherwise` edge is taken
+when its source ran and none of the other conditions leaving that source holds. A node with
+`join: all`, the default, runs only when every incoming edge is taken; a node with `join: any`
+needs only one.
 Nodes without incoming edges always run. A node that does not run is skipped, and its outgoing
 edges are not taken, so skips propagate. A failing step aborts the workflow.
 `Workflow.simulate(holds)` implements exactly these rules (see
@@ -144,7 +146,7 @@ their children flattened in document order; their edges do not represent real co
 
 | Level | What | Size | Use |
 |---|---|---|---|
-| L0 | `flowglyph.views.l0_card`: id, one-line description, parameter names, effects code, idempotency mode | tens of bytes | Discovery across thousands of capabilities. |
+| L0 | `flowglyph.views.l0_card`: id, one-line description, parameter names, effects code, idempotency mode | about 40 tokens | Discovery across thousands of capabilities. |
 | L1 | The Markdown card | a few hundred tokens | Choosing between candidates and filling arguments. |
 | L2 | The full Capability document | full contract | Validation and execution. |
 
@@ -157,9 +159,11 @@ shown lives in `flowglyph.views` ([ADR-0005](adr/0005-typed-capability-facts-and
 
 | Change | Bump |
 |---|---|
-| Input or output removed, retyped, or an input becomes required | major |
-| Optional input or new output added, effects, idempotency or security changed, or marked deprecated | minor |
-| Only titles, descriptions or parameter descriptions changed | patch |
+| A call that was valid can now be rejected: an input removed, narrowed (a type or `null` no longer accepted, a nested property dropped) or made required | major |
+| A result can now hold something a caller did not expect: an output removed, widened, no longer required, or newly nullable | major |
+| The capability is no longer invocable | major |
+| Optional input or new output added, an input widened, effects, idempotency or security changed, or marked deprecated | minor |
+| Only titles or descriptions changed, anywhere in the contract | patch |
 | Only layout, designer metadata or comments changed | none |
 
 Between two catalogs, a capability that appears is a `minor` change, since no caller depended on

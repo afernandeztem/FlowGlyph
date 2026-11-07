@@ -11,7 +11,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 IR_VERSION = "0.4.0"
 
@@ -22,6 +22,9 @@ type Provenance = Literal["declared", "inferred"]
 type NodeKind = Literal["invoke", "activity", "decision", "container", "opaque"]
 type Join = Literal["all", "any"]
 type TriggerKind = Literal["call", "schedule", "event"]
+
+OTHERWISE = "otherwise"
+"""The condition of an edge taken when no other condition of its source holds."""
 
 
 class Tri(StrEnum):
@@ -92,6 +95,16 @@ class Idempotency(_Model):
     provenance: Provenance = "inferred"
     confidence: float = Field(default=0.5, ge=0.0, le=1.0)
     inferred_by: Literal["heuristic", "llm"] | None = "heuristic"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _nobody_inferred_what_was_declared(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        fields = cast("dict[str, Any]", data)
+        if fields.get("provenance") == "declared":
+            return {**fields, "inferred_by": None}
+        return fields
 
 
 class Semantics(_Model):
@@ -224,21 +237,31 @@ class Workflow(_Model):
     def simulate(self, holds: Callable[[str], bool]) -> list[str]:
         """Ids of the nodes that run, in order, when `holds(condition)` decides each condition.
 
-        Nodes without incoming edges always run. Failures are not modelled: a failing step
-        aborts the whole workflow.
+        Nodes without incoming edges always run. An `otherwise` edge is taken when no other
+        condition leaving its source holds. Failures are not modelled: a failing step aborts
+        the whole workflow.
         """
         incoming: dict[str, list[Edge]] = {node.id: [] for node in self.nodes}
+        alternatives: dict[str, list[str]] = {}
         for edge in self.edges:
             incoming.setdefault(edge.target, []).append(edge)
+            if edge.condition is not None and edge.condition != OTHERWISE:
+                alternatives.setdefault(edge.source, []).append(edge.condition)
         ran: list[str] = []
+
+        def taken(edge: Edge) -> bool:
+            if edge.source not in ran:
+                return False
+            if edge.condition is None:
+                return True
+            if edge.condition == OTHERWISE:
+                return not any(holds(other) for other in alternatives.get(edge.source, []))
+            return holds(edge.condition)
+
         for node in self.nodes:
             edges = incoming.get(node.id, [])
-            taken = [
-                edge
-                for edge in edges
-                if edge.source in ran and (edge.condition is None or holds(edge.condition))
-            ]
-            runs = not edges or (len(taken) == len(edges) if node.join == "all" else bool(taken))
+            chosen = [edge for edge in edges if taken(edge)]
+            runs = not edges or (len(chosen) == len(edges) if node.join == "all" else bool(chosen))
             if runs:
                 ran.append(node.id)
         return ran

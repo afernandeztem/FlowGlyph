@@ -1,0 +1,11 @@
+<Activity x:Class="SendMail"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:ui="http://schemas.uipath.com/workflow/activities"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Item" Type="InArgument(x:String)" />
+  </x:Members>
+  <Sequence DisplayName="SendMail">
+    <ui:LogMessage Level="Info" Message="[&quot;SendMail&quot;]" />
+  </Sequence>
+</Activity>

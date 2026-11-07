@@ -33,14 +33,14 @@ None.
 
 1. **Take screenshot** (activity) -> [TakeScreenshot](uipath_activity_TakeScreenshot.md)
    The whole screen is captured.
-2. **If String.IsNullOrEmpty(io_FilePath)** (decision)
-3. **If Not Directory.Exists(ScreenshotFileInfo.DirectoryName)** (decision)
-4. **Create directory** (activity) -> [CreateDirectory](uipath_activity_CreateDirectory.md)
-5. **Save screenshot** (activity, runs if any predecessor ran) -> [SaveImage](uipath_activity_SaveImage.md)
+2. **If Not Directory.Exists(ScreenshotFileInfo.DirectoryName)** (decision)
+3. **Create directory** (activity) -> [CreateDirectory](uipath_activity_CreateDirectory.md)
+4. **Save screenshot** (activity, runs if any predecessor ran) -> [SaveImage](uipath_activity_SaveImage.md)
 
 Branches:
 
 - `If_2` -> `CreateDirectory_1` when `Not Directory.Exists(ScreenshotFileInfo.DirectoryName)`
+- `If_2` -> `SaveImage_2` when `otherwise`
 
 ## Contract
 

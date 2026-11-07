@@ -14,7 +14,7 @@
       "capability": "uipath/reframework/Framework/GetAppCredentials",
       "edges": [
         {
-          "condition": "not (Not CredentialsFound)",
+          "condition": "otherwise",
           "source": "If_5",
           "target": "AddCredential_2"
         },
@@ -35,12 +35,25 @@
         },
         {
           "condition": null,
-          "source": "GetRobotCredential_2",
+          "source": "TryCatch_2",
+          "target": "GetRobotCredential_2"
+        },
+        {
+          "condition": "on Exception",
+          "source": "TryCatch_2",
           "target": "If_4"
         }
       ],
       "id": "uipath/reframework/Framework/GetAppCredentials",
       "nodes": [
+        {
+          "capability": null,
+          "id": "TryCatch_2",
+          "join": "all",
+          "kind": "decision",
+          "label": "Private: Get Application Credentials",
+          "note": "Securely fetch or create and use a set of credentials.\n\nFirst, there is an attempt to fetch credentials from Orchestrator using the name received as argument. \nIf it is not possible to retrieve those credentials from Orchestrator, there is an attempt to fetch them from the Windows Credential Manager (WCM). \nIf the credentials are not defined in the WCM, the user is prompted to create the credentials that will be added to the WCM and returned for use during the process execution.\n\nThe Private property is used to prevent the generation of logs that might contain information about the credentials."
+        },
         {
           "capability": "uipath/activity/GetRobotCredential",
           "id": "GetRobotCredential_2",
@@ -95,13 +108,7 @@
     {
       "calls": [],
       "capability": "uipath/reframework/Framework/GetTransactionData",
-      "edges": [
-        {
-          "condition": null,
-          "source": "GetQueueItem_1",
-          "target": "If_1"
-        }
-      ],
+      "edges": [],
       "id": "uipath/reframework/Framework/GetTransactionData",
       "nodes": [
         {
@@ -111,14 +118,6 @@
           "kind": "activity",
           "label": "Get transaction item",
           "note": "Get a transaction item from the specified Orchestrator queue.\nIf queues are not used in this process, replace this activity with the appropriated logic to retrieve transaction items.\nFor example, if transactions are rows from a DataTable, the row corresponding to the current transaction is retrieved at this point."
-        },
-        {
-          "capability": null,
-          "id": "If_1",
-          "join": "all",
-          "kind": "decision",
-          "label": "If out_TransactionItem isNot Nothing",
-          "note": "This optional step can be used to include more information about a transaction item and it's used mainly for logging and visualization purposes.\nFor example, if transaction items are invoices, then the out_TransactionID can be the invoice number, out_TransactionField1 can be the invoice date and out_TransactionField2 can be the invoice amount."
         }
       ],
       "unresolved_calls": []
@@ -137,22 +136,12 @@
       "edges": [
         {
           "condition": null,
-          "source": "ReadRange_2",
-          "target": "If_1"
-        },
-        {
-          "condition": null,
-          "source": "GetRobotAsset_4",
-          "target": "If_5"
-        },
-        {
-          "condition": null,
           "source": "ReadRange_3",
           "target": "GetRobotAsset_4"
         },
         {
           "condition": null,
-          "source": "If_1",
+          "source": "ReadRange_2",
           "target": "ReadRange_3"
         }
       ],
@@ -165,14 +154,6 @@
           "kind": "activity",
           "label": "Read range (Settings and Constants sheets)",
           "note": null
-        },
-        {
-          "capability": null,
-          "id": "If_1",
-          "join": "all",
-          "kind": "decision",
-          "label": "If Not String.IsNullOrEmpty(row(\"Name\").ToString.Trim)",
-          "note": "Read non-empty rows in the sheet."
         },
         {
           "capability": "uipath/activity/ReadRange",
@@ -189,14 +170,6 @@
           "kind": "activity",
           "label": "Get Asset",
           "note": null
-        },
-        {
-          "capability": null,
-          "id": "If_5",
-          "join": "all",
-          "kind": "decision",
-          "label": "If Not String.IsNullOrEmpty(Row(\"Name\").ToString.Trim)",
-          "note": "Logs a warn message in case the asset is specified in the Config file, but it could not be loaded from Orchestrator."
         }
       ],
       "unresolved_calls": []
@@ -220,7 +193,7 @@
         {
           "condition": "in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
           "source": "If_2",
-          "target": "node_3"
+          "target": "node_2"
         },
         {
           "condition": "in_TransactionItem isNot Nothing AndAlso (in_TransactionItem.GetType is GetType(Uipath.Core.QueueItem))",
@@ -238,7 +211,7 @@
           "target": "Flowchart_7"
         },
         {
-          "condition": null,
+          "condition": "otherwise",
           "source": "If_4",
           "target": "Flowchart_7"
         },
@@ -249,13 +222,18 @@
         },
         {
           "condition": null,
-          "source": "InvokeWorkflowFile_5",
+          "source": "TryCatch_6",
+          "target": "InvokeWorkflowFile_5"
+        },
+        {
+          "condition": "on Exception",
+          "source": "TryCatch_6",
           "target": "InvokeWorkflowFile_6"
         },
         {
           "condition": null,
           "source": "InvokeWorkflowFile_4",
-          "target": "InvokeWorkflowFile_5"
+          "target": "TryCatch_6"
         },
         {
           "condition": null,
@@ -263,17 +241,17 @@
           "target": "If_4"
         },
         {
-          "condition": null,
+          "condition": "otherwise",
           "source": "If_3",
           "target": "If_4"
         },
         {
           "condition": null,
-          "source": "node_3",
+          "source": "node_2",
           "target": "If_3"
         },
         {
-          "condition": null,
+          "condition": "otherwise",
           "source": "If_2",
           "target": "If_3"
         },
@@ -303,7 +281,7 @@
         },
         {
           "capability": "uipath/activity/SetTransactionStatus",
-          "id": "node_3",
+          "id": "node_2",
           "join": "all",
           "kind": "activity",
           "label": "Set transaction status (Successful)",
@@ -358,6 +336,14 @@
           "note": null
         },
         {
+          "capability": null,
+          "id": "TryCatch_6",
+          "join": "all",
+          "kind": "decision",
+          "label": "Try closing applications",
+          "note": "Close all applications before returning to the Initialization state and opening them again.\nIf applications cannot be closed, kill their respective processes."
+        },
+        {
           "capability": "uipath/reframework/Framework/CloseAllApplications",
           "id": "InvokeWorkflowFile_5",
           "join": "all",
@@ -381,18 +367,13 @@
       "capability": "uipath/reframework/Framework/TakeScreenshot",
       "edges": [
         {
-          "condition": null,
-          "source": "TakeScreenshot_1",
-          "target": "If_3"
-        },
-        {
           "condition": "Not Directory.Exists(ScreenshotFileInfo.DirectoryName)",
           "source": "If_2",
           "target": "CreateDirectory_1"
         },
         {
           "condition": null,
-          "source": "If_3",
+          "source": "TakeScreenshot_1",
           "target": "If_2"
         },
         {
@@ -401,7 +382,7 @@
           "target": "SaveImage_2"
         },
         {
-          "condition": null,
+          "condition": "otherwise",
           "source": "If_2",
           "target": "SaveImage_2"
         }
@@ -415,14 +396,6 @@
           "kind": "activity",
           "label": "Take screenshot",
           "note": "The whole screen is captured."
-        },
-        {
-          "capability": null,
-          "id": "If_3",
-          "join": "all",
-          "kind": "decision",
-          "label": "If String.IsNullOrEmpty(io_FilePath)",
-          "note": null
         },
         {
           "capability": null,
@@ -466,11 +439,6 @@
         {
           "condition": null,
           "source": "InvokeWorkflowFile_12",
-          "target": "If_10"
-        },
-        {
-          "condition": null,
-          "source": "If_10",
           "target": "InvokeWorkflowFile_19"
         },
         {
@@ -484,12 +452,12 @@
           "target": "InvokeWorkflowFile_5"
         },
         {
-          "condition": null,
+          "condition": "otherwise",
           "source": "If_1",
           "target": "InvokeWorkflowFile_5"
         },
         {
-          "condition": "not (ShouldStop)",
+          "condition": "otherwise",
           "source": "If_11",
           "target": "InvokeWorkflowFile_20"
         },
@@ -499,7 +467,7 @@
           "target": "InvokeWorkflowFile_25"
         },
         {
-          "condition": null,
+          "condition": "ShouldStop",
           "source": "If_11",
           "target": "InvokeWorkflowFile_24"
         },
@@ -510,13 +478,18 @@
         },
         {
           "condition": null,
-          "source": "InvokeWorkflowFile_21",
+          "source": "TryCatch_4",
+          "target": "InvokeWorkflowFile_21"
+        },
+        {
+          "condition": "on Exception",
+          "source": "TryCatch_4",
           "target": "InvokeWorkflowFile_22"
         },
         {
           "condition": null,
           "source": "InvokeWorkflowFile_25",
-          "target": "InvokeWorkflowFile_21"
+          "target": "TryCatch_4"
         },
         {
           "condition": null,
@@ -554,14 +527,6 @@
           "kind": "invoke",
           "label": "Invoke InitAllSettings workflow",
           "note": null
-        },
-        {
-          "capability": null,
-          "id": "If_10",
-          "join": "all",
-          "kind": "decision",
-          "label": "If Not string.IsNullOrEmpty(in_OrchestratorQueueName)",
-          "note": "Overwrite queue name from in configuration file in case the argument OrchestratorQueueName is specified.\nThis provides backward compatibility with < 2018.3 and allows default values to come from Config.xlsx"
         },
         {
           "capability": "uipath/reframework/Framework/KillAllProcesses",
@@ -612,6 +577,14 @@
           "note": null
         },
         {
+          "capability": null,
+          "id": "TryCatch_4",
+          "join": "all",
+          "kind": "decision",
+          "label": "Try to close all aplications",
+          "note": null
+        },
+        {
           "capability": "uipath/reframework/Framework/CloseAllApplications",
           "id": "InvokeWorkflowFile_21",
           "join": "all",
@@ -656,18 +629,33 @@
         },
         {
           "condition": null,
-          "source": "InvokeWorkflowFile_3",
+          "source": "TryCatch_2",
+          "target": "InvokeWorkflowFile_2"
+        },
+        {
+          "condition": "on Exception",
+          "source": "TryCatch_2",
           "target": "InvokeWorkflowFile_4"
         },
         {
-          "condition": null,
-          "source": "InvokeWorkflowFile_4",
+          "condition": "on BusinessRuleException",
+          "source": "TryCatch_2",
           "target": "InvokeWorkflowFile_5"
         },
         {
           "condition": null,
           "source": "ExcelReadRange_2",
-          "target": "InvokeWorkflowFile_2"
+          "target": "TryCatch_2"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_3",
+          "target": "ExcelWriteRange_2"
+        },
+        {
+          "condition": null,
+          "source": "InvokeWorkflowFile_4",
+          "target": "ExcelWriteRange_2"
         },
         {
           "condition": null,
@@ -690,7 +678,7 @@
           "target": "ExcelApplicationScope_2"
         },
         {
-          "condition": null,
+          "condition": "otherwise",
           "source": "If_4",
           "target": "ExcelApplicationScope_2"
         }
@@ -720,6 +708,14 @@
           "kind": "activity",
           "label": "Read Range (Defined tests)",
           "note": null
+        },
+        {
+          "capability": null,
+          "id": "TryCatch_2",
+          "join": "all",
+          "kind": "decision",
+          "label": "Try catch",
+          "note": "Execute test and log its result."
         },
         {
           "capability": null,
@@ -756,7 +752,7 @@
         {
           "capability": "uipath/activity/ExcelWriteRange",
           "id": "ExcelWriteRange_2",
-          "join": "all",
+          "join": "any",
           "kind": "activity",
           "label": "Write Range (Tests results)",
           "note": null
@@ -787,16 +783,7 @@
       "capability": "uipath/reframework/Tests/RunAllTests_Logging",
       "edges": [],
       "id": "uipath/reframework/Tests/RunAllTests_Logging",
-      "nodes": [
-        {
-          "capability": null,
-          "id": "If_1",
-          "join": "all",
-          "kind": "decision",
-          "label": "If in_ExpectedOutcome = in_ActualOutcome",
-          "note": null
-        }
-      ],
+      "nodes": [],
       "unresolved_calls": []
     },
     {

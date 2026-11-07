@@ -10,13 +10,7 @@ invocable: false
 
 # TryCatch
 
-Securely fetch or create and use a set of credentials.
-
-First, there is an attempt to fetch credentials from Orchestrator using the name received as argument. 
-If it is not possible to retrieve those credentials from Orchestrator, there is an attempt to fetch them from the Windows Credential Manager (WCM). 
-If the credentials are not defined in the WCM, the user is prompted to create the credentials that will be added to the WCM and returned for use during the process execution.
-
-The Private property is used to prevent the generation of logs that might contain information about the credentials.
+Take a screenshot of the current state of the screen to facilitate debugging.
 
 - **Source:** `Framework/GetAppCredentials.xaml` (uipath)
 - **Effects:** reads: no, mutates state: no, destructive: no, external: no

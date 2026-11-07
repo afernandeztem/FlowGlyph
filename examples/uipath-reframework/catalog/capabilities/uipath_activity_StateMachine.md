@@ -10,10 +10,6 @@ invocable: false
 
 # StateMachine
 
-[Process title]
-[Process description]
-[Additional information (e.g., author, contact information and applications involved and required external setup)]
-
 - **Source:** `Main.xaml` (uipath)
 - **Effects:** reads: no, mutates state: no, destructive: no, external: no
 - **Idempotency:** natural, safe to retry (inferred, confidence 0.8)

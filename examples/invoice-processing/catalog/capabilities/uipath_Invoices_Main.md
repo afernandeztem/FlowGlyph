@@ -41,6 +41,7 @@ Validate an invoice and book it, asking for approval above the threshold.
 Branches:
 
 - `If_1` -> `Invoke_2` when `amount > in_Threshold`
+- `If_1` -> `Invoke_3` when `otherwise`
 
 Unresolved invocations:
 

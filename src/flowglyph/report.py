@@ -107,7 +107,7 @@ def _row(capability: Capability) -> Row:
         kind=capability.kind,
         provider=capability.source.provider,
         category=capability.category,
-        effects=effects_code(capability.effects) or "none",
+        effects=effects_code(capability.effects) or "pure",
         side_effects=capability.effects.has_side_effects,
         idempotency=capability.idempotency.mode,
         key_fields=", ".join(capability.idempotency.key_fields),

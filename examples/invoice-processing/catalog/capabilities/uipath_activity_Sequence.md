@@ -10,8 +10,6 @@ invocable: false
 
 # Sequence
 
-Validate an invoice and book it, asking for approval above the threshold.
-
 - **Source:** `Main.xaml` (uipath)
 - **Effects:** reads: no, mutates state: no, destructive: no, external: no
 - **Idempotency:** natural, safe to retry (inferred, confidence 0.8)

@@ -13,8 +13,10 @@ catalog.save("out")
 
 from importlib.metadata import PackageNotFoundError, version
 
-from flowglyph.adapters import Adapter, register_adapter
+from flowglyph.adapters import Adapter, Diagnostic, Extraction, register_adapter
 from flowglyph.catalog import Catalog, Lock, extract, load_catalog
+from flowglyph.catalog.lock import Bump
+from flowglyph.catalog.versioning import Change
 from flowglyph.errors import FlowGlyphError
 from flowglyph.ir import (
     IR_VERSION,
@@ -23,9 +25,14 @@ from flowglyph.ir import (
     Effects,
     Idempotency,
     Node,
+    Parameter,
+    Security,
+    Semantics,
+    Source,
     Tri,
     Trigger,
     Workflow,
+    export_json_schemas,
 )
 
 try:
@@ -36,18 +43,27 @@ except PackageNotFoundError:
 __all__ = [
     "IR_VERSION",
     "Adapter",
+    "Bump",
     "Capability",
     "Catalog",
+    "Change",
+    "Diagnostic",
     "Edge",
     "Effects",
+    "Extraction",
     "FlowGlyphError",
     "Idempotency",
     "Lock",
     "Node",
+    "Parameter",
+    "Security",
+    "Semantics",
+    "Source",
     "Tri",
     "Trigger",
     "Workflow",
     "__version__",
+    "export_json_schemas",
     "extract",
     "load_catalog",
     "register_adapter",

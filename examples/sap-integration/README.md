@@ -15,17 +15,22 @@ policy.yaml               what an agent may run, used in step 6
 ```
 
 The sources are small synthetic samples, written for FlowGlyph's tests. Run every command from
-this directory with `flowglyph[cli]` installed (`pip install "flowglyph[cli]"`, or `uv run` in a
-checkout).
+this directory with `flowglyph[cli]` installed (`pip install "flowglyph[cli]"`, or prefix them
+with `uv run` in a checkout). The committed `catalog/` is what step 4 leaves behind; to replay
+the steps from the start, remove it first (`rm -rf catalog`) and restore it afterwards with
+`git checkout catalog`.
 
 ## 1. What can be read
 
 ```console
 $ flowglyph adapters
  Adapter  Version  Reads
+ bpmn     0.1.0    Turns BPMN 2.0 processes into capabilities, with Camunda 7 and Camunda 8 extensions.
+ n8n      0.1.0    Turns n8n workflows into capabilities, linked through their Execute Workflow nodes.
  openapi  0.1.0    Turns every operation of an OpenAPI 3.x document into an invocable capability.
  sap      0.1.0    Turns an SAP OData service's metadata into one capability per allowed operation.
  sap-cpi  0.1.0    Turns SAP Cloud Integration iFlows into capabilities, one per endpoint they expose.
+ sbpa     0.1.0    Turns SAP Build Process Automation projects into processes, automations and decisions.
  uipath   0.1.0    Extracts capabilities and workflow graphs from a UiPath project.
 ```
 
@@ -60,7 +65,7 @@ Each row follows OData semantics ([ADR-0006](../../docs/adr/0006-sap-odata-adapt
 and `GET` functions are safe to retry; `PATCH` and `DELETE` leave the same state when repeated;
 `POST` creates a new record every time, and an action could do anything, so those four rows
 need someone who knows the service. The effects code reads `R`ead, `W`rite, `D`estroy,
-e`X`ternal, upper case for yes and lower case for unknown.
+e`X`ternal, upper case for yes and lower case when it may.
 
 Add `--format csv`, `markdown` or `json` and `-o file` to hand the report to someone.
 
@@ -88,12 +93,14 @@ The ProcessDirect link between the two iFlows becomes a call:
 $ flowglyph inspect catalog
 Nightly Stock Report RX natural
 Orders Inbound RWX key
-└── Notify Customer rWX key
+└── Notify Customer rWX conditional
 ```
 
 `Orders Inbound` is `key` because the iFlow itself says so: it wraps its work in an idempotent
 process call on the order number. FlowGlyph records that as *declared*, with a note saying where
-it comes from, and does not second-guess it. `flowglyph inspect catalog sap-cpi/Orders_Inbound`
+it comes from, and does not second-guess it. `Notify Customer` is `conditional`: its Data Store
+write rejects a repeated order number, so a retry is safe only if it runs before the mail is
+sent; step 4 settles that. `flowglyph inspect catalog sap-cpi/Orders_Inbound`
 shows the full card; the same cards are in [`catalog/capabilities/`](catalog/capabilities/).
 
 ## 4. Settle what the sources cannot say

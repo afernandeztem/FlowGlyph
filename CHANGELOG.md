@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `HOWTO.md`: every tool, what it does and how to use it, checked against the CLI by the
   test suite.
+- README: the handover folder of a client taken to a new robot in six commands, with the real
+  output of each; `docs/use-cases/`: the same six as stories of their own, with who each is
+  for and how to tell it. Their commands are checked against the CLI by the test suite.
 - Automation IR (`Capability`, `Workflow`, `Effects`, `Idempotency`) with JSON Schemas.
 - UiPath adapter: typed arguments with defaults and annotations, a taxonomy of activities with
   tri-state effects, workflow graphs with branches, transitive effects through invocations.
@@ -28,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Planner (`flowglyph plan`): BM25 shortlist, a plan proposed by Claude with structured output
   and server-side refusal fallbacks, and a deterministic resolver that rejects invented
   capabilities and broken references and reports missing capabilities as gaps.
+- `flowglyph plan` reads the requirements from the document the process arrived in: a PDF, a
+  Word or Excel file, a CSV, text or Markdown, or a folder holding all of them, through the new
+  `flowglyph[documents]` extra (`flowglyph.planner.documents.read_requirements` from Python).
 - The planner works with any provider. `--via` selects the Anthropic API, a signed-in coding
   assistant run headless (`claude-code`, `codex`, `gemini`, `cursor`, or any tool described with
   a `CommandSpec`), any OpenAI-compatible server (OpenAI, Ollama, vLLM, LM Studio, OpenRouter)
@@ -127,6 +133,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The idempotency report shows `pure` for a capability without effects, as `inspect`, the wiki
+  and the context files do; `none` is only ever an idempotency mode.
+- The `Else` of an `If` is guarded by `otherwise`, like a BPMN default flow, instead of
+  `not (<condition>)`; `Workflow.simulate` takes an `otherwise` edge when no other condition
+  of its source holds.
+- Lock files record the shape of every parameter (types, required, nested properties and
+  items) and leave defaults out, so the format changed; catalogs are re-versioned from 1.0.0
+  on the next `extract`.
+- `flowglyph` also exports `Parameter`, `Semantics`, `Security`, `Source`, `Extraction`,
+  `Diagnostic`, `Change`, `Bump` and `export_json_schemas`, everything needed to build a
+  capability or read what changed.
 - IR 0.3.0 (ADR-0005): `Capability` gains typed `trigger`, `entry_point`, `configuration`,
   `used_in` and `deprecated` fields instead of prefixed strings in `tags`. Presentation moves out
   of the IR into `flowglyph.views`: `effects_code`, `retry_advice` and `l0_card` replace
@@ -152,6 +169,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- UiPath: a `TryCatch` is now a decision whose handlers are reached `on <ExceptionType>` and
+  whose `Finally` follows every branch, and a `Switch` a decision with one guarded edge per
+  case; both were flattened into a sequence, so error handlers and exclusive cases looked like
+  the happy path. An `If` whose branches hold nothing is no longer kept as a decision.
+- n8n, SAP Build Process Automation, BPMN and SAP Cloud Integration: two branches that met
+  again in a folded node kept only one condition; the walk is now shared and keeps both.
+- UiPath: the annotation of a workflow's top-level activity described the activity type
+  (`Sequence`, `Flowchart`) instead of only the workflow.
+- Versioning: an input narrowed (a type or `null` no longer accepted, a nested property
+  dropped), an output widened, newly nullable or no longer required, and a capability that
+  stops being invocable are now major changes; they were minor. Wording changes anywhere in
+  a schema are a patch.
 - The planner accepted arguments of the wrong type: a string output bound to an integer input,
   a literal `"yes"` for a boolean, a string workflow input for a number. The resolver now compares
   the type of every workflow input, step output and literal with the input it feeds and reports

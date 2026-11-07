@@ -15,8 +15,9 @@ uipath.merge(api).save("examples/invoice-processing/catalog")
 
 ## 2. Plan the workflow from the requirements
 
-Needs `pip install "flowglyph[llm]"` and Anthropic credentials (`ANTHROPIC_API_KEY` or
-`ant auth login`).
+Needs `pip install "flowglyph[llm]"` and Anthropic credentials: `ANTHROPIC_API_KEY`, or the
+ones the Anthropic CLI stores with `ant auth login`. Or use the coding assistant you are signed
+in to, with `--via claude-code`, `codex`, `gemini` or `cursor`.
 
 ```bash
 flowglyph plan examples/invoice-processing/requirements.md examples/invoice-processing/catalog \

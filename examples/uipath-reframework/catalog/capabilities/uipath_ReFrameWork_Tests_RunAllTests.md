@@ -34,18 +34,23 @@ None.
 1. **If Not File.Exists(in_TestLogFile)** (decision)
 2. **Create Log file** (activity) -> [CreateFile](uipath_activity_CreateFile.md)
 3. **Read Range (Defined tests)** (activity) -> [ExcelReadRange](uipath_activity_ExcelReadRange.md)
-4. **Invoke Test File** (invoke)
-5. **Invoke Test Logging (Success)** (invoke) -> [RunAllTests_Logging](uipath_ReFrameWork_Tests_RunAllTests_Logging.md)
-6. **Invoke Test Logging (Application Exception)** (invoke) -> [RunAllTests_Logging](uipath_ReFrameWork_Tests_RunAllTests_Logging.md)
-7. **Invoke Test Logging (BRE)** (invoke) -> [RunAllTests_Logging](uipath_ReFrameWork_Tests_RunAllTests_Logging.md)
-8. **Write Range (Tests results)** (activity) -> [ExcelWriteRange](uipath_activity_ExcelWriteRange.md)
-9. **Open application (Notepad)** (activity) -> [OpenApplication](uipath_activity_OpenApplication.md)
+4. **Try catch** (decision)
+   Execute test and log its result.
+5. **Invoke Test File** (invoke)
+6. **Invoke Test Logging (Success)** (invoke) -> [RunAllTests_Logging](uipath_ReFrameWork_Tests_RunAllTests_Logging.md)
+7. **Invoke Test Logging (Application Exception)** (invoke) -> [RunAllTests_Logging](uipath_ReFrameWork_Tests_RunAllTests_Logging.md)
+8. **Invoke Test Logging (BRE)** (invoke) -> [RunAllTests_Logging](uipath_ReFrameWork_Tests_RunAllTests_Logging.md)
+9. **Write Range (Tests results)** (activity, runs if any predecessor ran) -> [ExcelWriteRange](uipath_activity_ExcelWriteRange.md)
+10. **Open application (Notepad)** (activity) -> [OpenApplication](uipath_activity_OpenApplication.md)
    Open log file in a Notepad window.
-10. **Excel application scope** (container, runs if any predecessor ran) -> [ExcelApplicationScope](uipath_activity_ExcelApplicationScope.md)
+11. **Excel application scope** (container, runs if any predecessor ran) -> [ExcelApplicationScope](uipath_activity_ExcelApplicationScope.md)
 
 Branches:
 
 - `If_4` -> `CreateFile_1` when `Not File.Exists(in_TestLogFile)`
+- `TryCatch_2` -> `InvokeWorkflowFile_4` when `on Exception`
+- `TryCatch_2` -> `InvokeWorkflowFile_5` when `on BusinessRuleException`
+- `If_4` -> `ExcelApplicationScope_2` when `otherwise`
 
 Unresolved invocations:
 

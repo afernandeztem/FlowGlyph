@@ -10,6 +10,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, ClassVar, cast
 
+from flowglyph._internal.graph import follow, with_joins
 from flowglyph._internal.hashing import digest
 from flowglyph.adapters import Diagnostic, Extraction
 from flowglyph.adapters.sbpa.package import (
@@ -248,17 +249,10 @@ def _graph(
             node = Node(id=key, kind="activity", label=label)
         nodes.append(node)
     edges = _edges(flows, set(steps))
-    sources: defaultdict[str, set[str]] = defaultdict(set)
-    for edge in edges:
-        sources[edge.target].add(edge.source)
-    nodes = [
-        node.model_copy(update={"join": "any"}) if len(sources[node.id]) > 1 else node
-        for node in nodes
-    ]
     workflow = Workflow(
         id=capability_id,
         capability=capability_id,
-        nodes=tuple(nodes),
+        nodes=tuple(with_joins(nodes, edges)),
         edges=tuple(edges),
         calls=tuple(dict.fromkeys(calls)),
         unresolved_calls=tuple(dict.fromkeys(unresolved)),
@@ -285,18 +279,7 @@ def _edges(flows: list[dict[str, Any]], kept: set[str]) -> list[Edge]:
         outgoing[str(flow.get("sourceRef"))].append(
             (str(flow.get("targetRef")), str(condition) if condition else None)
         )
-    edges: set[Edge] = set()
-    for start in kept:
-        seen: set[str] = set()
-        pending = list(outgoing[start])
-        while pending:
-            target, condition = pending.pop()
-            if target in kept:
-                edges.add(Edge(source=start, target=target, condition=condition))
-            elif target not in seen:
-                seen.add(target)
-                pending.extend((nxt, condition or cond) for nxt, cond in outgoing[target])
-    return sorted(edges, key=lambda e: (e.source, e.target, e.condition or ""))
+    return follow(outgoing, kept)
 
 
 def _trigger(artifact: Artifact) -> tuple[Trigger, bool]:

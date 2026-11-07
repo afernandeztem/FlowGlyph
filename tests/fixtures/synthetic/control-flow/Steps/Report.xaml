@@ -1,0 +1,11 @@
+<Activity x:Class="Report"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:ui="http://schemas.uipath.com/workflow/activities"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Item" Type="InArgument(x:String)" />
+  </x:Members>
+  <Sequence DisplayName="Report">
+    <ui:LogMessage Level="Info" Message="[&quot;Report&quot;]" />
+  </Sequence>
+</Activity>

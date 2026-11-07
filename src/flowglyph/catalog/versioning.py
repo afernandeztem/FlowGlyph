@@ -6,11 +6,10 @@ from typing import Any, Literal, cast
 
 from flowglyph._internal.hashing import fingerprint
 from flowglyph.catalog.lock import Bump, Lock, LockEntry, Signature
-from flowglyph.ir import Capability, JsonSchema
+from flowglyph.ir import Capability
 
-_DOCUMENTATION_KEYS = frozenset(
-    {"description", "examples", "x-seen", "x-default-expression", "x-xaml-template"}
-)
+_WORDING_KEYS = frozenset({"description", "examples"})
+_DOCUMENTATION_KEYS = _WORDING_KEYS | {"x-seen", "x-default-expression", "x-xaml-template"}
 _METADATA_FIELDS = frozenset({"effects", "idempotency", "security", "errors", "kind", "invocable"})
 
 
@@ -91,7 +90,8 @@ def lock_entry(capability: Capability, version: str) -> LockEntry:
     documentation = {
         "title": capability.title,
         "description": capability.description,
-        "parameters": [(p.name, p.description) for p in capability.inputs + capability.outputs],
+        "input": _words(capability.input_schema),
+        "output": _words(capability.output_schema),
     }
     return LockEntry(
         version=version,
@@ -104,9 +104,9 @@ def lock_entry(capability: Capability, version: str) -> LockEntry:
 
 
 def _bump(before: LockEntry, after: LockEntry) -> Bump:
-    if before.contract_hash != after.contract_hash:
-        return max(before.signature.bump_to(after.signature), Bump.MINOR)
-    if before.metadata_hash != after.metadata_hash:
+    if before.signature.bump_to(after.signature) is Bump.MAJOR:
+        return Bump.MAJOR
+    if before.contract_hash != after.contract_hash or before.metadata_hash != after.metadata_hash:
         return Bump.MINOR
     if before.documentation_hash != after.documentation_hash:
         return Bump.PATCH
@@ -124,13 +124,28 @@ def _increment(version: str, bump: Bump) -> str:
     return version
 
 
-def _strip_documentation(schema: JsonSchema) -> JsonSchema:
-    stripped: JsonSchema = {}
-    for key, value in schema.items():
-        if key in _DOCUMENTATION_KEYS:
-            continue
-        if isinstance(value, Mapping):
-            stripped[key] = _strip_documentation(cast("JsonSchema", value))
-        else:
-            stripped[key] = value
-    return stripped
+def _strip_documentation(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {
+            key: _strip_documentation(inner)
+            for key, inner in cast("Mapping[str, Any]", value).items()
+            if key not in _DOCUMENTATION_KEYS
+        }
+    if isinstance(value, list):
+        return [_strip_documentation(inner) for inner in cast("list[Any]", value)]
+    return value
+
+
+def _words(value: Any) -> Any:
+    """Only the wording of a schema, wherever it sits: what can change without the contract."""
+    if isinstance(value, Mapping):
+        words: dict[str, Any] = {}
+        for key, inner in cast("Mapping[str, Any]", value).items():
+            if key in _WORDING_KEYS:
+                words[key] = inner
+            elif isinstance(inner, Mapping | list):
+                words[key] = _words(inner)
+        return words
+    if isinstance(value, list):
+        return [_words(inner) for inner in cast("list[Any]", value)]
+    return None

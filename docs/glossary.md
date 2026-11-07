@@ -52,7 +52,7 @@ and this page disagree, the code is wrong or this page is out of date: please op
 
 **Effects code**
 : The compact form of effects: `R`ead, `W`rite, `D`estroy, e`X`ternal; upper case for yes,
-  lower case for unknown, absent for no. `RwX` reads, may write and calls another system.
+  lower case when it may (the sources do not say), absent for no. `RwX` reads, may write and calls another system.
 
 **Idempotency**
 : Whether, and how, a capability can be called again safely. Its *mode* is `natural`
@@ -126,7 +126,7 @@ and this page disagree, the code is wrong or this page is out of date: please op
   capability. Idempotency set this way becomes declared.
 
 **Representation levels: L0, L1, L2**
-: Three sizes of the same capability. *L0* is a card of a few dozen bytes for scanning
+: Three sizes of the same capability. *L0* is a card of about 40 tokens for scanning
   thousands; *L1* is the Markdown card for choosing; *L2* is the full contract for validating
   and running.
 

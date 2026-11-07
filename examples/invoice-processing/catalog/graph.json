@@ -25,7 +25,7 @@
           "target": "Invoke_3"
         },
         {
-          "condition": null,
+          "condition": "otherwise",
           "source": "If_1",
           "target": "Invoke_3"
         },

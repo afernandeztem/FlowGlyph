@@ -35,22 +35,24 @@ None.
 2. **If Config is Nothing** (decision)
    An uninitialized Config dictionary indicates that this is the first run of the process.
 3. **Invoke InitAllSettings workflow** (invoke) -> [InitiAllSettings](uipath_ReFrameWork_Framework_InitAllSettings.md)
-4. **If Not string.IsNullOrEmpty(in_OrchestratorQueueName)** (decision)
-   Overwrite queue name from in configuration file in case the argument OrchestratorQueueName is specified.
-5. **Invoke KillAllProcesses workflow (first run)** (invoke) -> [KillAllProcesses](uipath_ReFrameWork_Framework_KillAllProcesses.md)
+4. **Invoke KillAllProcesses workflow (first run)** (invoke) -> [KillAllProcesses](uipath_ReFrameWork_Framework_KillAllProcesses.md)
    Kills all Windows processes representing applications used in this business process to assure that the execution starts in a clean state.
-6. **Invoke InitiAllApplications workflow** (invoke, runs if any predecessor ran) -> [Initialize Applications](uipath_ReFrameWork_Framework_InitAllApplications.md)
-7. **If ShouldStop** (decision)
-8. **Invoke GetTransactionData workflow** (invoke) -> [GetTransactionData](uipath_ReFrameWork_Framework_GetTransactionData.md)
-9. **Invoke Process workflow** (invoke, runs if any predecessor ran) -> [Process](uipath_ReFrameWork_Process.md)
-10. **Invoke SetTransactionStatus workflow** (invoke) -> [SetTransactionStatus](uipath_ReFrameWork_Framework_SetTransactionStatus.md)
+5. **Invoke InitiAllApplications workflow** (invoke, runs if any predecessor ran) -> [Initialize Applications](uipath_ReFrameWork_Framework_InitAllApplications.md)
+6. **If ShouldStop** (decision)
+7. **Invoke GetTransactionData workflow** (invoke) -> [GetTransactionData](uipath_ReFrameWork_Framework_GetTransactionData.md)
+8. **Invoke Process workflow** (invoke, runs if any predecessor ran) -> [Process](uipath_ReFrameWork_Process.md)
+9. **Invoke SetTransactionStatus workflow** (invoke) -> [SetTransactionStatus](uipath_ReFrameWork_Framework_SetTransactionStatus.md)
+10. **Try to close all aplications** (decision)
 11. **Invoke CloseAllApplications workflow** (invoke) -> [CloseAllApplications](uipath_ReFrameWork_Framework_CloseAllApplications.md)
 12. **Invoke KillAllProcesses workflow (End process)** (invoke) -> [KillAllProcesses](uipath_ReFrameWork_Framework_KillAllProcesses.md)
 
 Branches:
 
 - `If_1` -> `InvokeWorkflowFile_12` when `Config is Nothing`
-- `If_11` -> `InvokeWorkflowFile_20` when `not (ShouldStop)`
+- `If_1` -> `InvokeWorkflowFile_5` when `otherwise`
+- `If_11` -> `InvokeWorkflowFile_20` when `otherwise`
+- `If_11` -> `InvokeWorkflowFile_24` when `ShouldStop`
+- `TryCatch_4` -> `InvokeWorkflowFile_22` when `on Exception`
 
 ## Contract
 

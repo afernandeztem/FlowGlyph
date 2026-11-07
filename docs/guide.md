@@ -29,11 +29,14 @@ Python 3.12 or newer. To follow this guide with the samples:
 git clone https://github.com/afernandeztem/FlowGlyph
 cd FlowGlyph
 cp -R examples/uipath-reframework/sources robots
+cp examples/uipath-reframework/overrides.yaml examples/uipath-reframework/policy.yaml .
 cp -R examples/sap-integration/sources sap
 ```
 
 `robots` is UiPath's ReFrameWork template; `sap` holds SAP Cloud Integration iFlows and two SAP
-OData services.
+OData services; `overrides.yaml` and `policy.yaml` are used in steps 3 and 6. Until there is a
+release on PyPI, the clone is also the way to get the command: `uv sync --all-extras` once,
+then run every command below as `uv run flowglyph ...`.
 
 ## 1. Build a catalog
 
@@ -100,8 +103,8 @@ Main RWdX none
 ```
 
 Each line is a workflow, its effects and its idempotency. The effects code reads `R`ead,
-`W`rite, `D`estroy, e`X`ternal: upper case means yes, lower case means maybe, a missing letter
-means no.
+`W`rite, `D`estroy, e`X`ternal: upper case means yes, lower case means it may (the sources do not
+say), a missing letter means no.
 
 **One capability in full:** `flowglyph inspect catalog Framework/GetTransactionData`
 
@@ -162,6 +165,13 @@ effects or idempotency), `patch` for documentation.
 
 ```bash
 flowglyph validate catalog                              # broken references inside a catalog
+```
+
+`diff` compares two catalogs, so keep the one from step 3 before changing anything:
+
+```bash
+cp -R catalog old-catalog
+flowglyph extract robots -o catalog                     # after a change to a workflow
 flowglyph diff old-catalog catalog --fail-on major      # exits 1 only on breaking changes
 ```
 
@@ -264,8 +274,10 @@ tokens, so you can commit it. `serve` refuses to start until every variable it n
 flowglyph plan requirements.md catalog -o plan --via claude-code
 ```
 
-A model proposes the steps, using only functions that exist in the catalog; FlowGlyph checks
-every step. What nothing in the catalog can do is reported as **missing**, never invented. Use
+The requirements can also be the client's process document as it came: a PDF, a Word or Excel
+file, a CSV, or a folder with all of them (`pip install "flowglyph[documents]"` for PDF, Word
+and Excel). A model proposes the steps, using only functions that exist in the catalog; FlowGlyph
+checks every step. What nothing in the catalog can do is reported as **missing**, never invented. Use
 whatever you already have: `--via claude-code`, `codex`, `gemini`, `cursor` (the coding
 assistant you are signed in to), `anthropic` (an API key) or `openai-compatible` (OpenAI,
 Ollama, vLLM...).
@@ -330,25 +342,8 @@ catalog = flowglyph.load_catalog("catalog")
 
 ## Every command
 
-| Command | Does |
-|---|---|
-| `flowglyph extract SOURCE -o DIR` | build or update a catalog |
-| `flowglyph adapters` | list the formats FlowGlyph reads |
-| `flowglyph inspect CATALOG [CAPABILITY]` | the call tree, or one capability's card |
-| `flowglyph search CATALOG "words"` | find functions by what they do |
-| `flowglyph idempotency CATALOG` | every function and whether it is safe to retry |
-| `flowglyph validate CATALOG` | check a catalog for broken references |
-| `flowglyph diff OLD NEW` | what changed, and how much |
-| `flowglyph enrich CATALOG` | descriptions for what sources left undescribed |
-| `flowglyph context SOURCE` | context files for coding agents, per UiPath project |
-| `flowglyph skill` | install the FlowGlyph skill for coding agents |
-| `flowglyph wiki build SOURCE` / `wiki lint DIR` | a wiki for people and LLMs |
-| `flowglyph serve CATALOG` | the MCP gateway for agents |
-| `flowglyph approvals CATALOG` / `approve CATALOG KEY` | runs waiting for a person |
-| `flowglyph plan REQUIREMENTS CATALOG` | design a workflow |
-| `flowglyph compile WORKFLOW --to bpmn` | turn a workflow into BPMN or XAML |
-
-Every command has `--help`.
+Every command has `--help`, and [HOWTO.md](../HOWTO.md) describes each one: what it does, an
+example, what you get back and its options.
 
 ## When something goes wrong
 
