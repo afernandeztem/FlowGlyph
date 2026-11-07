@@ -38,23 +38,26 @@ The Private property is used to prevent the generation of logs that might contai
 
 ## Steps
 
-1. **Get credentials** (activity) -> [GetRobotCredential](uipath_activity_GetRobotCredential.md)
+1. **Private: Get Application Credentials** (decision)
+   Securely fetch or create and use a set of credentials.
+2. **Get credentials** (activity) -> [GetRobotCredential](uipath_activity_GetRobotCredential.md)
    Attempt to retrieve credentials from Orchestrator.
-2. **If out_Username Is Nothing Or out_Password Is Nothing** (decision)
+3. **If out_Username Is Nothing Or out_Password Is Nothing** (decision)
    The Private property is used to prevent the generation of logs that might contain information about the credentials.
-3. **If Not CredentialsFound** (decision)
-4. **Request credentials** (activity) -> [RequestCredential](uipath_activity_RequestCredential.md)
+4. **If Not CredentialsFound** (decision)
+5. **Request credentials** (activity) -> [RequestCredential](uipath_activity_RequestCredential.md)
    Request credentials from user.
-5. **If Not CredentialsFound** (decision)
+6. **If Not CredentialsFound** (decision)
    Throw exception in case of no credentials, or add provided credentials to Windows Credential Manager.
-6. **Add Credential** (activity) -> [AddCredential](uipath_activity_AddCredential.md)
+7. **Add Credential** (activity) -> [AddCredential](uipath_activity_AddCredential.md)
    Add provided credentials to the Windows Credential Manager to avoid requesting them in later executions of the process.
 
 Branches:
 
-- `If_5` -> `AddCredential_2` when `not (Not CredentialsFound)`
+- `If_5` -> `AddCredential_2` when `otherwise`
 - `If_3` -> `RequestCredential_2` when `Not CredentialsFound`
 - `If_4` -> `If_3` when `out_Username Is Nothing Or out_Password Is Nothing`
+- `TryCatch_2` -> `If_4` when `on Exception`
 
 ## Contract
 

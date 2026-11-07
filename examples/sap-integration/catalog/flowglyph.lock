@@ -13,12 +13,17 @@
   "capabilities": {
     "sap-cpi/Nightly_Stock_Report": {
       "contract_hash": "sha256:5c115ef84d1299002cc9313f2c87f20f",
-      "documentation_hash": "sha256:d373fcec13077a4a4de8904d975a9fe5",
+      "documentation_hash": "sha256:b3cef1f82f7a55cf7d8d688394c72ec4",
       "metadata_hash": "sha256:992339c1fe67a4d4637aea15e9ba3821",
       "signature": {
-        "inputs": {},
+        "invocable": false,
         "outputs": {
-          "body": "any"
+          "properties": {
+            "body": {}
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:4b4d8e5d6f12f0c98b00aac1452faf88",
@@ -26,17 +31,24 @@
     },
     "sap-cpi/Notify_Customer": {
       "contract_hash": "sha256:39b431cfb8ee03c96443d4ee9b14962d",
-      "documentation_hash": "sha256:fe17c4db29467ac7b8a1f915e67456c1",
+      "documentation_hash": "sha256:95fc8b8d628c1e77fc1d9b87002ecd15",
       "metadata_hash": "sha256:d3d7bd6d9b6f6a82c59c046e5e3b1563",
       "signature": {
         "inputs": {
-          "body": [
-            "any",
-            false
+          "properties": {
+            "body": {}
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "body": "any"
+          "properties": {
+            "body": {}
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:54dffb9f4c91094f7fe3d3a7784a0327",
@@ -44,17 +56,24 @@
     },
     "sap-cpi/Orders_Inbound": {
       "contract_hash": "sha256:e033dcb4f174456cb03303945f1a5c56",
-      "documentation_hash": "sha256:b7194f1f59eb7fb26ac3f30400a25818",
+      "documentation_hash": "sha256:450433be76c2c69613efcff7c6c89f47",
       "metadata_hash": "sha256:8e1159f690cea127012fa5af1ed7502d",
       "signature": {
         "inputs": {
-          "body": [
-            "any",
-            false
+          "properties": {
+            "body": {}
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "body": "any"
+          "properties": {
+            "body": {}
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:e00ce1f1ced125e875799c972681e2a2",
@@ -62,21 +81,89 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/GetDuplicateCandidates": {
       "contract_hash": "sha256:b34af36f0c27b877a3afbfe73fb70b5e",
-      "documentation_hash": "sha256:7f378683e268db2dc53d762e5e4ff69b",
+      "documentation_hash": "sha256:99cf2711901cfe5d6d0d67e942755d5c",
       "metadata_hash": "sha256:c2d51de53ce8b68c4bb06f9eb16d81d9",
       "signature": {
         "inputs": {
-          "InvoiceGrossAmount": [
-            "number",
-            false
-          ],
-          "InvoicingParty": [
-            "string",
-            false
+          "properties": {
+            "InvoiceGrossAmount": {
+              "types": [
+                "number"
+              ]
+            },
+            "InvoicingParty": {
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "value": "array"
+          "properties": {
+            "value": {
+              "items": {
+                "properties": {
+                  "CompanyCode": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "DocumentCurrency": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "FiscalYear": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "InvoiceGrossAmount": {
+                    "types": [
+                      "number"
+                    ]
+                  },
+                  "InvoicingParty": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "IsBlocked": {
+                    "types": [
+                      "boolean"
+                    ]
+                  },
+                  "PostingDate": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "SupplierInvoice": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "SupplierInvoiceIDByInvcgParty": {
+                    "types": [
+                      "string"
+                    ]
+                  }
+                },
+                "types": [
+                  "object"
+                ]
+              },
+              "types": [
+                "array"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
@@ -84,21 +171,84 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/Release": {
       "contract_hash": "sha256:cd71e6913213340f070dbb954562eb67",
-      "documentation_hash": "sha256:79661e86c0f87a0dcc4b488d3f3efc3e",
+      "documentation_hash": "sha256:4a612bf5b8c0c3ada6113cacc3910efe",
       "metadata_hash": "sha256:ecee6b9728213b0160f4b381a12fce64",
       "signature": {
         "inputs": {
-          "FiscalYear": [
-            "string",
-            false
-          ],
-          "SupplierInvoice": [
-            "string",
-            false
+          "properties": {
+            "FiscalYear": {
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierInvoice": {
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "value": "object"
+          "properties": {
+            "value": {
+              "properties": {
+                "CompanyCode": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "DocumentCurrency": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "FiscalYear": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "InvoiceGrossAmount": {
+                  "types": [
+                    "number"
+                  ]
+                },
+                "InvoicingParty": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "IsBlocked": {
+                  "types": [
+                    "boolean"
+                  ]
+                },
+                "PostingDate": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "SupplierInvoice": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "SupplierInvoiceIDByInvcgParty": {
+                  "types": [
+                    "string"
+                  ]
+                }
+              },
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
@@ -106,33 +256,74 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/Supplier/query": {
       "contract_hash": "sha256:07e94a09f2ad1e827baed60a2dd8a54d",
-      "documentation_hash": "sha256:d4c6d6b6c0e91065a8268c677df30b7b",
+      "documentation_hash": "sha256:87758074e2091084a3233244c5df1910",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
         "inputs": {
-          "$filter": [
-            "string",
-            false
-          ],
-          "$orderby": [
-            "string",
-            false
-          ],
-          "$select": [
-            "string",
-            false
-          ],
-          "$skip": [
-            "integer",
-            false
-          ],
-          "$top": [
-            "integer",
-            false
+          "properties": {
+            "$filter": {
+              "types": [
+                "string"
+              ]
+            },
+            "$orderby": {
+              "types": [
+                "string"
+              ]
+            },
+            "$select": {
+              "types": [
+                "string"
+              ]
+            },
+            "$skip": {
+              "types": [
+                "integer"
+              ]
+            },
+            "$top": {
+              "types": [
+                "integer"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "value": "array"
+          "properties": {
+            "value": {
+              "items": {
+                "properties": {
+                  "Supplier": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "SupplierID": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "SupplierName": {
+                    "types": [
+                      "string"
+                    ]
+                  }
+                },
+                "types": [
+                  "object"
+                ]
+              },
+              "types": [
+                "array"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
@@ -140,19 +331,43 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/Supplier/read": {
       "contract_hash": "sha256:2ed621aed6525b9d00d09fed434296c5",
-      "documentation_hash": "sha256:7369cad3f1b3b6c9f9986e8d89a9297c",
+      "documentation_hash": "sha256:06cf2877813e87e3b200d4c088bddb7f",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
         "inputs": {
-          "Supplier": [
-            "string",
-            true
+          "properties": {
+            "Supplier": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "Supplier": "string",
-          "SupplierID": "string",
-          "SupplierName": "string"
+          "properties": {
+            "Supplier": {
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierID": {
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierName": {
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
@@ -160,25 +375,107 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/create": {
       "contract_hash": "sha256:291bbbc2dbd89ec15f19da5bbf2f2f11",
-      "documentation_hash": "sha256:771cc06c2dc34ab1a05ab5662edf06b0",
+      "documentation_hash": "sha256:96011a81d38ae9570cd4510b81f8ffd2",
       "metadata_hash": "sha256:c05bcd2b426562ea9a5ecbfb513dfd5d",
       "signature": {
         "inputs": {
-          "body": [
-            "object",
-            true
+          "properties": {
+            "body": {
+              "properties": {
+                "CompanyCode": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                },
+                "DocumentCurrency": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "InvoiceGrossAmount": {
+                  "types": [
+                    "number"
+                  ]
+                },
+                "InvoicingParty": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                },
+                "PostingDate": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "SupplierInvoiceIDByInvcgParty": {
+                  "types": [
+                    "string"
+                  ]
+                }
+              },
+              "required": true,
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "CompanyCode": "string",
-          "DocumentCurrency": "string",
-          "FiscalYear": "string",
-          "InvoiceGrossAmount": "number",
-          "InvoicingParty": "string",
-          "IsBlocked": "boolean",
-          "PostingDate": "string",
-          "SupplierInvoice": "string",
-          "SupplierInvoiceIDByInvcgParty": "string"
+          "properties": {
+            "CompanyCode": {
+              "types": [
+                "string"
+              ]
+            },
+            "DocumentCurrency": {
+              "types": [
+                "string"
+              ]
+            },
+            "FiscalYear": {
+              "types": [
+                "string"
+              ]
+            },
+            "InvoiceGrossAmount": {
+              "types": [
+                "number"
+              ]
+            },
+            "InvoicingParty": {
+              "types": [
+                "string"
+              ]
+            },
+            "IsBlocked": {
+              "types": [
+                "boolean"
+              ]
+            },
+            "PostingDate": {
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierInvoice": {
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierInvoiceIDByInvcgParty": {
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
@@ -186,33 +483,104 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/query": {
       "contract_hash": "sha256:e69b1a30a50cc013fd087a2a73a78184",
-      "documentation_hash": "sha256:1da2884e9ecadc69f0db3636e0057490",
+      "documentation_hash": "sha256:da736c027d7508b591895c35b0382eb3",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
         "inputs": {
-          "$filter": [
-            "string",
-            false
-          ],
-          "$orderby": [
-            "string",
-            false
-          ],
-          "$select": [
-            "string",
-            false
-          ],
-          "$skip": [
-            "integer",
-            false
-          ],
-          "$top": [
-            "integer",
-            false
+          "properties": {
+            "$filter": {
+              "types": [
+                "string"
+              ]
+            },
+            "$orderby": {
+              "types": [
+                "string"
+              ]
+            },
+            "$select": {
+              "types": [
+                "string"
+              ]
+            },
+            "$skip": {
+              "types": [
+                "integer"
+              ]
+            },
+            "$top": {
+              "types": [
+                "integer"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "value": "array"
+          "properties": {
+            "value": {
+              "items": {
+                "properties": {
+                  "CompanyCode": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "DocumentCurrency": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "FiscalYear": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "InvoiceGrossAmount": {
+                    "types": [
+                      "number"
+                    ]
+                  },
+                  "InvoicingParty": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "IsBlocked": {
+                    "types": [
+                      "boolean"
+                    ]
+                  },
+                  "PostingDate": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "SupplierInvoice": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "SupplierInvoiceIDByInvcgParty": {
+                    "types": [
+                      "string"
+                    ]
+                  }
+                },
+                "types": [
+                  "object"
+                ]
+              },
+              "types": [
+                "array"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
@@ -220,29 +588,79 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/read": {
       "contract_hash": "sha256:ca16e93023a75075d1bdc3bb0af836df",
-      "documentation_hash": "sha256:b38f6c9fe6b41a392fe8943f3f5551d0",
+      "documentation_hash": "sha256:0fa2b77bdd4c5155aac65f4dce30a212",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
         "inputs": {
-          "FiscalYear": [
-            "string",
-            true
-          ],
-          "SupplierInvoice": [
-            "string",
-            true
+          "properties": {
+            "FiscalYear": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierInvoice": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "CompanyCode": "string",
-          "DocumentCurrency": "string",
-          "FiscalYear": "string",
-          "InvoiceGrossAmount": "number",
-          "InvoicingParty": "string",
-          "IsBlocked": "boolean",
-          "PostingDate": "string",
-          "SupplierInvoice": "string",
-          "SupplierInvoiceIDByInvcgParty": "string"
+          "properties": {
+            "CompanyCode": {
+              "types": [
+                "string"
+              ]
+            },
+            "DocumentCurrency": {
+              "types": [
+                "string"
+              ]
+            },
+            "FiscalYear": {
+              "types": [
+                "string"
+              ]
+            },
+            "InvoiceGrossAmount": {
+              "types": [
+                "number"
+              ]
+            },
+            "InvoicingParty": {
+              "types": [
+                "string"
+              ]
+            },
+            "IsBlocked": {
+              "types": [
+                "boolean"
+              ]
+            },
+            "PostingDate": {
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierInvoice": {
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierInvoiceIDByInvcgParty": {
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
@@ -250,45 +668,137 @@
     },
     "sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/update": {
       "contract_hash": "sha256:28d39f84310a90c3f051fffd0ca992c5",
-      "documentation_hash": "sha256:5a0f180945191421e92a854f2eae58fc",
+      "documentation_hash": "sha256:7cfcb0ed12e79189be501c53e9de5a26",
       "metadata_hash": "sha256:3353c0365afdb7ad88c60900b874f730",
       "signature": {
         "inputs": {
-          "FiscalYear": [
-            "string",
-            true
-          ],
-          "SupplierInvoice": [
-            "string",
-            true
-          ],
-          "body": [
-            "object",
-            true
+          "properties": {
+            "FiscalYear": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            },
+            "SupplierInvoice": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            },
+            "body": {
+              "properties": {
+                "CompanyCode": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "DocumentCurrency": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "InvoiceGrossAmount": {
+                  "types": [
+                    "number"
+                  ]
+                },
+                "InvoicingParty": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "IsBlocked": {
+                  "types": [
+                    "boolean"
+                  ]
+                },
+                "PostingDate": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "SupplierInvoiceIDByInvcgParty": {
+                  "types": [
+                    "string"
+                  ]
+                }
+              },
+              "required": true,
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:2814de417e63f7e9f3294b1e2b0dafcb",
       "version": "1.0.0"
     },
     "sap/zbusinesspartner/BusinessPartner/block": {
       "contract_hash": "sha256:2325fc73e3bc379c0dc3b2277e17bb44",
-      "documentation_hash": "sha256:7f03225dfbdc52882778171a004ae46e",
+      "documentation_hash": "sha256:c4dce7fc5e54fd39f870d1802a0b0ea3",
       "metadata_hash": "sha256:38248a1254b57a426fcfbc5adcd08c25",
       "signature": {
         "inputs": {
-          "BusinessPartner": [
-            "string",
-            true
-          ],
-          "Reason": [
-            "string",
-            true
+          "properties": {
+            "BusinessPartner": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            },
+            "Reason": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "value": "object"
+          "properties": {
+            "value": {
+              "properties": {
+                "BusinessPartner": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "Country": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "CreatedOn": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "FullName": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "Revenue": {
+                  "types": [
+                    "number"
+                  ]
+                }
+              },
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:839a7fdf2669d1c02ccc6d6bb5455be1",
@@ -296,21 +806,81 @@
     },
     "sap/zbusinesspartner/BusinessPartner/create": {
       "contract_hash": "sha256:a73ccbb0ac180f151688e58e1a3f2cbf",
-      "documentation_hash": "sha256:9d51d64dada286ddb3a1d1413c27f85f",
+      "documentation_hash": "sha256:04a1950a5ec91c22b5242a52361529f6",
       "metadata_hash": "sha256:10b63fd40cb0b04e1d923e0bd4cf39aa",
       "signature": {
         "inputs": {
-          "body": [
-            "object",
-            true
+          "properties": {
+            "body": {
+              "properties": {
+                "BusinessPartner": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                },
+                "Country": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "CreatedOn": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "FullName": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "Revenue": {
+                  "types": [
+                    "number"
+                  ]
+                }
+              },
+              "required": true,
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "BusinessPartner": "string",
-          "Country": "string",
-          "CreatedOn": "string",
-          "FullName": "string",
-          "Revenue": "number"
+          "properties": {
+            "BusinessPartner": {
+              "types": [
+                "string"
+              ]
+            },
+            "Country": {
+              "types": [
+                "string"
+              ]
+            },
+            "CreatedOn": {
+              "types": [
+                "string"
+              ]
+            },
+            "FullName": {
+              "types": [
+                "string"
+              ]
+            },
+            "Revenue": {
+              "types": [
+                "number"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:839a7fdf2669d1c02ccc6d6bb5455be1",
@@ -318,33 +888,84 @@
     },
     "sap/zbusinesspartner/BusinessPartner/query": {
       "contract_hash": "sha256:bb791d7b95b86cb6eb65140b898c5005",
-      "documentation_hash": "sha256:6a04836f6fad0820f27ea773b3863c42",
+      "documentation_hash": "sha256:82fadcd0d2cc8ab58ebdeaf6a160a1d9",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
         "inputs": {
-          "$filter": [
-            "string",
-            false
-          ],
-          "$orderby": [
-            "string",
-            false
-          ],
-          "$select": [
-            "string",
-            false
-          ],
-          "$skip": [
-            "integer",
-            false
-          ],
-          "$top": [
-            "integer",
-            false
+          "properties": {
+            "$filter": {
+              "types": [
+                "string"
+              ]
+            },
+            "$orderby": {
+              "types": [
+                "string"
+              ]
+            },
+            "$select": {
+              "types": [
+                "string"
+              ]
+            },
+            "$skip": {
+              "types": [
+                "integer"
+              ]
+            },
+            "$top": {
+              "types": [
+                "integer"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "value": "array"
+          "properties": {
+            "value": {
+              "items": {
+                "properties": {
+                  "BusinessPartner": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "Country": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "CreatedOn": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "FullName": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "Revenue": {
+                    "types": [
+                      "number"
+                    ]
+                  }
+                },
+                "types": [
+                  "object"
+                ]
+              },
+              "types": [
+                "array"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:839a7fdf2669d1c02ccc6d6bb5455be1",
@@ -352,21 +973,53 @@
     },
     "sap/zbusinesspartner/BusinessPartner/read": {
       "contract_hash": "sha256:0013fd687e846c1aedd59356a2a0d8e1",
-      "documentation_hash": "sha256:b55ef848766f381637c04ff0d5363602",
+      "documentation_hash": "sha256:b719e6bb16d2efc7a1325f78e45f5dc1",
       "metadata_hash": "sha256:8edcba4cd5b7b52769a5f84d944525ca",
       "signature": {
         "inputs": {
-          "BusinessPartner": [
-            "string",
-            true
+          "properties": {
+            "BusinessPartner": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "BusinessPartner": "string",
-          "Country": "string",
-          "CreatedOn": "string",
-          "FullName": "string",
-          "Revenue": "number"
+          "properties": {
+            "BusinessPartner": {
+              "types": [
+                "string"
+              ]
+            },
+            "Country": {
+              "types": [
+                "string"
+              ]
+            },
+            "CreatedOn": {
+              "types": [
+                "string"
+              ]
+            },
+            "FullName": {
+              "types": [
+                "string"
+              ]
+            },
+            "Revenue": {
+              "types": [
+                "number"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:839a7fdf2669d1c02ccc6d6bb5455be1",
@@ -374,44 +1027,120 @@
     },
     "sap/zbusinesspartner/BusinessPartner/update": {
       "contract_hash": "sha256:9a6418fc3c4cdbe8e9c96f9c010108e2",
-      "documentation_hash": "sha256:6300d953686f54842561c747c0abe7bc",
+      "documentation_hash": "sha256:5ba590c69772f5d4ba82220e06d6f5ab",
       "metadata_hash": "sha256:3353c0365afdb7ad88c60900b874f730",
       "signature": {
         "inputs": {
-          "BusinessPartner": [
-            "string",
-            true
-          ],
-          "body": [
-            "object",
-            true
+          "properties": {
+            "BusinessPartner": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            },
+            "body": {
+              "properties": {
+                "Country": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "CreatedOn": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "FullName": {
+                  "types": [
+                    "string"
+                  ]
+                },
+                "Revenue": {
+                  "types": [
+                    "number"
+                  ]
+                }
+              },
+              "required": true,
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:839a7fdf2669d1c02ccc6d6bb5455be1",
       "version": "1.0.0"
     },
     "sap/zbusinesspartner/checkDuplicates": {
       "contract_hash": "sha256:9a0e0e3f99d01eaf65ced602763f8ad4",
-      "documentation_hash": "sha256:a7ec50fee56e52203b2d221e52a3d0b1",
+      "documentation_hash": "sha256:433ca9904dec7ecc1841d241d2e598f0",
       "metadata_hash": "sha256:c2d51de53ce8b68c4bb06f9eb16d81d9",
       "signature": {
         "inputs": {
-          "FullName": [
-            "string",
-            true
+          "properties": {
+            "FullName": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "value": "array"
+          "properties": {
+            "value": {
+              "items": {
+                "properties": {
+                  "BusinessPartner": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "Country": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "CreatedOn": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "FullName": {
+                    "types": [
+                      "string"
+                    ]
+                  },
+                  "Revenue": {
+                    "types": [
+                      "number"
+                    ]
+                  }
+                },
+                "types": [
+                  "object"
+                ]
+              },
+              "types": [
+                "array"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:839a7fdf2669d1c02ccc6d6bb5455be1",
       "version": "1.0.0"
     }
   },
-  "ir_version": "0.4.0",
-  "origin": null,
-  "revision": null
+  "ir_version": "0.4.0"
 }

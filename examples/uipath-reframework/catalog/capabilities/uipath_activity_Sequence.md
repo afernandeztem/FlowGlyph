@@ -10,7 +10,7 @@ invocable: false
 
 # Sequence
 
-Do necessary procedures for ending the process (e.g., logout) and close the applications used in the process.
+The Private property is used to prevent the generation of logs that might contain information about the credentials.
 
 - **Source:** `Framework/CloseAllApplications.xaml` (uipath)
 - **Effects:** reads: no, mutates state: no, destructive: no, external: no

@@ -13,21 +13,62 @@
   "capabilities": {
     "openapi/Payments_API/createInvoice": {
       "contract_hash": "sha256:004e8a28c6a3b2858058aa2bdb91e656",
-      "documentation_hash": "sha256:8122ff23f70691ec6a8a59429cd00637",
+      "documentation_hash": "sha256:f75d219e6b04ead201201bdd47847729",
       "metadata_hash": "sha256:faae31f70dc7a9a08b1fdbf071553730",
       "signature": {
         "inputs": {
-          "Idempotency-Key": [
-            "string",
-            true
-          ],
-          "body": [
-            "object",
-            true
+          "properties": {
+            "Idempotency-Key": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            },
+            "body": {
+              "properties": {
+                "amount": {
+                  "required": true,
+                  "types": [
+                    "number"
+                  ]
+                },
+                "currency": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                },
+                "customer": {},
+                "reference": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                },
+                "vendor": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                }
+              },
+              "required": true,
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "body": "any"
+          "properties": {
+            "body": {}
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:c7e0b581343a5144be1a7b92cf3be3c0",
@@ -35,53 +76,93 @@
     },
     "openapi/Payments_API/deleteInvoice": {
       "contract_hash": "sha256:63a358a4c86144036e5c4f9c22668988",
-      "documentation_hash": "sha256:4947f9269bfd41ce0f0200980b83d8fb",
+      "documentation_hash": "sha256:7ea516305d11b90ea29f889494a889e6",
       "metadata_hash": "sha256:44445d4b20d0df545a6c7fda6a3ca9b4",
       "signature": {
         "inputs": {
-          "invoiceId": [
-            "string",
-            true
+          "properties": {
+            "invoiceId": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:c7e0b581343a5144be1a7b92cf3be3c0",
       "version": "1.0.0"
     },
     "openapi/Payments_API/executePayment": {
       "contract_hash": "sha256:90de4eff39209f585dad21259af348c4",
-      "documentation_hash": "sha256:96e66657dab967b00e5e55ef45e829d5",
+      "documentation_hash": "sha256:b4945b3a570a0917ec0f3439461792da",
       "metadata_hash": "sha256:a848b788f02a9b8347edb0f61ff4273c",
       "signature": {
         "inputs": {
-          "X-Tenant": [
-            "string",
-            true
-          ],
-          "body": [
-            "object",
-            true
+          "properties": {
+            "X-Tenant": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            },
+            "body": {
+              "properties": {
+                "amount": {
+                  "required": true,
+                  "types": [
+                    "number"
+                  ]
+                },
+                "invoiceId": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                }
+              },
+              "required": true,
+              "types": [
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:c7e0b581343a5144be1a7b92cf3be3c0",
       "version": "1.0.0"
     },
     "openapi/Payments_API/getInvoice": {
       "contract_hash": "sha256:b4bfd3250de12aa5263ba0de2f43b377",
-      "documentation_hash": "sha256:b5666fc3c7a320082dee223af4853393",
+      "documentation_hash": "sha256:d493b131d9869a6723868821e5cc0479",
       "metadata_hash": "sha256:f9dacdde89c2f6641c64c57dcc05c9d2",
       "signature": {
         "inputs": {
-          "invoiceId": [
-            "string",
-            true
+          "properties": {
+            "invoiceId": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "body": "any"
+          "properties": {
+            "body": {}
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:c7e0b581343a5144be1a7b92cf3be3c0",
@@ -89,21 +170,38 @@
     },
     "openapi/Payments_API/listInvoices": {
       "contract_hash": "sha256:2784219cd4e0b3a8c9da4188626160a8",
-      "documentation_hash": "sha256:96fa444a1231103bf8eefad4e2b8bf7a",
+      "documentation_hash": "sha256:712494373d84a17a335c3aa028df429d",
       "metadata_hash": "sha256:00e0c3080d8b47886d117f207607f032",
       "signature": {
         "inputs": {
-          "limit": [
-            "integer",
-            false
-          ],
-          "status": [
-            "string",
-            false
+          "properties": {
+            "limit": {
+              "types": [
+                "integer"
+              ]
+            },
+            "status": {
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "body": "array"
+          "properties": {
+            "body": {
+              "items": {},
+              "types": [
+                "array"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:c7e0b581343a5144be1a7b92cf3be3c0",
@@ -111,61 +209,121 @@
     },
     "openapi/Payments_API/patch_invoices_invoiceId": {
       "contract_hash": "sha256:9a6b4ca09147edf24548681bd7d9f345",
-      "documentation_hash": "sha256:d382246e05eb3981098874a4f175137f",
+      "documentation_hash": "sha256:76c2c2b94b5667be561bca048effe46b",
       "metadata_hash": "sha256:ee188dbfbaf3a206b390d8969e53fd1e",
       "signature": {
         "inputs": {
-          "body": [
-            "object",
-            false
-          ],
-          "invoiceId": [
-            "string",
-            true
+          "properties": {
+            "body": {
+              "types": [
+                "object"
+              ]
+            },
+            "invoiceId": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:c7e0b581343a5144be1a7b92cf3be3c0",
       "version": "1.0.0"
     },
     "openapi/Payments_API/replaceInvoice": {
       "contract_hash": "sha256:3f503c40a93c3c0a15edb4553c392b0f",
-      "documentation_hash": "sha256:a5d9e12b744aede0979b9076e7625aa3",
+      "documentation_hash": "sha256:867b345d29988179cabe356cd4b79201",
       "metadata_hash": "sha256:c5fd5261d68e66f3b4459191db70e55c",
       "signature": {
         "inputs": {
-          "body": [
-            "object",
-            false
-          ],
-          "invoiceId": [
-            "string",
-            true
+          "properties": {
+            "body": {
+              "properties": {
+                "amount": {
+                  "required": true,
+                  "types": [
+                    "number"
+                  ]
+                },
+                "currency": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                },
+                "customer": {},
+                "reference": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                },
+                "vendor": {
+                  "required": true,
+                  "types": [
+                    "string"
+                  ]
+                }
+              },
+              "types": [
+                "object"
+              ]
+            },
+            "invoiceId": {
+              "required": true,
+              "types": [
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:c7e0b581343a5144be1a7b92cf3be3c0",
       "version": "1.0.0"
     },
     "uipath/Invoices/Main": {
       "contract_hash": "sha256:194b9bee1c46fcbaf15d604f660ef765",
-      "documentation_hash": "sha256:5a7d3715a8c67fe330b0a506834b0f50",
+      "documentation_hash": "sha256:d14c6d2dd6c4172c1e7c83f702fc03bb",
       "metadata_hash": "sha256:44a426919c6a716706c26f30f262bc01",
       "signature": {
         "inputs": {
-          "in_InvoicePath": [
-            "string",
-            true
-          ],
-          "in_Threshold": [
-            "number",
-            false
+          "properties": {
+            "in_InvoicePath": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            },
+            "in_Threshold": {
+              "types": [
+                "number"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "out_InvoiceId": "string"
+          "properties": {
+            "out_InvoiceId": {
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:30a8d70c601988d6c9e63c7aa9b4cb8f",
@@ -173,17 +331,35 @@
     },
     "uipath/Invoices/Steps/BookInvoice": {
       "contract_hash": "sha256:2e594215174275ca96a80d1726960a10",
-      "documentation_hash": "sha256:04ad3b4f5fc6d170b7ecb8761ed58d5b",
+      "documentation_hash": "sha256:c332c11a9969febf07bec39540d6065a",
       "metadata_hash": "sha256:44a426919c6a716706c26f30f262bc01",
       "signature": {
         "inputs": {
-          "in_Invoice": [
-            "object",
-            true
+          "properties": {
+            "in_Invoice": {
+              "required": true,
+              "types": [
+                "null",
+                "object"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "out_InvoiceId": "string"
+          "properties": {
+            "out_InvoiceId": {
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:f50a1735d2b3182ee4a29b1c387592b1",
@@ -191,33 +367,57 @@
     },
     "uipath/Invoices/Steps/RequestApproval": {
       "contract_hash": "sha256:ed7372db148172f3757b680a3d26ee91",
-      "documentation_hash": "sha256:48bf0998c740c53f91d4543b55a33c62",
+      "documentation_hash": "sha256:3b3a3922a46ba04cac2d1bcce5ea97a6",
       "metadata_hash": "sha256:44a426919c6a716706c26f30f262bc01",
       "signature": {
         "inputs": {
-          "in_Approver": [
-            "string",
-            true
+          "properties": {
+            "in_Approver": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
-        },
-        "outputs": {}
+        }
       },
       "source_hash": "sha256:f02de881050dfa570a5fde5b91d90bc2",
       "version": "1.0.0"
     },
     "uipath/Invoices/Steps/ValidateVendor": {
       "contract_hash": "sha256:beedab923197821a3b3f4614ee326e2e",
-      "documentation_hash": "sha256:140df4427937f18be12b669aae6d13c4",
+      "documentation_hash": "sha256:1854ac3ff5c76f5ca6d34ff9efd03e9a",
       "metadata_hash": "sha256:cc9f49e8420c9378b9c5e22338c3884e",
       "signature": {
         "inputs": {
-          "in_VendorId": [
-            "string",
-            true
+          "properties": {
+            "in_VendorId": {
+              "required": true,
+              "types": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "types": [
+            "object"
           ]
         },
         "outputs": {
-          "out_Exists": "boolean"
+          "properties": {
+            "out_Exists": {
+              "types": [
+                "boolean"
+              ]
+            }
+          },
+          "types": [
+            "object"
+          ]
         }
       },
       "source_hash": "sha256:fd13a79b4875d9d0dd33fc98a675d108",
@@ -225,129 +425,146 @@
     },
     "uipath/activity/AddQueueItem": {
       "contract_hash": "sha256:a5140548901c50c0740f8781a0cd8845",
-      "documentation_hash": "sha256:97596775efdd93c478d46d53ab56e336",
+      "documentation_hash": "sha256:21156b36f869b48c92539f9f8b625b60",
       "metadata_hash": "sha256:cb567be478f1054408ea31946d83c5c6",
       "signature": {
         "inputs": {
-          "QueueType": [
-            "any",
-            true
+          "properties": {
+            "QueueType": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:f50a1735d2b3182ee4a29b1c387592b1",
       "version": "1.0.0"
     },
     "uipath/activity/Assign": {
       "contract_hash": "sha256:e39f2a90527651c971e04e2207b4e1e1",
-      "documentation_hash": "sha256:8c39bf7ca23d57ef2a594fe5eb637de7",
+      "documentation_hash": "sha256:91ddb0013339ced2a015e8aa6e7149fe",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "To": [
-            "any",
-            true
-          ],
-          "Value": [
-            "any",
-            true
+          "properties": {
+            "To": {
+              "required": true
+            },
+            "Value": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:fd13a79b4875d9d0dd33fc98a675d108",
       "version": "1.0.0"
     },
     "uipath/activity/If": {
       "contract_hash": "sha256:b4e3e3c2f6f6fb5e0d578aa017c44434",
-      "documentation_hash": "sha256:409746e000929a2de565e1018774004b",
+      "documentation_hash": "sha256:2d0c1e5ee115e9ba7f40fd6fa5aa8e37",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Condition": [
-            "any",
-            true
-          ],
-          "Then": [
-            "any",
-            true
+          "properties": {
+            "Condition": {
+              "required": true
+            },
+            "Then": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:30a8d70c601988d6c9e63c7aa9b4cb8f",
       "version": "1.0.0"
     },
     "uipath/activity/InvokeWorkflowFile": {
       "contract_hash": "sha256:8e4548b4d71c1dac420f6eddd7556723",
-      "documentation_hash": "sha256:1d08a5c87ff777242ec02ab55f1211f0",
+      "documentation_hash": "sha256:d7cb5e4b54083614b92bc5167a67120e",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "WorkflowFileName": [
-            "any",
-            true
+          "properties": {
+            "WorkflowFileName": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:30a8d70c601988d6c9e63c7aa9b4cb8f",
       "version": "1.0.0"
     },
     "uipath/activity/LogMessage": {
       "contract_hash": "sha256:f045654c234d6dc552a892b02263d101",
-      "documentation_hash": "sha256:699a93e4d26e7cf9642abcaa1d4272c3",
+      "documentation_hash": "sha256:e49b76f0e3a66e272198d1ef11bb5b0a",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
         "inputs": {
-          "Level": [
-            "any",
-            true
-          ],
-          "Message": [
-            "any",
-            true
+          "properties": {
+            "Level": {
+              "required": true
+            },
+            "Message": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:30a8d70c601988d6c9e63c7aa9b4cb8f",
       "version": "1.0.0"
     },
     "uipath/activity/SendMail": {
       "contract_hash": "sha256:e3424da3239ba835e023ee2f8aec152c",
-      "documentation_hash": "sha256:29ab46fda27d3bba6aa1b37e3235196c",
+      "documentation_hash": "sha256:ddc09b22ae1977472ee5c6eefc77722b",
       "metadata_hash": "sha256:cb567be478f1054408ea31946d83c5c6",
       "signature": {
         "inputs": {
-          "Subject": [
-            "any",
-            true
-          ],
-          "To": [
-            "any",
-            true
+          "properties": {
+            "Subject": {
+              "required": true
+            },
+            "To": {
+              "required": true
+            }
+          },
+          "types": [
+            "object"
           ]
         },
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:f02de881050dfa570a5fde5b91d90bc2",
       "version": "1.0.0"
     },
     "uipath/activity/Sequence": {
       "contract_hash": "sha256:69444a89311e1dc7a5047fabf53977c0",
-      "documentation_hash": "sha256:db5fe110f732656e65101909a63373f9",
+      "documentation_hash": "sha256:3bfff3fd703016a5b779e15da82c4e39",
       "metadata_hash": "sha256:24d7e8bcb664c5c37d08bdc39f4100c6",
       "signature": {
-        "inputs": {},
-        "outputs": {}
+        "invocable": false
       },
       "source_hash": "sha256:30a8d70c601988d6c9e63c7aa9b4cb8f",
       "version": "1.0.0"
     }
   },
-  "ir_version": "0.4.0",
-  "origin": null,
-  "revision": null
+  "ir_version": "0.4.0"
 }

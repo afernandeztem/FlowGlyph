@@ -127,6 +127,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The `Else` of an `If` is guarded by `otherwise`, like a BPMN default flow, instead of
+  `not (<condition>)`; `Workflow.simulate` takes an `otherwise` edge when no other condition
+  of its source holds.
+- Lock files record the shape of every parameter (types, required, nested properties and
+  items) and leave defaults out, so the format changed; catalogs are re-versioned from 1.0.0
+  on the next `extract`.
+- `flowglyph` also exports `Parameter`, `Semantics`, `Security`, `Source`, `Extraction`,
+  `Diagnostic`, `Change`, `Bump` and `export_json_schemas`, everything needed to build a
+  capability or read what changed.
 - IR 0.3.0 (ADR-0005): `Capability` gains typed `trigger`, `entry_point`, `configuration`,
   `used_in` and `deprecated` fields instead of prefixed strings in `tags`. Presentation moves out
   of the IR into `flowglyph.views`: `effects_code`, `retry_advice` and `l0_card` replace
@@ -144,6 +153,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- UiPath: a `TryCatch` is now a decision whose handlers are reached `on <ExceptionType>` and
+  whose `Finally` follows every branch, and a `Switch` a decision with one guarded edge per
+  case; both were flattened into a sequence, so error handlers and exclusive cases looked like
+  the happy path. An `If` whose branches hold nothing is no longer kept as a decision.
+- n8n, SAP Build Process Automation, BPMN and SAP Cloud Integration: two branches that met
+  again in a folded node kept only one condition; the walk is now shared and keeps both.
+- UiPath: the annotation of a workflow's top-level activity described the activity type
+  (`Sequence`, `Flowchart`) instead of only the workflow.
+- Versioning: an input narrowed (a type or `null` no longer accepted, a nested property
+  dropped), an output widened, newly nullable or no longer required, and a capability that
+  stops being invocable are now major changes; they were minor. Wording changes anywhere in
+  a schema are a patch.
 - XML sources that declare a DTD after the first 4 KiB, for example behind a long comment, are
   refused like any other DTD.
 - The command line printed source text as Rich markup, so diagnostics lost expressions such as

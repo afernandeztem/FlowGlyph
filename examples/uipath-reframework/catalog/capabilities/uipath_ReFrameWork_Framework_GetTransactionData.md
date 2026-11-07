@@ -44,8 +44,6 @@ If there are multiple transactions, use the argument in_TransactionNumber as an 
 
 1. **Get transaction item** (activity) -> [GetQueueItem](uipath_activity_GetQueueItem.md)
    Get a transaction item from the specified Orchestrator queue.
-2. **If out_TransactionItem isNot Nothing** (decision)
-   This optional step can be used to include more information about a transaction item and it's used mainly for logging and visualization purposes.
 
 ## Contract
 

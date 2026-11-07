@@ -42,7 +42,6 @@ Log the result of running the test, based on the type of test and its outcome.
 
 ## Steps
 
-1. **If in_ExpectedOutcome = in_ActualOutcome** (decision)
 
 ## Contract
 
