@@ -39,7 +39,7 @@ def test_graph_keeps_invocations_and_branches(synthetic: Path):
     assert "Start" not in labels, "pure logging is folded away"
     conditions = {(edge.source, edge.target): edge.condition for edge in workflow.edges}
     assert conditions[("If_1", "Invoke_2")] == "amount > in_Threshold"
-    assert conditions[("If_1", "Invoke_3")] is None, "an empty Else falls through"
+    assert conditions[("If_1", "Invoke_3")] == "otherwise", "an empty Else falls through"
     assert conditions[("Invoke_2", "Invoke_3")] is None
     assert workflow.calls == (
         "uipath/Invoices/Steps/ValidateVendor",
@@ -101,3 +101,52 @@ def test_steps_after_a_branch_run_whichever_way_it_goes(synthetic: Path):
         ran = workflow.simulate(lambda condition, approved=approved: approved)
         assert "Invoke_3" in ran
         assert ("Invoke_2" in ran) is approved
+
+
+def test_try_catch_and_switch_are_decisions(synthetic: Path):
+    workflow = next(
+        w
+        for w in extract(synthetic / "control-flow").workflows
+        if w.id == "uipath/ControlFlow/Main"
+    )
+    labels = {node.id: node.label for node in workflow.nodes}
+    assert "If_1" not in labels, "an If whose branches fold to nothing is not a decision"
+    assert list(labels) == [
+        "TryCatch_1",
+        "Switch_1",
+        "Invoke_1",
+        "Invoke_2",
+        "Invoke_3",
+        "Invoke_4",
+        "Invoke_5",
+    ], "nodes stay in document order, decisions before their branches"
+    conditions = {(edge.source, edge.target): edge.condition for edge in workflow.edges}
+    assert conditions[("TryCatch_1", "Switch_1")] is None
+    assert conditions[("TryCatch_1", "Invoke_3")] == "on Exception"
+    assert conditions[("Switch_1", "Invoke_1")] == "in_Channel = mail"
+    assert conditions[("Switch_1", "Invoke_2")] == "in_Channel = queue"
+    assert conditions[("Switch_1", "Invoke_4")] == "otherwise", "an empty Default falls through"
+    assert conditions[("Invoke_1", "Invoke_4")] is None, "every branch reaches the Finally"
+    assert conditions[("Invoke_3", "Invoke_4")] is None
+    assert conditions[("Invoke_4", "Invoke_5")] is None, "a handler that only logs adds nothing"
+    assert "TryCatch_2" not in labels
+
+
+def test_handlers_run_only_on_error(synthetic: Path):
+    workflow = next(
+        w
+        for w in extract(synthetic / "control-flow").workflows
+        if w.id == "uipath/ControlFlow/Main"
+    )
+    normal = workflow.simulate(lambda condition: condition == "in_Channel = mail")
+    assert normal == ["TryCatch_1", "Switch_1", "Invoke_1", "Invoke_4", "Invoke_5"]
+    failing = workflow.simulate(lambda condition: condition == "on Exception")
+    assert "Invoke_3" in failing
+    assert "Invoke_1" not in failing
+    assert "Invoke_4" in failing, "the Finally runs after a handled error too"
+
+
+def test_the_workflow_annotation_does_not_describe_its_container(synthetic: Path):
+    capabilities = {c.id: c for c in extract(synthetic / "control-flow").capabilities}
+    assert capabilities["uipath/ControlFlow/Main"].description.startswith("Dispatch one item")
+    assert capabilities["uipath/activity/Sequence"].description == ""

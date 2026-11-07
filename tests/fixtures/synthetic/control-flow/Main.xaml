@@ -1,0 +1,54 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Main"
+ xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:s="clr-namespace:System;assembly=mscorlib"
+ xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+ xmlns:ui="http://schemas.uipath.com/workflow/activities"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Channel" Type="InArgument(x:String)" />
+  </x:Members>
+  <Sequence DisplayName="Dispatch" sap2010:Annotation.AnnotationText="Dispatch one item to the channel it came from, cleaning up whatever happens." sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <If Condition="[in_Channel Is Nothing]" DisplayName="Nothing to decide" sap2010:WorkflowViewState.IdRef="If_1">
+      <If.Then>
+        <ui:LogMessage Level="Warn" Message="[&quot;No channel&quot;]" sap2010:WorkflowViewState.IdRef="LogMessage_1" />
+      </If.Then>
+    </If>
+    <TryCatch DisplayName="Try dispatching" sap2010:WorkflowViewState.IdRef="TryCatch_1">
+      <TryCatch.Try>
+        <Switch x:TypeArguments="x:String" Expression="[in_Channel]" DisplayName="By channel" sap2010:WorkflowViewState.IdRef="Switch_1">
+          <Switch.Default>
+            <ui:LogMessage Level="Info" Message="[&quot;Unknown channel&quot;]" sap2010:WorkflowViewState.IdRef="LogMessage_2" />
+          </Switch.Default>
+          <ui:InvokeWorkflowFile x:Key="mail" DisplayName="Send by mail" WorkflowFileName="Steps\SendMail.xaml" sap2010:WorkflowViewState.IdRef="Invoke_1" />
+          <ui:InvokeWorkflowFile x:Key="queue" DisplayName="Add to queue" WorkflowFileName="Steps\Enqueue.xaml" sap2010:WorkflowViewState.IdRef="Invoke_2" />
+        </Switch>
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="s:Exception" sap2010:WorkflowViewState.IdRef="Catch_1">
+          <ActivityAction x:TypeArguments="s:Exception">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="s:Exception" Name="exception" />
+            </ActivityAction.Argument>
+            <ui:InvokeWorkflowFile DisplayName="Report failure" WorkflowFileName="Steps\Report.xaml" sap2010:WorkflowViewState.IdRef="Invoke_3" />
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+      <TryCatch.Finally>
+        <ui:InvokeWorkflowFile DisplayName="Clean up" WorkflowFileName="Steps\CleanUp.xaml" sap2010:WorkflowViewState.IdRef="Invoke_4" />
+      </TryCatch.Finally>
+    </TryCatch>
+    <TryCatch DisplayName="Try quietly" sap2010:WorkflowViewState.IdRef="TryCatch_2">
+      <TryCatch.Try>
+        <ui:InvokeWorkflowFile DisplayName="Archive" WorkflowFileName="Steps\Archive.xaml" sap2010:WorkflowViewState.IdRef="Invoke_5" />
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="s:Exception">
+          <ActivityAction x:TypeArguments="s:Exception">
+            <ui:LogMessage Level="Warn" Message="[&quot;Could not archive&quot;]" sap2010:WorkflowViewState.IdRef="LogMessage_3" />
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+    </TryCatch>
+  </Sequence>
+</Activity>

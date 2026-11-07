@@ -111,15 +111,17 @@ The implementation graph of a workflow capability.
 | Field | Meaning |
 |---|---|
 | `nodes` | Steps: `invoke` (calls another capability), `activity` (a step with effects), `decision` (a branch), `container` (a scope with effects of its own) and `opaque` (a state machine, flowchart or parallel block whose internal control flow is not modelled yet). |
-| `edges` | Control flow. `condition` is set on edges leaving a decision. |
+| `edges` | Control flow. `condition` is set on edges leaving a decision; `otherwise` marks the edge taken when no other condition of that decision holds (an `Else`, a `Default`, a BPMN default flow). A TryCatch is a decision whose handlers are reached `on <ExceptionType>`. |
 | `nodes[].join` | `all` or `any`: how many incoming edges must be taken for the node to run. |
 | `calls` | Capability ids this workflow invokes. |
 | `unresolved_calls` | Invocations that could not be matched to a capability, including targets computed at runtime. |
 
 ### What runs
 
-An edge is *taken* when its source ran and its condition holds. A node with `join: all`, the
-default, runs only when every incoming edge is taken; a node with `join: any` needs only one.
+An edge is *taken* when its source ran and its condition holds; an `otherwise` edge is taken
+when its source ran and none of the other conditions leaving that source holds. A node with
+`join: all`, the default, runs only when every incoming edge is taken; a node with `join: any`
+needs only one.
 Nodes without incoming edges always run. A node that does not run is skipped, and its outgoing
 edges are not taken, so skips propagate. A failing step aborts the workflow.
 `Workflow.simulate(holds)` implements exactly these rules (see
