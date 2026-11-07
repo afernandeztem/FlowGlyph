@@ -79,6 +79,7 @@ include = [
     "/LICENSE", "/NOTICE", "/README.md", "/CHANGELOG.md", "/CONTRIBUTING.md", "/SECURITY.md",
     "/CODE_OF_CONDUCT.md",
 ]
+exclude = ["/docs/assets/*.mp4", "/docs/assets/*.gif", "/docs/assets/*.png"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/flowglyph"]
