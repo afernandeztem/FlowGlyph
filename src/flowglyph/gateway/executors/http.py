@@ -42,7 +42,7 @@ class HttpExecutor:
             if location == "body":
                 body = value
             elif location == "path":
-                path[name] = urllib.parse.quote(_text(value), safe="")
+                path[name] = _segment(name, value)
             elif location == "header":
                 headers[name] = _text(value)
             elif location == "cookie":
@@ -82,6 +82,14 @@ def _fill(route: str, path: dict[str, str]) -> str:
     if "{" in filled:
         raise ExecutionError(f"missing path parameters for {route}")
     return filled
+
+
+def _segment(name: str, value: Any) -> str:
+    """One path segment. `..`, `.` and empty values would change which route is called."""
+    text = _text(value)
+    if text in {"", ".", ".."}:
+        raise ExecutionError(f"the path parameter {name} cannot be {text!r}")
+    return urllib.parse.quote(text, safe="")
 
 
 def _text(value: Any) -> str:

@@ -1,3 +1,4 @@
+import sqlite3
 import threading
 from pathlib import Path
 
@@ -6,7 +7,21 @@ import pytest
 from flowglyph.gateway import ledger as ledger_module
 from flowglyph.gateway.ledger import Ledger, Ticket
 
-TICKET = Ticket(key="k", capability="c", version="1.0.0", arguments_hash="h", ttl_seconds=60)
+TICKET = Ticket(
+    key="k",
+    capability="c",
+    version="1.0.0",
+    arguments_hash="h",
+    ttl_seconds=60,
+    arguments={"invoice": "INV-1"},
+)
+OLD_SCHEMA = """
+CREATE TABLE runs (
+    key TEXT PRIMARY KEY, capability TEXT NOT NULL, version TEXT NOT NULL,
+    arguments_hash TEXT NOT NULL, status TEXT NOT NULL, result TEXT,
+    created REAL NOT NULL, updated REAL NOT NULL, expires_at REAL NOT NULL
+)
+"""
 
 
 @pytest.fixture
@@ -63,8 +78,29 @@ def test_concurrent_claims_have_a_single_winner(ledger: Ledger):
 def test_approval_is_consumed_only_by_a_run(ledger: Ledger):
     assert ledger.claim(TICKET, status="awaiting_approval").claimed
     assert [run.key for run in ledger.pending_approvals()] == ["k"]
-    assert ledger.approve("k")
-    assert not ledger.approve("k"), "approving twice does nothing"
+    approved = ledger.approve("k")
+    assert approved is not None
+    assert (approved.status, approved.arguments) == ("approved", {"invoice": "INV-1"})
+    assert ledger.approve("k") is None, "approving twice does nothing"
     assert not ledger.claim(TICKET, status="awaiting_approval").claimed, "approval is kept"
     assert ledger.claim(TICKET, status="running").claimed
     assert ledger.pending_approvals() == []
+
+
+def test_ledgers_written_before_arguments_were_kept_still_open(tmp_path: Path):
+    path = tmp_path / "ledger.sqlite"
+    with sqlite3.connect(path) as connection:
+        connection.execute(OLD_SCHEMA)
+        connection.execute(
+            "INSERT INTO runs VALUES ('old', 'c', '1.0.0', 'h', 'awaiting_approval', "
+            "NULL, 1, 1, ?)",
+            (2e12,),
+        )
+    ledger = Ledger(path)
+    old = ledger.get("old")
+    assert old is not None
+    assert (old.status, old.arguments) == ("awaiting_approval", None)
+    assert ledger.claim(TICKET).claimed
+    new = ledger.get("k")
+    assert new is not None
+    assert new.arguments == {"invoice": "INV-1"}

@@ -1,3 +1,5 @@
+import getpass
+import json
 import shlex
 import shutil
 from pathlib import Path
@@ -151,10 +153,14 @@ def test_people_approve_held_runs_from_the_command_line(synthetic: Path, tmp_pat
     code, output = invoke("approvals", out)
     assert code == 0
     assert held.idempotency_key in output
+    assert 'invoiceId="7"' in output, "a person sees what they approve"
 
     code, output = invoke("approve", out, held.idempotency_key)
     assert code == 0, output
     assert gateway.run("deleteInvoice", {"invoiceId": "7"}, idempotency_key="cleanup-7").ok
+    entries = [json.loads(line) for line in gateway.audit.path.read_text().splitlines()]
+    approval = next(entry for entry in entries if entry["event"] == "approve")
+    assert approval["actor"] == getpass.getuser()
 
     code, output = invoke("approve", out, held.idempotency_key)
     assert code == 1

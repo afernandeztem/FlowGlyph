@@ -12,7 +12,7 @@ class AuditLog:
 
     Argument values are never written, only their names and a hash, because they routinely
     contain personal data or secrets. The hash is enough to correlate a call with its ledger
-    entry.
+    entry, where the values are kept.
     """
 
     def __init__(self, path: str | Path) -> None:
@@ -21,9 +21,9 @@ class AuditLog:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
 
-    def record(self, event: str, **fields: Any) -> None:
-        """Append one event."""
-        entry = {"time": round(time.time(), 3), "event": event, **fields}
+    def record(self, event: str, *, actor: str | None = None, **fields: Any) -> None:
+        """Append one event. `actor` is the person behind it; None when the agent acted."""
+        entry = {"time": round(time.time(), 3), "event": event, "actor": actor, **fields}
         line = json.dumps(entry, sort_keys=True, default=str)
         with self._lock, self.path.open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(line + "\n")
