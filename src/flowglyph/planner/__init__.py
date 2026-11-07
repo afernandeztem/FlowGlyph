@@ -1,10 +1,10 @@
 """Turn requirements written in plain language into a workflow over catalog capabilities.
 
 The language model only proposes a `Plan`. A deterministic resolver then checks every
-capability, argument and reference against the catalog, so a capability the model invents is
-reported, never accepted. Backends for the Claude API, coding assistants' command lines and
-OpenAI-compatible servers are in `flowglyph.planner.backends`; any object implementing
-`PlanModel` can be used instead.
+capability, argument, reference and type against the catalog, so a capability the model invents
+or a string bound to an integer is reported, never accepted. Backends for the Claude API, coding
+assistants' command lines and OpenAI-compatible servers are in `flowglyph.planner.backends`; any
+object implementing `PlanModel` can be used instead.
 """
 
 import re

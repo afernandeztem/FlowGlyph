@@ -17,6 +17,7 @@ from flowglyph.cli._shared import (
     console,
     fail,
     open_catalog,
+    reporting_errors,
 )
 
 app = typer.Typer(
@@ -26,6 +27,7 @@ app = typer.Typer(
 
 
 @app.command()
+@reporting_errors
 def build(
     source: Annotated[str, typer.Argument(help=SOURCE_HELP)],
     *,
@@ -47,6 +49,7 @@ def build(
 
 
 @app.command()
+@reporting_errors
 def lint(
     directory: Annotated[Path, typer.Argument(help="Wiki directory.")] = Path("wiki"),
     *,

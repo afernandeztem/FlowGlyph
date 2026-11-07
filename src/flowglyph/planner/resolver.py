@@ -16,12 +16,23 @@ from flowglyph.ir import (
     Idempotency,
     JsonSchema,
     Node,
+    Parameter,
     Source,
     Workflow,
 )
-from flowglyph.planner.model import Plan, PlannedStep
+from flowglyph.planner.model import Plan, PlannedArgument, PlannedStep
 
 _SLUG = re.compile(r"[^a-z0-9]+")
+_JSON_TYPES = frozenset({"string", "number", "integer", "boolean", "object", "array", "null"})
+_TYPE_OF_LITERAL: dict[type, str] = {
+    str: "string",
+    bool: "boolean",
+    int: "integer",
+    float: "number",
+    dict: "object",
+    list: "array",
+    type(None): "null",
+}
 
 
 @dataclass
@@ -116,7 +127,7 @@ class _Resolution:
         self.problems: list[str] = []
         self.unresolved: list[str] = []
         self.warnings: list[str] = []
-        self.inputs = {planned.name for planned in plan.inputs}
+        self.inputs = {planned.name: planned.type for planned in plan.inputs}
         self.order = [step.id for step in plan.steps]
 
     def check(self) -> None:
@@ -159,14 +170,16 @@ class _Resolution:
         accepted = {parameter.name: parameter for parameter in capability.inputs}
         given = {argument.name for argument in step.arguments}
         for argument in step.arguments:
-            if argument.name not in accepted:
+            parameter = accepted.get(argument.name)
+            if parameter is None:
                 self.problems.append(f"{step.id}: {capability.id} has no input {argument.name}")
-            elif argument.source == "workflow_input" and argument.value not in self.inputs:
-                self.problems.append(f"{step.id}.{argument.name}: unknown input {argument.value}")
-            elif argument.source == "step_output":
-                self._check_reference(step, argument.name, argument.value, position)
-            elif argument.source == "literal":
-                self._check_literal(step, argument.name, argument.value)
+                continue
+            actual = self._argument_type(step, argument, position)
+            if actual is not None and not _fits(actual, parameter):
+                self.problems.append(
+                    f"{step.id}.{argument.name}: {capability.id} expects {_describe(parameter)}, "
+                    f"but {_origin(argument)} is {actual}"
+                )
         missing = sorted(name for name, p in accepted.items() if p.required and name not in given)
         if missing:
             self.problems.append(f"{step.id}: missing required inputs {', '.join(missing)}")
@@ -176,21 +189,43 @@ class _Resolution:
                 f"{step.id} has side effects: run it with an idempotency key so retries are safe"
             )
 
-    def _check_reference(self, step: PlannedStep, name: str, reference: str, position: int) -> None:
+    def _argument_type(
+        self, step: PlannedStep, argument: PlannedArgument, position: int
+    ) -> str | None:
+        """The JSON type the argument carries, or None when its source is itself a problem."""
+        if argument.source == "workflow_input":
+            declared = self.inputs.get(argument.value)
+            if declared is None:
+                self.problems.append(f"{step.id}.{argument.name}: unknown input {argument.value}")
+            return declared
+        if argument.source == "step_output":
+            return self._output_type(step, argument.name, argument.value, position)
+        return self._literal_type(step, argument.name, argument.value)
+
+    def _output_type(
+        self, step: PlannedStep, name: str, reference: str, position: int
+    ) -> str | None:
         source_step, _, output = reference.partition(".")
         if source_step not in self.order[:position]:
             self.problems.append(f"{step.id}.{name}: {source_step} is not an earlier step")
-            return
+            return None
         producer = self.plan.steps[self.order.index(source_step)]
         capability = self.catalog.capabilities.get(producer.capability or "")
-        if capability is not None and output not in {p.name for p in capability.outputs}:
+        if capability is None:
+            return None
+        produced = next((p for p in capability.outputs if p.name == output), None)
+        if produced is None:
             self.problems.append(f"{step.id}.{name}: {capability.id} has no output {output}")
+            return None
+        return produced.type
 
-    def _check_literal(self, step: PlannedStep, name: str, value: str) -> None:
+    def _literal_type(self, step: PlannedStep, name: str, value: str) -> str | None:
         try:
-            json.loads(value)
+            parsed = json.loads(value)
         except json.JSONDecodeError:
             self.problems.append(f"{step.id}.{name}: literal {value!r} is not valid JSON")
+            return None
+        return _TYPE_OF_LITERAL[type(parsed)]
 
     def _dependencies(self, step: PlannedStep, position: int) -> list[str]:
         if step.after or position == 0:
@@ -215,6 +250,31 @@ class _Resolution:
                 if dependency in self.order[:position]:
                     edges.append(Edge(source=dependency, target=step.id, condition=step.condition))
         return edges
+
+
+def _fits(actual: str, parameter: Parameter) -> bool:
+    """Whether a value of JSON type `actual` can be passed as `parameter`.
+
+    A side whose type is `any`, or anything else outside the JSON type names, is not checked:
+    an adapter that could not tell is not contradicted.
+    """
+    if actual == parameter.type or {actual, parameter.type} - _JSON_TYPES:
+        return True
+    if actual == "null":
+        return parameter.nullable
+    return actual == "integer" and parameter.type == "number"
+
+
+def _describe(parameter: Parameter) -> str:
+    return f"{parameter.type} or null" if parameter.nullable else parameter.type
+
+
+def _origin(argument: PlannedArgument) -> str:
+    if argument.source == "workflow_input":
+        return f"input {argument.value}"
+    if argument.source == "step_output":
+        return argument.value
+    return f"literal {argument.value!r}"
 
 
 def _inherits_skip(join: str, skippable: list[bool]) -> bool:

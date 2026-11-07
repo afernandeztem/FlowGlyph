@@ -1,5 +1,7 @@
 """Consoles, error handling and catalog loading shared by every command."""
 
+import functools
+from collections.abc import Callable
 from pathlib import Path
 from typing import NoReturn
 
@@ -28,6 +30,31 @@ def fail(message: object, code: int = 2) -> NoReturn:
     """Print `message` as an error and stop with exit status `code`."""
     errors.print(f"[bold red]error:[/] {escape(str(message))}")
     raise typer.Exit(code)
+
+
+def reporting_errors(command: Callable[..., None]) -> Callable[..., None]:
+    """Make `command` report a file it cannot read or write like any other error.
+
+    A missing policy file or requirements document is the most likely first mistake, and a
+    traceback is the wrong answer to it. Typer still sees the command's own signature.
+    """
+
+    @functools.wraps(command)
+    def guarded(*args: object, **kwargs: object) -> None:
+        try:
+            command(*args, **kwargs)
+        except OSError as error:
+            fail(_describe(error))
+
+    return guarded
+
+
+def _describe(error: OSError) -> str:
+    if error.strerror is None:
+        return str(error)
+    if error.filename is None:
+        return error.strerror
+    return f"{error.filename}: {error.strerror}"
 
 
 def open_catalog(
