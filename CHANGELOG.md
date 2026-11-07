@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Planner (`flowglyph plan`): BM25 shortlist, a plan proposed by Claude with structured output
   and server-side refusal fallbacks, and a deterministic resolver that rejects invented
   capabilities and broken references and reports missing capabilities as gaps.
+- `flowglyph plan` reads the requirements from the document the process arrived in: a PDF, a
+  Word or Excel file, a CSV, text or Markdown, or a folder holding all of them, through the new
+  `flowglyph[documents]` extra (`flowglyph.planner.documents.read_requirements` from Python).
 - The planner works with any provider. `--via` selects the Anthropic API, a signed-in coding
   assistant run headless (`claude-code`, `codex`, `gemini`, `cursor`, or any tool described with
   a `CommandSpec`), any OpenAI-compatible server (OpenAI, Ollama, vLLM, LM Studio, OpenRouter)

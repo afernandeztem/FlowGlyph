@@ -274,8 +274,10 @@ tokens, so you can commit it. `serve` refuses to start until every variable it n
 flowglyph plan requirements.md catalog -o plan --via claude-code
 ```
 
-A model proposes the steps, using only functions that exist in the catalog; FlowGlyph checks
-every step. What nothing in the catalog can do is reported as **missing**, never invented. Use
+The requirements can also be the client's process document as it came: a PDF, a Word or Excel
+file, a CSV, or a folder with all of them (`pip install "flowglyph[documents]"` for PDF, Word
+and Excel). A model proposes the steps, using only functions that exist in the catalog; FlowGlyph
+checks every step. What nothing in the catalog can do is reported as **missing**, never invented. Use
 whatever you already have: `--via claude-code`, `codex`, `gemini`, `cursor` (the coding
 assistant you are signed in to), `anthropic` (an API key) or `openai-compatible` (OpenAI,
 Ollama, vLLM...).

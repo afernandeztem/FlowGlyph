@@ -28,6 +28,7 @@ whether running it twice is safe. Every tool below either builds that catalog or
 pip install "flowglyph[cli]"     # the command line
 pip install "flowglyph[mcp]"     # adds the gateway for AI agents
 pip install "flowglyph[llm]"     # adds the Anthropic backend for plan and enrich
+pip install "flowglyph[documents]"  # lets plan read PDF, Word and Excel documents
 pip install "flowglyph[all]"     # everything
 ```
 
@@ -331,7 +332,15 @@ in the catalog. A model proposes the steps; FlowGlyph checks every one.
 
 ```bash
 flowglyph plan requirements.md catalog -o plan --via claude-code
+flowglyph plan client-pdd.pdf catalog -o plan --via claude-code     # the client's process document
+flowglyph plan ./handover catalog -o plan                           # a folder: PDF, Word, Excel, CSV, text
 ```
+
+**It reads:** text and Markdown as they are; PDF and Word (`.docx`) documents as their paragraphs
+and tables; Excel workbooks (`.xlsx`) and CSV files as one table per sheet. Give it a folder and
+every document in it is read, in name order, each under its own heading. PDF, Word and Excel
+need `pip install "flowglyph[documents]"`; a scanned PDF without a text layer is refused, not
+guessed.
 
 **You get:** `plan/workflow.plan.yaml` (the model's proposal) and `plan/workflow.ir.yaml` (the
 checked workflow). A step nothing in the catalog can do is reported as **missing**, never

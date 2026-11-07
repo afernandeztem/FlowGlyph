@@ -14,7 +14,11 @@ from flowglyph.errors import FlowGlyphError
 
 def plan(
     requirements: Annotated[
-        Path, typer.Argument(help="Requirements in plain language (text or Markdown).")
+        Path,
+        typer.Argument(
+            help="The requirements: a text, Markdown, PDF, Word, Excel or CSV file, or a "
+            "folder of them."
+        ),
     ],
     catalog_dir: Annotated[str, typer.Argument(help=SOURCE_HELP)],
     *,
@@ -43,9 +47,14 @@ def plan(
         fail("the anthropic planner needs: pip install 'flowglyph[llm]'")
     except FlowGlyphError as error:
         fail(error)
+    documents = importlib.import_module("flowglyph.planner.documents")
+    try:
+        text = documents.read_requirements(requirements)
+    except FlowGlyphError as error:
+        fail(error)
     catalog = open_catalog(catalog_dir)
     try:
-        outcome = planner.plan(requirements.read_text(encoding="utf-8"), catalog, backend)
+        outcome = planner.plan(text, catalog, backend)
     except FlowGlyphError as error:
         fail(error)
     proposal, result = outcome.save(out)
