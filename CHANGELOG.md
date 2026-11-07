@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.0] - 2026-11-07
+
+The first release.
+
 ### Added
 
 - `HOWTO.md`: every tool, what it does and how to use it, checked against the CLI by the
@@ -241,3 +247,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shape of its Edm type.
 - Capability titles, descriptions and cards lose control characters before they reach an MCP
   client, and the server instructions say they are data from the sources, not instructions.
+
+[Unreleased]: https://github.com/afernandeztem/FlowGlyph/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/afernandeztem/FlowGlyph/releases/tag/v0.1.0

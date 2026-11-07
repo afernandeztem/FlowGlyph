@@ -6,14 +6,12 @@ publishes them to PyPI with Trusted Publishing, and creates a GitHub release.
 
 ## Before the first public release
 
-1. The repository is `afernandeztem/FlowGlyph`, private until the first release. Make it public in its
-   settings. If it moves, replace `afernandeztem/FlowGlyph` in `pyproject.toml`, `README.md`,
+1. The repository is `afernandeztem/FlowGlyph`, public since 2026-11-07. If it moves, replace `afernandeztem/FlowGlyph` in `pyproject.toml`, `README.md`,
    `CONTRIBUTING.md` and `.github/ISSUE_TEMPLATE/config.yml`.
 2. Enable private vulnerability reporting in the repository's security settings.
-3. The README references its images and the walkthrough GIF by relative path, which GitHub
-   renders in a private repository and PyPI does not. Once the repository is public, make them
-   absolute (`https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/...`)
-   so the PyPI page shows them too.
+3. The README references its images and the walkthrough GIF by absolute
+   `https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/...` URLs, so the
+   PyPI page shows them too (done on 2026-11-07; keep it that way).
 4. On PyPI, add a pending trusted publisher for `flowglyph`: workflow `release.yml`,
    environment `pypi`. Create the `pypi` environment in GitHub with required reviewers.
 5. Check that the name is still free on PyPI.
@@ -26,11 +24,11 @@ publishes them to PyPI with Trusted Publishing, and creates a GitHub release.
 4. Bump the plugin manifests to the new version: `.claude-plugin/plugin.json`,
    `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`
    and `gemini-extension.json`. The release workflow refuses a tag they do not match.
-5. Commit, then tag with a signed-off commit: `git tag -s v0.1.0 -m "FlowGlyph 0.1.0"`.
+5. Commit, then tag: `git tag -a v0.1.0 -m "FlowGlyph 0.1.0"` (`-s` instead of `-a` once a signing
+   key is configured).
 6. `git push --follow-tags`. The workflow does the rest.
 
-After the first tag, add the link reference Keep a Changelog expects at the end of
-`CHANGELOG.md`, and extend it on every release:
+Extend the link references at the end of `CHANGELOG.md` on every release:
 
 ```markdown
 [Unreleased]: https://github.com/afernandeztem/FlowGlyph/compare/v0.1.0...HEAD
