@@ -48,5 +48,15 @@ if (mode === "preview") {
     "-vf", "fps=12,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle",
     "-loop", "0", join(out, "walkthrough.gif")]);
   console.log("wrote walkthrough.mp4 and walkthrough.gif");
+  // One short GIF per use-case scene, for the pages in docs/use-cases.
+  const scenes = await page.evaluate(() => window.SCENES);
+  for (const scene of scenes.filter(s => s.clip)) {
+    const first = Math.round(scene.start * fps);
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", String(fps), "-start_number", String(first),
+      "-i", pattern, "-frames:v", String(Math.round(scene.dur * fps)),
+      "-vf", "fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle",
+      "-loop", "0", join(out, `walkthrough-${scene.id}.gif`)]);
+    console.log(`wrote walkthrough-${scene.id}.gif`);
+  }
 }
 await browser.close();

@@ -4,6 +4,8 @@
 **Takes:** two commands, then whatever time you give the LLM. **Needs:**
 `pip install "flowglyph[cli]"`, any coding assistant for the maintenance.
 
+<img alt="wiki build and context on the same folder." src="../assets/walkthrough-agents.gif" width="100%">
+
 ## The situation
 
 The documentation of the automation estate is a wiki page per robot, written at go-live and

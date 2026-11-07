@@ -3,6 +3,8 @@
 **For:** UiPath developers who work with Claude Code, Codex, Cursor or Gemini CLI.
 **Takes:** one command per project. **Needs:** `pip install "flowglyph[cli]"`.
 
+<img alt="wiki build and context on the same folder." src="../assets/walkthrough-agents.gif" width="100%">
+
 ## The situation
 
 A coding agent opened on a UiPath project sees XML. It does not know which workflow is the

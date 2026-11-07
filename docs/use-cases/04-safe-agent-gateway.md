@@ -3,6 +3,8 @@
 **For:** AI platform teams, security, whoever is asked "can the agent run our robots?".
 **Takes:** one policy file and one command. **Needs:** `pip install "flowglyph[mcp]"`.
 
+<img alt="Four calls through the gateway: done, replayed, denied, approval required." src="../assets/walkthrough-serve.gif" width="100%">
+
 ## The situation
 
 Agents are good at finding the function that does what they want. The risk is the rest: a

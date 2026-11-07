@@ -61,6 +61,12 @@
   .pipe .box b { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1px; }
   .pipe .box.on { border-color: var(--accent); color: var(--text); background: #1a1f2e; }
   .pipe .arrow { text-align: center; color: var(--dim); font-size: 15px; line-height: 1; }
+  .grid { position: absolute; left: 48px; right: 48px; top: 104px; height: 350px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; gap: 14px; }
+  .grid .tile .n { font-size: 34px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .grid .tile b { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .grid .tile .h { font-size: 19px; font-weight: 600; margin-top: 4px; line-height: 1.25; }
+  .grid .tile .s { font-size: 14.5px; color: var(--dim); margin-top: 8px; line-height: 1.35; }
 </style>
 </head>
 <body>
@@ -101,10 +107,23 @@ const scenes = [
   { id: "cover", dur: 4, render: tl => `
     <div class="cover" style="opacity:${fade(tl, 4)}">
       <h1>FlowGlyph</h1>
-      <h2>From a client's package to a new robot, in six commands</h2>
-      <p>Every output in this walkthrough is real.</p>
+      <h2>Six things it does with the automations you already have</h2>
+      <p>One example folder, six commands. Every output shown is real.</p>
       <div class="pill">pip install "flowglyph[all]"</div>
     </div>` },
+
+  { id: "overview", dur: 9, render: tl => {
+    const tiles = [
+      ["1", "read", "Everything that exists, in one catalog", "UiPath, SAP, BPMN, n8n, OpenAPI; no model involved"],
+      ["2", "audit", "Is it safe to run twice?", "effects and retry safety per function, with provenance"],
+      ["3", "explain", "A wiki for LLMs, context for coding agents", "AGENTS.md and activity cards from the sources"],
+      ["4", "design", "A workflow from the client's document", "PDF, Word, text; only functions that exist"],
+      ["5", "build", "Open it in Studio or a BPMN modeler", "XAML and BPMN from the same checked workflow"],
+      ["6", "run", "An agent that cannot break the rules", "MCP gateway: contract, policy, one run per key, audit"],
+    ].map((t, i) => `<div class="tile" style="opacity:${after(tl, 0.4 + i * 0.55)}"><div class="n">${t[0]}</div><div><b>${t[1]}</b><div class="h">${t[2]}</div><div class="s">${t[3]}</div></div></div>`).join("");
+    return frame("What it does", "Six things, each on its own",
+      `<div class="grid">${tiles}</div>`,
+      `Pick what you need and stop there. The six are shown on one handover folder, so you can see how they connect, but none depends on another.`, 4.4, "", tl, 9); } },
 
   { id: "handover", dur: 6, render: tl => {
     const lines = [
@@ -123,11 +142,11 @@ const scenes = [
       [2.2, "#4ade80", "What exists: the API, as its OpenAPI document"],
       [3.2, "#fbbf24", "What is wanted: the client's own words, in Word"],
     ].map(r => `<div class="row" style="opacity:${after(tl, r[0])}"><div class="sw" style="background:${r[1]}"></div><div>${r[2]}</div></div>`).join("");
-    return frame("The handover", "What a client gives you",
+    return frame("The example", "One folder, used by all six",
       `<div class="tree">${tree}</div><div class="side">${side}</div>`,
-      "Not a catalog. Not a model. Three things nobody reads end to end.", 4.2, "", tl, 6); } },
+      "What a client hands over. Not a catalog, not a model: three things nobody reads end to end.", 4.2, "", tl, 6); } },
 
-  { id: "extract", dur: 9, render: tl => {
+  { id: "extract", clip: true, dur: 9, render: tl => {
     const cmd = "flowglyph extract ./handover -o catalog";
     const d = typedFor(cmd);
     const lines = [
@@ -144,12 +163,12 @@ const scenes = [
       <div class="box ${on(1)}"><b>adapters</b>deterministic parsers, no model, no network</div><div class="arrow">↓</div>
       <div class="box ${on(2)}"><b>automation ir</b>contract · effects · idempotency</div><div class="arrow">↓</div>
       <div class="box ${on(3)}"><b>catalog</b>catalog.jsonl · graph.json · lock · cards</div></div>`;
-    return frame("1 · read", "Everything that exists, in one catalog",
+    return frame("1 of 6 · read", "Everything that exists, in one catalog",
       `<div class="term" style="right:604px">${terminal(lines, tl)}</div>${pipe}`,
       `One command reads every format it finds. <b>R</b> reads, <b>W</b> writes, <b>X</b> talks to another system; <b>none</b> means every run has an effect. It already found a call to a workflow that is not there.`,
       d + 4.4, "", tl, 9); } },
 
-  { id: "review", dur: 11, render: tl => {
+  { id: "review", clip: true, dur: 11, render: tl => {
     const cmd = "flowglyph idempotency ./handover --review";
     const d = typedFor(cmd);
     const t2 = d + 6.0;
@@ -175,12 +194,12 @@ const scenes = [
     <span class="k">idempotency</span>: {<span class="k">mode</span>: <span class="v">natural</span>}
   <span class="k">openapi/Payments_API/executePayment</span>:
     <span class="k">security</span>: {<span class="k">approval_required</span>: <span class="v">true</span>}</div>`;
-    return frame("2 · decide", "Is it safe to run twice?",
+    return frame("2 of 6 · audit", "Is it safe to run twice?",
       `<div class="term">${terminal(lines, tl)}</div>`,
       `The parser proves what it can. <b>review</b> means it changes something and nothing guarantees a retry is safe. The rest you decide once, next to the sources, and it becomes part of the catalog as <b>declared</b>.`,
       d + 1.6, card, tl, 11); } },
 
-  { id: "agents", dur: 9, render: tl => {
+  { id: "agents", clip: true, dur: 9, render: tl => {
     const c1 = "flowglyph wiki build ./handover -o wiki";
     const c2 = "flowglyph context ./handover --catalog catalog";
     const d1 = typedFor(c1), d2 = d1 + 1.8 + typedFor(c2);
@@ -198,12 +217,12 @@ const scenes = [
 | Steps/ValidateVendor.xaml | <span class="g">safe</span>     | safe to retry                                 |
 
 <span class="c">.flowglyph/activities/AddQueueItem.md · the XAML this project uses for it</span></div>`;
-    return frame("3 · explain", "Give people and agents the picture",
+    return frame("3 of 6 · explain", "A wiki for LLMs, context for coding agents",
       `<div class="term">${terminal(lines, tl)}</div>`,
       `A wiki an LLM can maintain without losing a note, and the <b>AGENTS.md</b> and activity cards a coding agent reads before touching the project. Both rebuilt from the sources in seconds.`,
       d2 + 1.0, card, tl, 9); } },
 
-  { id: "plan", dur: 13, render: tl => {
+  { id: "plan", clip: true, dur: 13, render: tl => {
     const cmd = "flowglyph plan ./handover/supplier-invoice-pdd.docx catalog -o plan --via claude-code";
     const d = typedFor(cmd);
     const p = d + 2.2;
@@ -228,12 +247,12 @@ const scenes = [
 | 2    | Ask the finance approver first     | Only above 10,000 EUR            |
 | 3    | Create the invoice in payments     | A retry never books it twice     |
 | 4    | Archive the invoice PDF            | Keep for 10 years                |</div>`;
-    return frame("4 · design", "A workflow from the client's own document",
+    return frame("4 of 6 · design", "A workflow from the client's own document",
       `<div class="term">${terminal(lines, tl)}${think}</div>`,
       `The model proposes; FlowGlyph checks every step against the catalog. Two steps are <b>missing</b>, and that is the point: nothing in the sources does them, so the plan doubles as the gap list, and nothing was invented.`,
       p + 3.6, card, tl, 13); } },
 
-  { id: "compile", dur: 7.5, render: tl => {
+  { id: "compile", clip: true, dur: 7.5, render: tl => {
     const cmd = "flowglyph compile plan/workflow.ir.yaml --catalog catalog --to xaml -o Main.xaml";
     const d = typedFor(cmd);
     const lines = [
@@ -246,12 +265,12 @@ const scenes = [
   &lt;<span class="k">FlowDecision</span> Condition=<span class="v">"[validate_vendor.out_Exists == true]"</span> /&gt;
   &lt;<span class="r">ui:Comment</span> Text=<span class="v">"Notify purchasing ...: no capability does this yet"</span> /&gt;
   &lt;<span class="k">ui:InvokeWorkflowFile</span> WorkflowFileName=<span class="v">"Steps\\RequestApproval.xaml"</span>&gt;</div>`;
-    return frame("5 · build", "Open it in Studio",
+    return frame("5 of 6 · build", "Open it in Studio or a BPMN modeler",
       `<div class="term">${terminal(lines, tl)}</div>`,
       `A Flowchart with the resolved steps as calls, arguments ready to bind, and a <b>Comment</b> where each missing step goes. The coding agent builds those two next, from the project's own activity cards. <b style="white-space:nowrap">--to bpmn</b> gives the process owner the same workflow.`,
       d + 1.4, card, tl, 7.5); } },
 
-  { id: "serve", dur: 9.5, render: tl => {
+  { id: "serve", clip: true, dur: 9.5, render: tl => {
     const cmd = "flowglyph serve catalog --policy policy.yaml";
     const d = typedFor(cmd);
     const lines = [
@@ -270,14 +289,14 @@ const scenes = [
   - <span class="k">if_effects</span>: [<span class="v">destructive</span>]
     <span class="k">action</span>: <span class="v">require_approval</span>
     <span class="k">reason</span>: <span class="v">may destroy data</span></div>`;
-    return frame("6 · run", "Let an agent use what exists, safely",
+    return frame("6 of 6 · run", "An agent that cannot break the rules",
       `<div class="term">${terminal(lines, tl)}</div>`,
       `Every call goes through the contract, your policy, the idempotency ledger and the audit log. The agent discovers at 40 tokens a card and only ever loads the contract it is about to run.`,
       d + 5.4, card, tl, 9.5); } },
 
   { id: "end", dur: 7, render: tl => `
     <div class="end" style="opacity:${fade(tl, 7)}">
-      <div class="t">One catalog. Every output you need.</div>
+      <div class="t">Pick what you need. Every piece works on its own.</div>
       <img src="pipeline-dark.svg" alt="">
       <div class="f">pip install "flowglyph[all]"<span>github.com/afernandeztem/FlowGlyph · Apache-2.0</span></div>
     </div>` },
@@ -293,6 +312,7 @@ function seek(t) {
 }
 window.seek = seek;
 window.TOTAL = TOTAL;
+window.SCENES = scenes.map(s => ({ id: s.id, start: s.start, dur: s.dur, clip: s.clip === true }));
 window.FPS = FPS;
 seek(0);
 </script>

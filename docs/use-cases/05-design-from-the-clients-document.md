@@ -4,6 +4,8 @@
 **Takes:** one command and a model call. **Needs:** `pip install "flowglyph[cli,documents]"`
 and a coding assistant you are signed in to, or an API key.
 
+<img alt="The Word document in, the checked plan out." src="../assets/walkthrough-plan.gif" width="100%">
+
 ## The situation
 
 The client sends the process definition: a Word document with a purpose, a table of steps and
