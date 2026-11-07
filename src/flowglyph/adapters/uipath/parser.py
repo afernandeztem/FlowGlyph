@@ -52,7 +52,12 @@ class ActivityStats:
         return f"uipath/activity/{self.name}"
 
     def observe(
-        self, element: ET.Element, artifact: str, prefixes: Mapping[str, str] | None = None
+        self,
+        element: ET.Element,
+        artifact: str,
+        prefixes: Mapping[str, str] | None = None,
+        *,
+        note: str | None = None,
     ) -> None:
         """Record one occurrence of the activity, keeping the template of its richest use."""
         self.uses += 1
@@ -61,7 +66,6 @@ class ActivityStats:
             candidate = template(element, prefixes)
             if self.template is None or candidate.size > self.template.size:
                 self.template, self.template_file = candidate, artifact
-        note = annotation(element)
         if note and len(self.notes) < _MAX_EXAMPLES:
             self.notes.append(note)
         for key, value in element.attrib.items():
@@ -132,9 +136,9 @@ class WorkflowParser:
         """Parse the document `root` read from `artifact`, whose root declares `prefixes`."""
         class_name = root.get(f"{{{XAML_NS}}}Class") or PurePosixPath(artifact).stem
         input_schema, output_schema, notes = _arguments(root, class_name)
-        used: dict[tuple[str, str], ActivityStats] = {}
-        self._collect_activities(root, artifact, used, prefixes)
         top = next(child_activities(root), None)
+        used: dict[tuple[str, str], ActivityStats] = {}
+        self._collect_activities(root, artifact, used, prefixes, top)
         builder = GraphBuilder(classify=self._classify, resolve_invoke=self.resolve_invoke)
         return ParsedWorkflow(
             artifact=artifact,
@@ -166,15 +170,18 @@ class WorkflowParser:
         artifact: str,
         used: dict[tuple[str, str], ActivityStats],
         prefixes: Mapping[str, str] | None,
+        top: ET.Element | None,
     ) -> None:
         if is_designer_noise(element):
             return
         if is_activity(element):
             stats = self._stats(element)
-            stats.observe(element, artifact, prefixes)
+            # The annotation on the top-level activity describes the workflow, not the type.
+            note = annotation(element) if element is not top else None
+            stats.observe(element, artifact, prefixes, note=note)
             used[stats.namespace, stats.name] = stats
         for child in element:
-            self._collect_activities(child, artifact, used, prefixes)
+            self._collect_activities(child, artifact, used, prefixes, top)
 
 
 def _arguments(root: ET.Element, class_name: str) -> tuple[JsonSchema, JsonSchema, list[str]]:
