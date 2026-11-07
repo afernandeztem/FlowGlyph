@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FlowGlyph walkthrough</title>
+<style>
+  :root {
+    --bg: #0b0f17; --panel: #111827; --line: #1f2937; --text: #e5e7eb; --dim: #8b95a7;
+    --accent: #f59e0b; --green: #4ade80; --red: #f87171; --yellow: #fbbf24; --blue: #60a5fa;
+    --purple: #c4b5fd; --cyan: #67e8f9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Inter", "Segoe UI", Helvetica, Arial, sans-serif; }
+  #stage { position: relative; width: 1280px; height: 720px; }
+  .header { position: absolute; left: 48px; right: 48px; top: 30px; height: 56px; display: flex; align-items: center; gap: 18px; }
+  .step { font-size: 15px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  .title { font-size: 28px; font-weight: 600; }
+  .brand { position: absolute; right: 48px; top: 36px; font-size: 16px; color: var(--dim); letter-spacing: .04em; }
+  .term { position: absolute; left: 48px; right: 48px; top: 104px; height: 350px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; padding: 20px 26px;
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 16.5px; line-height: 1.5;
+    white-space: pre; overflow: hidden; }
+  .term .prompt { color: var(--green); }
+  .term .cmd { color: #fff; }
+  .term .cursor { display: inline-block; width: 9px; height: 19px; background: #fff; vertical-align: -3px; }
+  .term .dim { color: var(--dim); }
+  .term .warn { color: var(--yellow); }
+  .term .miss { color: var(--red); font-weight: 600; }
+  .term .ok { color: var(--green); }
+  .term .hl { color: var(--accent); }
+  .term .head { color: var(--purple); }
+  .bottom { position: absolute; left: 48px; right: 48px; top: 478px; height: 214px; display: flex; gap: 24px; }
+  .caption { flex: 1; font-size: 21px; line-height: 1.45; color: var(--text); padding-top: 6px; }
+  .caption b { color: var(--accent); font-weight: 600; }
+  .card { width: 700px; flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 13px 18px;
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.42; white-space: pre; overflow: hidden; }
+  .card .ct { color: var(--dim); font-family: -apple-system, "Inter", sans-serif; font-size: 12px; letter-spacing: .1em;
+    text-transform: uppercase; margin-bottom: 7px; }
+  .card .k { color: var(--cyan); } .card .v { color: var(--yellow); } .card .c { color: var(--dim); } .card .r { color: var(--red); }
+  .card .g { color: var(--green); }
+  .cover { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 120px; }
+  .cover h1 { font-size: 76px; font-weight: 700; letter-spacing: -.02em; }
+  .cover h2 { font-size: 34px; font-weight: 400; color: var(--text); margin-top: 18px; max-width: 980px; line-height: 1.3; }
+  .cover p { font-size: 20px; color: var(--dim); margin-top: 26px; }
+  .cover .pill { display: inline-block; align-self: flex-start; margin-top: 30px; padding: 10px 18px; border: 1px solid var(--line); border-radius: 999px;
+    font-family: "SF Mono", Menlo, monospace; font-size: 18px; color: var(--accent); }
+  .tree { position: absolute; left: 48px; top: 104px; width: 600px; height: 350px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 26px 30px; font-family: "SF Mono", Menlo, monospace; font-size: 17px; line-height: 1.8; white-space: pre; }
+  .tree .d { color: var(--blue); } .tree .tag { color: var(--dim); font-size: 14px; }
+  .side { position: absolute; left: 680px; right: 48px; top: 104px; height: 350px; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+  .side .row { display: flex; align-items: center; gap: 16px; font-size: 21px; }
+  .side .sw { width: 16px; height: 16px; border-radius: 4px; flex: none; }
+  .end { position: absolute; inset: 0; }
+  .end img { position: absolute; left: 60px; top: 150px; width: 1160px; }
+  .end .t { position: absolute; left: 60px; top: 58px; font-size: 34px; font-weight: 600; }
+  .end .f { position: absolute; left: 60px; bottom: 44px; font-family: "SF Mono", Menlo, monospace; font-size: 20px; color: var(--accent); }
+  .end .f span { color: var(--dim); margin-left: 28px; }
+  .pipe { position: absolute; left: 700px; right: 48px; top: 104px; height: 350px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  .pipe .box { border: 2px solid var(--line); border-radius: 10px; padding: 8px 16px; font-size: 17px; color: var(--dim); }
+  .pipe .box b { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1px; }
+  .pipe .box.on { border-color: var(--accent); color: var(--text); background: #1a1f2e; }
+  .pipe .arrow { text-align: center; color: var(--dim); font-size: 15px; line-height: 1; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const FPS = 30;
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const fade = (tl, dur, at = 0, len = 0.35) => clamp((tl - at) / len, 0, 1) * clamp((dur - tl) / len, 0, 1);
+const after = (tl, at) => clamp((tl - at) / 0.35, 0, 1);
+
+function typed(cmd, tl, at, cps = 34) {
+  const n = clamp(Math.floor((tl - at) * cps), 0, cmd.length);
+  const done = n >= cmd.length;
+  const caret = !done || Math.floor(tl * 2.5) % 2 === 0 ? '<span class="cursor"></span>' : "";
+  return `<span class="prompt">$</span> <span class="cmd">${esc(cmd.slice(0, n))}</span>${done ? "" : caret}`;
+}
+const typedFor = cmd => cmd.length / 34 + 0.5;
+
+/* Lines are {at, html} or {at, cmd}; they appear at `at` seconds into the scene.
+   A line with clear: true wipes what came before it, like a terminal that scrolled. */
+function terminal(lines, tl) {
+  const shown = lines.filter(l => tl >= l.at);
+  const last = shown.map((l, i) => (l.clear ? i : -1)).reduce((a, b) => Math.max(a, b), 0);
+  return shown.slice(last).map(l => (l.cmd !== undefined ? typed(l.cmd, tl, l.at) : l.html)).join("\n");
+}
+
+function frame(step, title, body, caption, captionAt, card, tl, dur) {
+  return `<div style="opacity:${fade(tl, dur)}">
+    <div class="header"><span class="step">${step}</span><span class="title">${title}</span></div>
+    <div class="brand">FlowGlyph</div>
+    ${body}
+    <div class="bottom"><div class="caption" style="opacity:${after(tl, captionAt)}">${caption}</div>${card || ""}</div>
+  </div>`;
+}
+
+const scenes = [
+  { id: "cover", dur: 4, render: tl => `
+    <div class="cover" style="opacity:${fade(tl, 4)}">
+      <h1>FlowGlyph</h1>
+      <h2>From a client's package to a new robot, in six commands</h2>
+      <p>Every output in this walkthrough is real.</p>
+      <div class="pill">pip install "flowglyph[all]"</div>
+    </div>` },
+
+  { id: "handover", dur: 6, render: tl => {
+    const lines = [
+      [0.2, '<span class="d">handover/</span>'],
+      [0.6, '├── <span class="d">Invoices/</span>                  <span class="tag">a UiPath project</span>'],
+      [0.9, '│   ├── Main.xaml'],
+      [1.1, '│   ├── project.json'],
+      [1.3, '│   └── <span class="d">Steps/</span>'],
+      [1.5, '│       ValidateVendor · RequestApproval · BookInvoice'],
+      [1.9, '├── payments-api.yaml          <span class="tag">OpenAPI 3.1</span>'],
+      [2.6, '└── supplier-invoice-pdd.docx  <span class="tag">the process definition</span>'],
+    ];
+    const tree = lines.filter(l => tl >= l[0]).map(l => l[1]).join("\n");
+    const side = [
+      [1.0, "#60a5fa", "What exists: the robots, as built in Studio"],
+      [2.2, "#4ade80", "What exists: the API, as its OpenAPI document"],
+      [3.2, "#fbbf24", "What is wanted: the client's own words, in Word"],
+    ].map(r => `<div class="row" style="opacity:${after(tl, r[0])}"><div class="sw" style="background:${r[1]}"></div><div>${r[2]}</div></div>`).join("");
+    return frame("The handover", "What a client gives you",
+      `<div class="tree">${tree}</div><div class="side">${side}</div>`,
+      "Not a catalog. Not a model. Three things nobody reads end to end.", 4.2, "", tl, 6); } },
+
+  { id: "extract", dur: 9, render: tl => {
+    const cmd = "flowglyph extract ./handover -o catalog";
+    const d = typedFor(cmd);
+    const lines = [
+      { at: 0.3, cmd },
+      { at: d + 0.3, html: `Extracted <span class="hl">11 invocable capabilities</span> and 7 that\ncannot be run on their own into catalog` },
+      { at: d + 0.9, html: `  <span class="warn">warning</span> payments-api.yaml: PATCH /invoices/{invoiceId}\n  has no operationId, using patch_invoices_invoiceId` },
+      { at: d + 1.3, html: `  <span class="warn">warning</span> Invoices/Main.xaml: invoked workflow not\n  found in the project: Steps/Missing.xaml` },
+      { at: d + 2.3, cmd: "flowglyph inspect catalog" },
+      { at: d + 3.6, html: `Main <span class="hl">WX none</span>\n├── ValidateVendor pure natural\n├── RequestApproval WX none\n├── BookInvoice WX none\n└── <span class="miss">? Steps/Missing.xaml</span>` },
+    ];
+    const on = k => (tl > d + 0.3 + k * 0.3 ? "on" : "");
+    const pipe = `<div class="pipe">
+      <div class="box ${on(0)}"><b>sources</b>UiPath · OpenAPI · SAP · BPMN · n8n</div><div class="arrow">↓</div>
+      <div class="box ${on(1)}"><b>adapters</b>deterministic parsers, no model, no network</div><div class="arrow">↓</div>
+      <div class="box ${on(2)}"><b>automation ir</b>contract · effects · idempotency</div><div class="arrow">↓</div>
+      <div class="box ${on(3)}"><b>catalog</b>catalog.jsonl · graph.json · lock · cards</div></div>`;
+    return frame("1 · read", "Everything that exists, in one catalog",
+      `<div class="term" style="right:604px">${terminal(lines, tl)}</div>${pipe}`,
+      `One command reads every format it finds. <b>R</b> reads, <b>W</b> writes, <b>X</b> talks to another system; <b>none</b> means every run has an effect. It already found a call to a workflow that is not there.`,
+      d + 4.4, "", tl, 9); } },
+
+  { id: "review", dur: 11, render: tl => {
+    const cmd = "flowglyph idempotency ./handover --review";
+    const d = typedFor(cmd);
+    const t2 = d + 6.0;
+    const head = `<span class="head"> Capability                                     Kind       Effects  Idempotency  Status</span>`;
+    const row = (c, k, e, s) => ` ${c.padEnd(46)} ${k.padEnd(10)} ${e.padEnd(8)} none         <span class="${s}">review</span>`;
+    const lines = [
+      { at: 0.3, cmd },
+      { at: d + 0.3, html: head },
+      { at: d + 0.5, html: row("openapi/Payments_API/executePayment", "operation", "rWX", "warn") },
+      { at: d + 0.65, html: row("openapi/Payments_API/patch_invoices_invoiceId", "operation", "rWdX", "warn") },
+      { at: d + 0.8, html: row("uipath/Invoices/Main", "workflow", "WX", "warn") },
+      { at: d + 0.95, html: row("uipath/Invoices/Steps/BookInvoice", "workflow", "WX", "warn") },
+      { at: d + 1.1, html: row("uipath/Invoices/Steps/RequestApproval", "workflow", "WX", "warn") },
+      { at: d + 1.4, html: `5 capabilities, <span class="warn">5 to review</span>.` },
+      { at: t2, cmd, clear: true },
+      { at: t2 + typedFor(cmd) - 0.2, html: head + "\n" + row("openapi/Payments_API/executePayment", "operation", "rWX", "warn") + "\n" + row("openapi/Payments_API/patch_invoices_invoiceId", "operation", "rWdX", "warn") + "\n" + row("uipath/Invoices/Main", "workflow", "WX", "warn") + `\n3 capabilities, <span class="warn">3 to review</span>.` },
+    ];
+    const card = `<div class="card" style="opacity:${after(tl, d + 2.4)}"><div class="ct">handover/flowglyph.overrides.yaml · what you know, written once</div><span class="k">capabilities</span>:
+  <span class="k">uipath/Invoices/Steps/BookInvoice</span>:
+    <span class="k">idempotency</span>: {<span class="k">mode</span>: <span class="v">key</span>, <span class="k">key_fields</span>: [<span class="v">in_Invoice</span>]}
+  <span class="k">uipath/Invoices/Steps/RequestApproval</span>:
+    <span class="k">description</span>: <span class="v">Emails the finance approver; a second email is harmless.</span>
+    <span class="k">idempotency</span>: {<span class="k">mode</span>: <span class="v">natural</span>}
+  <span class="k">openapi/Payments_API/executePayment</span>:
+    <span class="k">security</span>: {<span class="k">approval_required</span>: <span class="v">true</span>}</div>`;
+    return frame("2 · decide", "Is it safe to run twice?",
+      `<div class="term">${terminal(lines, tl)}</div>`,
+      `The parser proves what it can. <b>review</b> means it changes something and nothing guarantees a retry is safe. The rest you decide once, next to the sources, and it becomes part of the catalog as <b>declared</b>.`,
+      d + 1.6, card, tl, 11); } },
+
+  { id: "agents", dur: 9, render: tl => {
+    const c1 = "flowglyph wiki build ./handover -o wiki";
+    const c2 = "flowglyph context ./handover --catalog catalog";
+    const d1 = typedFor(c1), d2 = d1 + 1.8 + typedFor(c2);
+    const lines = [
+      { at: 0.3, cmd: c1 },
+      { at: d1 + 0.3, html: `Wiki <span class="hl">30 pages</span> in wiki\n<span class="dim">## [2026-11-07] ingest | catalog\n\n- 18 capabilities, 3 to review\nNext: flowglyph wiki lint wiki, then read wiki/AGENTS.md</span>` },
+      { at: d1 + 1.8, cmd: c2 },
+      { at: d2 + 0.3, html: `Context Invoices: <span class="hl">9 files written</span>, 0 unchanged, in handover/Invoices` },
+    ];
+    const card = `<div class="card" style="opacity:${after(tl, d2 + 0.7)}"><div class="ct">handover/Invoices/AGENTS.md · from the sources, not from a model</div><span class="c">## Entry Points</span>
+| Main.xaml | <span class="k">in_Threshold</span>: number | <span class="k">out_InvoiceId</span>: string or null |
+
+<span class="c">## Effects and Retry Safety</span>
+| Steps/BookInvoice.xaml    | <span class="g">declared</span> | safe to retry when deduplicated on in_Invoice |
+| Steps/ValidateVendor.xaml | <span class="g">safe</span>     | safe to retry                                 |
+
+<span class="c">.flowglyph/activities/AddQueueItem.md · the XAML this project uses for it</span></div>`;
+    return frame("3 · explain", "Give people and agents the picture",
+      `<div class="term">${terminal(lines, tl)}</div>`,
+      `A wiki an LLM can maintain without losing a note, and the <b>AGENTS.md</b> and activity cards a coding agent reads before touching the project. Both rebuilt from the sources in seconds.`,
+      d2 + 1.0, card, tl, 9); } },
+
+  { id: "plan", dur: 13, render: tl => {
+    const cmd = "flowglyph plan ./handover/supplier-invoice-pdd.docx catalog -o plan --via claude-code";
+    const d = typedFor(cmd);
+    const p = d + 2.2;
+    const think = tl > d && tl < p ? `\n<span class="dim">reading the document, shortlisting 20 candidates, asking Claude Code${".".repeat(1 + Math.floor((tl - d) * 3) % 3)}</span>` : "";
+    const row = (s, c, i1, i2) => ` ${s.padEnd(18)} ${c}  ${i1}\n${" ".repeat(60)}${i2}`;
+    const ok = c => `<span class="ok">${c.padEnd(38)}</span>`;
+    const miss = `<span class="miss">missing</span>${" ".repeat(31)}`;
+    const lines = [
+      { at: 0.3, cmd },
+      { at: p, html: `<span class="hl">Book emailed supplier invoices without creating duplicates, then archive the PDF</span>` },
+      { at: p + 0.3, html: `<span class="head"> Step               Capability                              Intent</span>` },
+      { at: p + 0.6, html: row("validate_vendor", ok("uipath/Invoices/Steps/ValidateVendor"), "Check that the vendor on the invoice", "exists in our records.") },
+      { at: p + 1.1, html: row("notify_purchasing", miss, "Notify purchasing that the vendor is", "unknown and stop processing the invoice.") },
+      { at: p + 1.6, html: row("request_approval", ok("uipath/Invoices/Steps/RequestApproval"), "Ask the finance approver for approval", "before booking a high-value invoice.") },
+      { at: p + 2.1, html: row("create_invoice", ok("openapi/Payments_API/createInvoice"), "Create the invoice in the payments system,", "keyed by the invoice reference.") },
+      { at: p + 2.6, html: row("archive_pdf", miss, "Archive the invoice PDF in the document", "store with a 10-year retention period.") },
+    ];
+    const card = `<div class="card" style="opacity:${after(tl, 0.8)}"><div class="ct">supplier-invoice-pdd.docx · as the client wrote it</div><span class="c"># Process Definition Document: Supplier invoice intake</span>
+<span class="c">## 2. Process steps</span>
+| Step | Description                        | Business rule                    |
+| 1    | Check that the vendor exists       | Unknown vendor: notify purchasing |
+| 2    | Ask the finance approver first     | Only above 10,000 EUR            |
+| 3    | Create the invoice in payments     | A retry never books it twice     |
+| 4    | Archive the invoice PDF            | Keep for 10 years                |</div>`;
+    return frame("4 · design", "A workflow from the client's own document",
+      `<div class="term">${terminal(lines, tl)}${think}</div>`,
+      `The model proposes; FlowGlyph checks every step against the catalog. Two steps are <b>missing</b>, and that is the point: nothing in the sources does them, so the plan doubles as the gap list, and nothing was invented.`,
+      p + 3.6, card, tl, 13); } },
+
+  { id: "compile", dur: 7.5, render: tl => {
+    const cmd = "flowglyph compile plan/workflow.ir.yaml --catalog catalog --to xaml -o Main.xaml";
+    const d = typedFor(cmd);
+    const lines = [
+      { at: 0.3, cmd },
+      { at: d + 0.3, html: `  <span class="warn">warning</span> conditions are copied as written; rewrite them as Visual Basic expressions in Studio\nCompiled plan/book-emailed-supplier-invoices-without-creating-duplicates-then-archive-the-pdf\ninto <span class="hl">Main.xaml</span>` },
+    ];
+    const card = `<div class="card" style="opacity:${after(tl, d + 0.9)}"><div class="ct">Main.xaml · opens in UiPath Studio</div><span class="c">&lt;Flowchart DisplayName="Book emailed supplier invoices ..."&gt;</span>
+  &lt;<span class="k">ui:InvokeWorkflowFile</span> WorkflowFileName=<span class="v">"Steps\\ValidateVendor.xaml"</span>&gt;
+    &lt;InArgument x:TypeArguments="x:String" x:Key=<span class="v">"in_VendorId"</span> /&gt;
+  &lt;<span class="k">FlowDecision</span> Condition=<span class="v">"[validate_vendor.out_Exists == true]"</span> /&gt;
+  &lt;<span class="r">ui:Comment</span> Text=<span class="v">"Notify purchasing ...: no capability does this yet"</span> /&gt;
+  &lt;<span class="k">ui:InvokeWorkflowFile</span> WorkflowFileName=<span class="v">"Steps\\RequestApproval.xaml"</span>&gt;</div>`;
+    return frame("5 · build", "Open it in Studio",
+      `<div class="term">${terminal(lines, tl)}</div>`,
+      `A Flowchart with the resolved steps as calls, arguments ready to bind, and a <b>Comment</b> where each missing step goes. The coding agent builds those two next, from the project's own activity cards. <b style="white-space:nowrap">--to bpmn</b> gives the process owner the same workflow.`,
+      d + 1.4, card, tl, 7.5); } },
+
+  { id: "serve", dur: 9.5, render: tl => {
+    const cmd = "flowglyph serve catalog --policy policy.yaml";
+    const d = typedFor(cmd);
+    const lines = [
+      { at: 0.3, cmd },
+      { at: d + 0.3, html: `flowglyph gateway serving catalog over stdio, dry runs` },
+      { at: d + 1.4, html: `<span class="dim">agent ›</span> createInvoice   Idempotency-Key: INV-2026-118  → <span class="ok">done</span>      <span class="dim">enforcement: ledger</span>` },
+      { at: d + 2.4, html: `<span class="dim">agent ›</span> createInvoice   Idempotency-Key: INV-2026-118  → <span class="ok">replayed</span>  <span class="dim">the first result; nothing ran again</span>` },
+      { at: d + 3.5, html: `<span class="dim">agent ›</span> executePayment  invoiceId: 118                 → <span class="miss">denied</span>\n          <span class="dim">payments are released by treasury, never by an agent</span>` },
+      { at: d + 4.6, html: `<span class="dim">agent ›</span> deleteInvoice   invoiceId: 118                 → <span class="warn">approval_required</span>\n          <span class="dim">may destroy data; a person must run \`flowglyph approve catalog '…/deleteInvoice#auto:075f809e…'\`</span>` },
+    ];
+    const card = `<div class="card" style="opacity:${after(tl, d + 0.6)}"><div class="ct">policy.yaml · the first matching rule decides</div><span class="k">default</span>: <span class="v">allow</span>
+<span class="k">rules</span>:
+  - <span class="k">capabilities</span>: <span class="v">"openapi/*/executePayment"</span>
+    <span class="k">action</span>: <span class="r">deny</span>
+    <span class="k">reason</span>: <span class="v">payments are released by treasury, never by an agent</span>
+  - <span class="k">if_effects</span>: [<span class="v">destructive</span>]
+    <span class="k">action</span>: <span class="v">require_approval</span>
+    <span class="k">reason</span>: <span class="v">may destroy data</span></div>`;
+    return frame("6 · run", "Let an agent use what exists, safely",
+      `<div class="term">${terminal(lines, tl)}</div>`,
+      `Every call goes through the contract, your policy, the idempotency ledger and the audit log. The agent discovers at 40 tokens a card and only ever loads the contract it is about to run.`,
+      d + 5.4, card, tl, 9.5); } },
+
+  { id: "end", dur: 7, render: tl => `
+    <div class="end" style="opacity:${fade(tl, 7)}">
+      <div class="t">One catalog. Every output you need.</div>
+      <img src="pipeline-dark.svg" alt="">
+      <div class="f">pip install "flowglyph[all]"<span>github.com/afernandeztem/FlowGlyph · Apache-2.0</span></div>
+    </div>` },
+];
+
+let offset = 0;
+for (const s of scenes) { s.start = offset; offset += s.dur; }
+const TOTAL = offset;
+
+function seek(t) {
+  const s = scenes.find(s => t >= s.start && t < s.start + s.dur) || scenes[scenes.length - 1];
+  document.getElementById("stage").innerHTML = s.render(t - s.start);
+}
+window.seek = seek;
+window.TOTAL = TOTAL;
+window.FPS = FPS;
+seek(0);
+</script>
+</body>
+</html>
