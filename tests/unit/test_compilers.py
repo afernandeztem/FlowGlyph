@@ -189,9 +189,7 @@ def test_a_straight_line_becomes_a_sequence(robots: flowglyph.Catalog, tmp_path:
 
 
 def test_planned_workflows_compile_with_their_inputs():
-    capability, workflow = load_planned(
-        EXAMPLES / "invoice-processing" / "out" / "workflow.ir.yaml"
-    )
+    capability, workflow = load_planned(FIXTURES / "planned" / "invoice-intake.ir.yaml")
     catalog = flowglyph.load_catalog(EXAMPLES / "invoice-processing" / "catalog")
     xaml = compile_workflow(workflow, capability, to="xaml", catalog=catalog)
     root = _parse(xaml.text)
