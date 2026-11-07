@@ -105,6 +105,7 @@ def test_a_file_that_cannot_be_read_is_one_error_line(project: Path, tmp_path: P
     for arguments in (
         ("serve", catalog_dir, "--policy", tmp_path / "nope.yaml"),
         ("plan", tmp_path / "nope.md", catalog_dir, "--via", "codex"),
+        ("plan", tmp_path / "nope.pdf", catalog_dir, "--via", "codex"),
     ):
         code, output = invoke(*arguments)
         assert code == 2
@@ -343,3 +344,13 @@ def test_compile_prints_or_writes_and_reports_what_it_could_not_carry(
     code, output = invoke("compile", catalog_dir, "--to", "bpmn")
     assert code == 2
     assert "name the workflow to compile" in output
+
+
+def test_plan_refuses_a_document_it_cannot_read(project: Path, tmp_path: Path):
+    catalog_dir = flowglyph.extract(project).save(tmp_path / "catalog")
+    deck = tmp_path / "process.pptx"
+    deck.write_bytes(b"PK")
+    code, output = invoke("plan", deck, catalog_dir, "--via", "codex")
+    assert code == 2
+    assert "error: " in output and ".pptx is not supported" in output
+    assert "Traceback" not in output

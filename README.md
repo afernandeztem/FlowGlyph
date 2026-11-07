@@ -53,6 +53,7 @@ pip install "flowglyph[all]"             # everything: CLI, MCP gateway, Anthrop
 | `cli` | typer, rich | the `flowglyph` command |
 | `mcp` | the MCP SDK, jsonschema | `flowglyph serve`, and `flowglyph.gateway` from Python |
 | `llm` | the Anthropic SDK | `flowglyph plan --via anthropic`; the other planner backends need nothing extra |
+| `documents` | pypdf, python-docx, openpyxl | `flowglyph plan` from a PDF, Word or Excel document |
 
 From a clone, before there is a release on PyPI:
 
