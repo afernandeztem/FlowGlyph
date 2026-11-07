@@ -3,6 +3,7 @@
 This guide walks through every feature in the order you would use them. Each step is one or two
 commands, what they give you, and what to do next. You can follow it with your own automations,
 or with the samples in this repository (the commands below use them).
+For every option of every tool, see [HOWTO.md](../HOWTO.md).
 
 ```
   your automations          1 extract        2 look           3 settle         4 check

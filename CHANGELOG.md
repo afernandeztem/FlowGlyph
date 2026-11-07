@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `HOWTO.md`: every tool, what it does and how to use it, checked against the CLI by the
+  test suite.
 - Automation IR (`Capability`, `Workflow`, `Effects`, `Idempotency`) with JSON Schemas.
 - UiPath adapter: typed arguments with defaults and annotations, a taxonomy of activities with
   tri-state effects, workflow graphs with branches, transitive effects through invocations.

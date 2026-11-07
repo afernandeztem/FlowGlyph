@@ -10,7 +10,11 @@ import typer
 from flowglyph.cli.main import app
 
 ROOT = Path(__file__).parents[2]
-DOCUMENTS = (ROOT / "docs" / "guide.md", ROOT / "src" / "flowglyph" / "skill" / "SKILL.md")
+DOCUMENTS = (
+    ROOT / "HOWTO.md",
+    ROOT / "docs" / "guide.md",
+    ROOT / "src" / "flowglyph" / "skill" / "SKILL.md",
+)
 _COMMAND = re.compile(r"(?<!import )(?<!from )flowglyph ((?:wiki )?[a-z]+)((?: [^\s`|]+)*)")
 
 
