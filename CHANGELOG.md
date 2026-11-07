@@ -175,6 +175,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dropped), an output widened, newly nullable or no longer required, and a capability that
   stops being invocable are now major changes; they were minor. Wording changes anywhere in
   a schema are a patch.
+- The planner accepted arguments of the wrong type: a string output bound to an integer input,
+  a literal `"yes"` for a boolean, a string workflow input for a number. The resolver now compares
+  the type of every workflow input, step output and literal with the input it feeds and reports
+  each mismatch as a problem. `integer` fits `number`, `null` fits a nullable input, and `any`
+  on either side is not checked.
+- The three most likely first mistakes printed a traceback. A `--policy` file or requirements
+  document that does not exist, `--via anthropic` without `ANTHROPIC_API_KEY` (or an
+  `ant auth login` profile), and a `--via claude-code`, `codex`, `gemini` or `cursor` whose
+  command is not on PATH are now one `error:` line that says what to do, before anything runs.
 - XML sources that declare a DTD after the first 4 KiB, for example behind a long comment, are
   refused like any other DTD.
 - The command line printed source text as Rich markup, so diagnostics lost expressions such as

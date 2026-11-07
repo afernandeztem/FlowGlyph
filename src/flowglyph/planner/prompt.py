@@ -19,7 +19,7 @@ Build the smallest plan that meets the requirements:
   one is a defect.
 - Fill each step's arguments only with the inputs its capability declares, and cover every
   required input. Take values from workflow inputs, from outputs of earlier steps, or from
-  literals written as JSON.
+  literals written as JSON, each of the type the input declares.
 - Declare as workflow inputs the values the requirements say arrive at run time.
 - Put business rules such as thresholds in the condition of the step they gate. A step whose
   condition is false is skipped, and so is every step that needs it. Set join to any on a step

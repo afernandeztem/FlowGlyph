@@ -100,6 +100,39 @@ def test_errors_are_reported_without_tracebacks(tmp_path: Path):
     assert "Traceback" not in output
 
 
+def test_a_file_that_cannot_be_read_is_one_error_line(project: Path, tmp_path: Path):
+    catalog_dir = flowglyph.extract(project).save(tmp_path / "catalog")
+    for arguments in (
+        ("serve", catalog_dir, "--policy", tmp_path / "nope.yaml"),
+        ("plan", tmp_path / "nope.md", catalog_dir, "--via", "codex"),
+    ):
+        code, output = invoke(*arguments)
+        assert code == 2
+        assert output.startswith("error: ") and "nope." in output, output
+        assert "Traceback" not in output
+
+
+@pytest.mark.usefixtures("no_anthropic_credentials")
+def test_planner_backends_that_cannot_run_say_why(
+    project: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    requirements = tmp_path / "requirements.md"
+    requirements.write_text("Book the invoice.", encoding="utf-8")
+    code, output = invoke("plan", requirements, project)
+    assert code == 2
+    assert "error: no Anthropic credentials" in output
+    assert "--via claude-code, codex, gemini, cursor or openai-compatible" in output
+
+    def not_installed(command: str) -> None:
+        del command
+
+    monkeypatch.setattr(shutil, "which", not_installed)
+    code, output = invoke("plan", requirements, project, "--via", "claude-code")
+    assert code == 2
+    assert "error: claude-code: the 'claude' command is not on PATH" in output
+    assert "Traceback" not in output
+
+
 def test_strict_fails_on_parse_errors(synthetic: Path, tmp_path: Path):
     source = tmp_path / "broken"
     source.mkdir()
