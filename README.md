@@ -21,11 +21,11 @@ understand, search and run safely.**
 
 ## Why
 
-Companies run thousands of automations: UiPath robots, SAP integration flows and OData services,
-internal APIs. The
-knowledge of what each one does is scattered across XML files, and none of them answers the
-two questions that matter before anything, or anyone, presses the button: **what will this
-change, and is it safe to run twice?**
+Companies run thousands of automations: UiPath robots, SAP integration flows, OData services and
+SAP Build processes, BPMN processes, n8n workflows, internal APIs. The knowledge of what each one
+does is scattered across XML and JSON files, and none of them answers the two questions that
+matter before anything, or anyone, presses the button: **what will this change, and is it safe
+to run twice?**
 
 FlowGlyph reads those sources with deterministic parsers, never with an LLM, and turns every
 workflow, entity operation and API call into a small, typed **capability**: its inputs and
@@ -33,6 +33,9 @@ outputs, its effects and its idempotency. From that catalog you take only what y
 spreadsheet of functions and their retry safety, a wiki an LLM can maintain, an MCP server that
 lets agents use your automations without being able to break the rules, or a planner that
 designs new workflows from the capabilities you already have.
+
+**New here?** The [guide](docs/guide.md) walks through every feature in order, one or two
+commands at a time, with samples you can run from a clone.
 
 ## Install
 
