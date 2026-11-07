@@ -127,6 +127,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The idempotency report shows `pure` for a capability without effects, as `inspect`, the wiki
+  and the context files do; `none` is only ever an idempotency mode.
 - The `Else` of an `If` is guarded by `otherwise`, like a BPMN default flow, instead of
   `not (<condition>)`; `Workflow.simulate` takes an `otherwise` edge when no other condition
   of its source holds.

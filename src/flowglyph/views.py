@@ -14,8 +14,9 @@ _L0_DESCRIPTION_LIMIT = 120
 def effects_code(effects: Effects) -> str:
     """Effects as letters: `R`ead, `W`rite, `D`estroy, e`X`ternal.
 
-    Upper case means yes, lower case means unknown, and an absent letter means no, so `RwX`
-    reads, may write and talks to another system. Pure capabilities give an empty string.
+    Upper case means yes, lower case means it may (the sources do not say), and an absent
+    letter means no, so `RwX` reads, may write and talks to another system. Pure capabilities
+    give an empty string.
     """
     letters = (
         ("r", effects.reads),
