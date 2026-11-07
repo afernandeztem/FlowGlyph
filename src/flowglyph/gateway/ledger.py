@@ -5,7 +5,7 @@ import sqlite3
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
@@ -21,14 +21,22 @@ CREATE TABLE IF NOT EXISTS runs (
     result TEXT,
     created REAL NOT NULL,
     updated REAL NOT NULL,
-    expires_at REAL NOT NULL
+    expires_at REAL NOT NULL,
+    arguments TEXT
 )
 """
+_SELECT = (
+    "SELECT key, capability, version, arguments_hash, status, result, created, updated, "
+    "expires_at, arguments FROM runs"
+)
 
 
 @dataclass(frozen=True)
 class Run:
-    """One row of the ledger."""
+    """One row of the ledger.
+
+    `arguments` is None for rows written before the ledger kept argument values.
+    """
 
     key: str
     capability: str
@@ -39,6 +47,7 @@ class Run:
     created: float
     updated: float
     expires_at: float
+    arguments: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -50,6 +59,7 @@ class Ticket:
     version: str
     arguments_hash: str
     ttl_seconds: int
+    arguments: dict[str, Any] = field(default_factory=dict[str, Any])
 
 
 @dataclass(frozen=True)
@@ -68,7 +78,8 @@ class Ledger:
     """Durable record of runs, keyed by idempotency key.
 
     Claiming a key is a single `INSERT ... ON CONFLICT DO NOTHING`, so two concurrent calls
-    with the same key can never both execute, even from different processes.
+    with the same key can never both execute, even from different processes. The row keeps
+    the arguments of the call, so a person can see what they approve.
     """
 
     def __init__(self, path: str | Path) -> None:
@@ -78,6 +89,9 @@ class Ledger:
         with self._connect() as connection:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.execute(_SCHEMA)
+            columns = {row[1] for row in connection.execute("PRAGMA table_info(runs)")}
+            if "arguments" not in columns:
+                connection.execute("ALTER TABLE runs ADD COLUMN arguments TEXT")
 
     @contextmanager
     def _connect(self) -> Generator[sqlite3.Connection]:
@@ -95,8 +109,9 @@ class Ledger:
                 "DELETE FROM runs WHERE key = ? AND expires_at < ?", (ticket.key, now)
             )
             inserted = connection.execute(
-                "INSERT INTO runs VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?) "
-                "ON CONFLICT(key) DO NOTHING",
+                "INSERT INTO runs (key, capability, version, arguments_hash, status, result, "
+                "created, updated, expires_at, arguments) "
+                "VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?) ON CONFLICT(key) DO NOTHING",
                 (
                     ticket.key,
                     ticket.capability,
@@ -106,6 +121,7 @@ class Ledger:
                     now,
                     now,
                     now + ticket.ttl_seconds,
+                    json.dumps(ticket.arguments, sort_keys=True, default=str),
                 ),
             ).rowcount
             if inserted:
@@ -129,34 +145,33 @@ class Ledger:
                 (status, json.dumps(result, default=str), time.time(), key),
             )
 
-    def approve(self, key: str) -> bool:
-        """Approve a run that is waiting for approval. Returns whether one was waiting."""
+    def approve(self, key: str) -> Run | None:
+        """Approve the run waiting under `key`. Returns it, or None when none was waiting."""
         with self._connect() as connection:
-            return bool(
-                connection.execute(
-                    "UPDATE runs SET status = 'approved', updated = ? "
-                    "WHERE key = ? AND status = 'awaiting_approval'",
-                    (time.time(), key),
-                ).rowcount
-            )
+            approved = connection.execute(
+                "UPDATE runs SET status = 'approved', updated = ? "
+                "WHERE key = ? AND status = 'awaiting_approval'",
+                (time.time(), key),
+            ).rowcount
+        return self.get(key) if approved else None
 
     def get(self, key: str) -> Run | None:
         """The run stored under `key`, if any."""
         with self._connect() as connection:
-            row = connection.execute("SELECT * FROM runs WHERE key = ?", (key,)).fetchone()
+            row = connection.execute(_SELECT + " WHERE key = ?", (key,)).fetchone()
         return _run(row) if row else None
 
     def pending_approvals(self) -> list[Run]:
         """Runs waiting for a person to approve them, oldest first."""
         with self._connect() as connection:
             rows = connection.execute(
-                "SELECT * FROM runs WHERE status = 'awaiting_approval' ORDER BY created"
+                _SELECT + " WHERE status = 'awaiting_approval' ORDER BY created"
             ).fetchall()
         return [_run(row) for row in rows]
 
 
 def _run(row: tuple[Any, ...]) -> Run:
-    key, capability, version, arguments_hash, status, result, created, updated, expires = row
+    key, capability, version, arguments_hash, status, result, created, updated, expires, raw = row
     return Run(
         key=key,
         capability=capability,
@@ -167,4 +182,5 @@ def _run(row: tuple[Any, ...]) -> Run:
         created=created,
         updated=updated,
         expires_at=expires,
+        arguments=json.loads(raw) if raw else None,
     )

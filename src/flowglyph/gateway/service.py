@@ -3,7 +3,7 @@
 import json
 import shlex
 from collections.abc import Iterable
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -123,39 +123,53 @@ class Gateway:
         *,
         idempotency_key: str | None = None,
     ) -> RunResult:
-        """Run a capability, or explain why it was not run."""
+        """Run a capability, or explain why it was not run.
+
+        Whatever the executor raises becomes a `failed` result; an exception never escapes
+        with the ledger row still running. Every call leaves a line in the audit log.
+        """
         try:
             capability = self.catalog.get(reference)
         except CatalogError as error:
             return RunResult("invalid", reference, "", errors=[str(error)])
         rejection, decision = self._admit(capability, arguments)
         if rejection is not None:
-            result = rejection
-        elif not (capability.effects.has_side_effects or decision.action == "require_approval"):
-            result = _result(
-                capability, "done", result=self.executor.execute(capability, arguments)
-            )
-        else:
-            ticket = Ticket(
-                key=idempotency_key_for(capability, arguments, idempotency_key),
-                capability=capability.id,
-                version=capability.version,
-                arguments_hash=fingerprint(arguments),
-                ttl_seconds=capability.idempotency.ttl_seconds or DEFAULT_TTL_SECONDS,
-            )
-            result = self._run_once(capability, arguments, ticket, decision)
-        self.audit.record(
-            "run",
-            capability=capability.id,
-            version=capability.version,
-            status=result.status,
-            idempotency_key=result.idempotency_key,
-            enforcement=result.enforcement,
-            argument_names=sorted(arguments),
-            arguments_hash=fingerprint(arguments),
-            reason=result.reason,
-        )
+            self._record("run", capability, arguments, **_outcome(rejection))
+            return rejection
+        result = _result(capability, "failed", errors=["the run was interrupted"])
+        try:
+            if capability.effects.has_side_effects or decision.action == "require_approval":
+                ticket = Ticket(
+                    key=idempotency_key_for(capability, arguments, idempotency_key),
+                    capability=capability.id,
+                    version=capability.version,
+                    arguments_hash=fingerprint(arguments),
+                    ttl_seconds=capability.idempotency.ttl_seconds or DEFAULT_TTL_SECONDS,
+                    arguments=arguments,
+                )
+                result = self._run_once(capability, arguments, ticket, decision)
+            else:
+                result = self._execute(capability, arguments)
+        finally:
+            self._record("run", capability, arguments, **_outcome(result))
         return result
+
+    def approve(self, key: str, *, actor: str) -> Run | None:
+        """Let the run waiting under `key` go ahead, in `actor`'s name.
+
+        Returns the approved run, or None when nothing was waiting under `key`.
+        """
+        run = self.ledger.approve(key)
+        if run is not None:
+            self.audit.record(
+                "approve",
+                actor=actor,
+                capability=run.capability,
+                version=run.version,
+                idempotency_key=run.key,
+                arguments_hash=run.arguments_hash,
+            )
+        return run
 
     def _admit(
         self, capability: Capability, arguments: dict[str, Any]
@@ -190,13 +204,36 @@ class Gateway:
         claim = self.ledger.claim(ticket, status="running")
         if not claim.claimed:
             return self._existing(capability, claim.existing, ticket)
+        result = self._execute(capability, arguments, idempotency_key=ticket.key)
+        if result.status == "failed":
+            self.ledger.finish(ticket.key, "failed", {"error": result.errors[0]})
+        else:
+            self.ledger.finish(ticket.key, "done", result.result)
+        return replace(result, **ledger)
+
+    def _execute(
+        self, capability: Capability, arguments: dict[str, Any], idempotency_key: str | None = None
+    ) -> RunResult:
+        self._record("start", capability, arguments, idempotency_key=idempotency_key)
         try:
             output = self.executor.execute(capability, arguments)
-        except FlowGlyphError as error:
-            self.ledger.finish(ticket.key, "failed", {"error": str(error)})
-            return _result(capability, "failed", errors=[str(error)], **ledger)
-        self.ledger.finish(ticket.key, "done", output)
-        return _result(capability, "done", result=output, **ledger)
+        except Exception as error:  # noqa: BLE001
+            # Executors are plug-ins that talk to remote systems; whatever they raise is a
+            # failed run, never a crash of the gateway with the ledger row left running.
+            return _result(capability, "failed", errors=[_describe(error)])
+        return _result(capability, "done", result=output)
+
+    def _record(
+        self, event: str, capability: Capability, arguments: dict[str, Any], **fields: Any
+    ) -> None:
+        self.audit.record(
+            event,
+            capability=capability.id,
+            version=capability.version,
+            argument_names=sorted(arguments),
+            arguments_hash=fingerprint(arguments),
+            **fields,
+        )
 
     def approval_command(self, key: str) -> str:
         """The command a person runs to approve the run waiting under `key`."""
@@ -222,6 +259,21 @@ class Gateway:
 
 def _result(capability: Capability, status: Status, **fields: Any) -> RunResult:
     return RunResult(status=status, capability=capability.id, version=capability.version, **fields)
+
+
+def _outcome(result: RunResult) -> dict[str, Any]:
+    return {
+        "status": result.status,
+        "idempotency_key": result.idempotency_key,
+        "enforcement": result.enforcement,
+        "reason": result.reason,
+    }
+
+
+def _describe(error: Exception) -> str:
+    if isinstance(error, FlowGlyphError):
+        return str(error)
+    return f"{type(error).__name__}: {error}"
 
 
 def idempotency_key_for(
