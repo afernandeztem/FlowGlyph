@@ -5,6 +5,7 @@ from typing import Any, Literal
 
 import anthropic
 from anthropic.types.beta import BetaOutputConfigParam
+from pydantic import BaseModel
 
 from flowglyph.planner import PlannerError
 from flowglyph.planner.model import Plan
@@ -41,14 +42,22 @@ class ClaudePlanModel:
         Raises:
             PlannerError: If the request fails, is declined, or returns no plan.
         """
-        content = request_text(requirements, candidates)
+        return self.answer(SYSTEM_PROMPT, request_text(requirements, candidates), Plan)
+
+    def answer[T: BaseModel](self, system: str, prompt: str, shape: type[T]) -> T:
+        """Ask Claude for an answer that validates as `shape`.
+
+        Raises:
+            PlannerError: If the request fails, is declined, or returns no answer.
+        """
+        noun = shape.__name__.lower()
         try:
             response = self.client.beta.messages.parse(
                 model=self.model,
                 max_tokens=16000,
-                system=SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": content}],
-                output_format=Plan,
+                system=system,
+                messages=[{"role": "user", "content": prompt}],
+                output_format=shape,
                 output_config=BetaOutputConfigParam(effort=self.effort),
                 betas=[FALLBACK_BETA],
                 fallbacks="default",
@@ -59,12 +68,12 @@ class ClaudePlanModel:
             ) from error
         except anthropic.APIStatusError as error:
             raise PlannerError(
-                f"the planning request failed ({error.status_code}): {error.message}"
+                f"the request for a {noun} failed ({error.status_code}): {error.message}"
             ) from error
         except anthropic.APIConnectionError as error:
             raise PlannerError(f"could not reach the Anthropic API: {error}") from error
         if response.stop_reason == "refusal":
-            raise PlannerError("the model declined to plan these requirements")
+            raise PlannerError(f"the model declined to write the {noun}")
         if response.stop_reason == "max_tokens" or response.parsed_output is None:
-            raise PlannerError("the model did not return a complete plan")
+            raise PlannerError(f"the model did not return a complete {noun}")
         return response.parsed_output

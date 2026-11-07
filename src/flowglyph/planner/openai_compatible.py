@@ -8,10 +8,10 @@ import urllib.request
 from collections.abc import Sequence
 from typing import Any, cast
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from flowglyph.planner import PlannerError
-from flowglyph.planner.model import Plan, plan_json_schema
+from flowglyph.planner.model import Plan, strict_json_schema
 from flowglyph.planner.prompt import SYSTEM_PROMPT, request_text
 
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
@@ -51,18 +51,8 @@ class OpenAICompatiblePlanModel:
     def request_body(
         self, requirements: str, candidates: Sequence[dict[str, Any]]
     ) -> dict[str, Any]:
-        """The chat completions request sent to the server."""
-        return {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": request_text(requirements, candidates)},
-            ],
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {"name": "plan", "strict": True, "schema": plan_json_schema()},
-            },
-        }
+        """The chat completions request sent to the server for a plan."""
+        return self._body(SYSTEM_PROMPT, request_text(requirements, candidates), Plan)
 
     def propose(self, requirements: str, candidates: Sequence[dict[str, Any]]) -> Plan:
         """Ask the server for a plan.
@@ -70,13 +60,22 @@ class OpenAICompatiblePlanModel:
         Raises:
             PlannerError: If the server is unreachable, rejects the request or returns no plan.
         """
+        return self.answer(SYSTEM_PROMPT, request_text(requirements, candidates), Plan)
+
+    def answer[T: BaseModel](self, system: str, prompt: str, shape: type[T]) -> T:
+        """Ask the server for an answer that validates as `shape`.
+
+        Raises:
+            PlannerError: If the server is unreachable, rejects the request or returns nothing
+                valid.
+        """
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         # The scheme was checked in __init__, so urllib cannot be pointed at local files.
         request = urllib.request.Request(  # noqa: S310
             f"{self.base_url}/chat/completions",
-            data=json.dumps(self.request_body(requirements, candidates)).encode(),
+            data=json.dumps(self._body(system, prompt, shape)).encode(),
             headers=headers,
             method="POST",
         )
@@ -90,10 +89,27 @@ class OpenAICompatiblePlanModel:
             ) from error
         except (urllib.error.URLError, TimeoutError) as error:
             raise PlannerError(f"could not reach {self.base_url}: {error}") from error
-        return _plan_from(body)
+        return _answer_from(body, shape)
+
+    def _body(self, system: str, prompt: str, shape: type[BaseModel]) -> dict[str, Any]:
+        return {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": shape.__name__.lower(),
+                    "strict": True,
+                    "schema": strict_json_schema(shape),
+                },
+            },
+        }
 
 
-def _plan_from(body: dict[str, Any]) -> Plan:
+def _answer_from[T: BaseModel](body: dict[str, Any], shape: type[T]) -> T:
     try:
         message = cast("dict[str, Any]", body["choices"][0]["message"])
     except (KeyError, IndexError, TypeError) as error:
@@ -102,6 +118,8 @@ def _plan_from(body: dict[str, Any]) -> Plan:
         raise PlannerError(f"the model declined: {message['refusal']}")
     content = message.get("content") or ""
     try:
-        return Plan.model_validate_json(content)
+        return shape.model_validate_json(content)
     except ValidationError as error:
-        raise PlannerError(f"the model returned an invalid plan: {error}") from error
+        raise PlannerError(
+            f"the model returned an invalid {shape.__name__.lower()}: {error}"
+        ) from error

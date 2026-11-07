@@ -42,6 +42,7 @@ contexts below it in this table, never those above.
 | **Execution** | `flowglyph.gateway` | Running capabilities safely: argument validation, *policy*, *ledger*, audit, MCP. | Catalog, Views |
 | **Planning** | `flowglyph.planner` | Turning requirements into a workflow over existing capabilities. | Catalog, Views |
 | **Compilation** | `flowglyph.compilers` | Turning a workflow back into a document a tool runs: BPMN 2.0, UiPath XAML. | Catalog, Model |
+| **Enrichment** | `flowglyph.enrichment` | Descriptions and business semantics a model writes where sources say nothing, cached by source hash. | Planning (its backends), Catalog |
 | **Interface** | `flowglyph.cli` | The `flowglyph` command. Thin: it parses options and prints. | everything above |
 
 `flowglyph._internal` is a shared kernel of small helpers (hashing, XML, BM25, Markdown cards)
@@ -106,6 +107,7 @@ commit.
 | Ledger | `<catalog>/.flowglyph/ledger.sqlite` | the gateway |
 | Audit log | `<catalog>/.flowglyph/audit.jsonl` | the gateway, append only |
 | Connections | `flowglyph.connections.yaml` | a person; credentials stay in environment variables |
+| Enrichment cache | `<catalog>/flowglyph.enrichment.json` | `flowglyph enrich`; reapplied by `extract` |
 | Git cache | `~/.cache/flowglyph/sources/`, or `$FLOWGLYPH_CACHE/sources/` | `flowglyph.sources` |
 
 ## Principles

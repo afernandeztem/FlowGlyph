@@ -94,6 +94,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   File for UiPath workflows with their arguments listed, and a Comment for anything else. What
   cannot be carried over exactly, such as conditions in another expression language, is
   reported. Compiled BPMN reads back through the BPMN adapter into the same graph.
+- Enrichment (`flowglyph enrich`, ADR-0014): a model describes capabilities whose source left
+  no description, only a placeholder or the adapter's boilerplate, and gives every capability
+  its business verb, entity and domain. It works through any planner backend, sees only what the
+  catalog knows (never sources or configuration), and answers for unknown ids are dropped.
+  Answers are cached in `flowglyph.enrichment.json` by source hash and reapplied by `extract`
+  before versioning, so reruns change nothing. IR 0.4.0 adds `Capability.generated`, the fields
+  a model wrote; cards say so. Idempotency is never enriched.
+- Every planner backend can now answer with any pydantic model (`StructuredModel.answer`), not
+  only a plan, so new uses of a model need no new backend.
+- `flowglyph.extract(..., refine=...)` applies a step after overrides and before versioning.
 - `examples/uipath-reframework`: UiPath's ReFrameWork template through the call tree, the
   idempotency report, overrides, a change made in Studio and its versions, the wiki and the
   gateway, with real output.

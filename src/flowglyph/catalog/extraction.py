@@ -1,5 +1,6 @@
 """Turning sources into a catalog: discover, run adapters, apply overrides, version."""
 
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 
@@ -19,6 +20,7 @@ def extract(
     adapter: str | Adapter = "auto",
     previous: Lock | str | Path | None = None,
     ref: str | None = None,
+    refine: Callable[[list[Capability]], list[Capability]] | None = None,
 ) -> Catalog:
     """Extract a catalog from a folder, a file or a git repository URL.
 
@@ -33,6 +35,8 @@ def extract(
         previous: The lock of an earlier extraction, used to version capabilities. When
             omitted, capabilities start at 1.0.0.
         ref: Branch, tag or commit to read when `path` is a repository URL.
+        refine: Applied after overrides and before versioning, such as cached enrichment, so
+            what it adds is versioned like the rest of the capability.
 
     Returns:
         The catalog, with `changes` describing what moved since `previous`.
@@ -63,6 +67,8 @@ def extract(
             capabilities[capability.id] = capability
         workflows.update({workflow.id: workflow for workflow in extraction.workflows})
     overridden = apply_overrides(capabilities.values(), root / OVERRIDES_FILE)
+    if refine is not None:
+        overridden = refine(overridden)
     old_lock = Lock.read(previous) if isinstance(previous, str | Path) else previous
     versioned, entries, changes = assign_versions(overridden, old_lock)
     return Catalog(

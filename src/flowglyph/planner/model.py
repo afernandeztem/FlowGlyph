@@ -64,12 +64,17 @@ class Plan(_PlanModel):
 
 
 def plan_json_schema() -> dict[str, Any]:
-    """JSON Schema of `Plan` in the strict form most structured-output APIs require.
+    """JSON Schema of `Plan` in the strict form most structured-output APIs require."""
+    return strict_json_schema(Plan)
+
+
+def strict_json_schema(shape: type[BaseModel]) -> dict[str, Any]:
+    """JSON Schema of `shape` in the strict form most structured-output APIs require.
 
     Every property is listed as required and objects reject unknown keys, which OpenAI's strict
     mode demands and Anthropic, Gemini and local servers accept.
     """
-    return _strict(Plan.model_json_schema())
+    return _strict(shape.model_json_schema())
 
 
 def _strict(node: Any) -> Any:

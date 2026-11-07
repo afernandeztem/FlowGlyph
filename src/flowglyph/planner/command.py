@@ -11,10 +11,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from flowglyph.planner import PlannerError
-from flowglyph.planner.model import Plan, plan_json_schema
+from flowglyph.planner.model import Plan, strict_json_schema
 from flowglyph.planner.prompt import SYSTEM_PROMPT, request_text
 
 DEFAULT_TIMEOUT_SECONDS = 600
@@ -112,13 +112,20 @@ class CommandPlanModel:
         self.effort = effort
         self.timeout_seconds = timeout_seconds
 
-    def command(self, schema_file: Path, output_file: Path) -> list[str]:
+    def command(
+        self,
+        schema_file: Path,
+        output_file: Path,
+        *,
+        shape: type[BaseModel] = Plan,
+        system: str = SYSTEM_PROMPT,
+    ) -> list[str]:
         """The command line that runs, without the prompt, which goes through stdin."""
         values = {
-            "schema": json.dumps(plan_json_schema()),
+            "schema": json.dumps(strict_json_schema(shape)),
             "schema_file": str(schema_file),
             "output_file": str(output_file),
-            "system": SYSTEM_PROMPT,
+            "system": system,
             "model": self.model or "",
             "effort": self.effort or "",
         }
@@ -130,15 +137,8 @@ class CommandPlanModel:
         return [part.format_map(values) if "{" in part else part for part in argv]
 
     def prompt(self, requirements: str, candidates: Sequence[dict[str, Any]]) -> str:
-        """The text written to the command's stdin."""
-        parts = [SYSTEM_PROMPT] if self.spec.system_in_prompt else []
-        parts.append(request_text(requirements, candidates))
-        if self.spec.schema_in_prompt:
-            parts.append(
-                "Reply with a single JSON object, and nothing else, that validates against "
-                f"this JSON Schema:\n{json.dumps(plan_json_schema())}"
-            )
-        return "\n\n".join(parts)
+        """The text written to the command's stdin for a plan."""
+        return self._stdin(SYSTEM_PROMPT, request_text(requirements, candidates), Plan)
 
     def propose(self, requirements: str, candidates: Sequence[dict[str, Any]]) -> Plan:
         """Run the assistant and read back its plan.
@@ -146,19 +146,28 @@ class CommandPlanModel:
         Raises:
             PlannerError: If the tool is missing, not signed in, fails or returns no plan.
         """
+        return self.answer(SYSTEM_PROMPT, request_text(requirements, candidates), Plan)
+
+    def answer[T: BaseModel](self, system: str, prompt: str, shape: type[T]) -> T:
+        """Run the assistant and read back an answer that validates as `shape`.
+
+        Raises:
+            PlannerError: If the tool is missing, not signed in, fails or returns nothing valid.
+        """
         executable = shutil.which(self.spec.argv[0])
         if executable is None:
             raise PlannerError(f"{self.spec.name}: {self.spec.argv[0]!r} is not on PATH")
         with tempfile.TemporaryDirectory(prefix="flowglyph-plan-") as scratch:
             schema_file = Path(scratch) / "plan.schema.json"
             output_file = Path(scratch) / "plan.json"
-            schema_file.write_text(json.dumps(plan_json_schema()), encoding="utf-8", newline="\n")
-            argv = self.command(schema_file, output_file)
+            schema = json.dumps(strict_json_schema(shape))
+            schema_file.write_text(schema, encoding="utf-8", newline="\n")
+            argv = self.command(schema_file, output_file, shape=shape, system=system)
             self._refuse_unsafe_batch_file(executable, argv[1:])
             try:
                 completed = subprocess.run(
                     [executable, *argv[1:]],
-                    input=self.prompt(requirements, candidates),
+                    input=self._stdin(system, prompt, shape),
                     capture_output=True,
                     text=True,
                     timeout=self.timeout_seconds,
@@ -173,7 +182,17 @@ class CommandPlanModel:
             output = output_file.read_text(encoding="utf-8") if output_file.is_file() else ""
             if uses_file and not output:
                 raise PlannerError(self._failure(completed.stderr or completed.stdout))
-            return self._read(output if uses_file else completed.stdout, completed.stderr)
+            return self._read(output if uses_file else completed.stdout, completed.stderr, shape)
+
+    def _stdin(self, system: str, prompt: str, shape: type[BaseModel]) -> str:
+        parts = [system] if self.spec.system_in_prompt else []
+        parts.append(prompt)
+        if self.spec.schema_in_prompt:
+            parts.append(
+                "Reply with a single JSON object, and nothing else, that validates against "
+                f"this JSON Schema:\n{json.dumps(strict_json_schema(shape))}"
+            )
+        return "\n\n".join(parts)
 
     def _refuse_unsafe_batch_file(self, executable: str, arguments: Sequence[str]) -> None:
         """Windows runs `.cmd` and `.bat` files through cmd.exe, which re-parses arguments.
@@ -187,11 +206,11 @@ class CommandPlanModel:
         if any(_CMD_METACHARACTERS.intersection(argument) for argument in arguments):
             raise PlannerError(
                 f"{self.spec.name}: {executable} is a batch file, and cmd.exe cannot pass it the "
-                "plan schema intact; install the tool's native executable or plan with another "
+                "plan schema intact; install the tool's native executable or use another "
                 "backend, such as --via anthropic or --via openai-compatible"
             )
 
-    def _read(self, stdout: str, stderr: str) -> Plan:
+    def _read[T: BaseModel](self, stdout: str, stderr: str, shape: type[T]) -> T:
         payload: Any = _loads(stdout)
         if payload is None:
             raise PlannerError(self._failure(stderr or stdout))
@@ -203,12 +222,13 @@ class CommandPlanModel:
                 payload = envelope.get(self.spec.result_key, envelope.get("result", envelope))
         if isinstance(payload, str):
             payload = _loads(payload)
+        noun = shape.__name__.lower()
         if payload is None:
-            raise PlannerError(f"{self.spec.name} did not return a structured plan")
+            raise PlannerError(f"{self.spec.name} did not return a structured {noun}")
         try:
-            return Plan.model_validate(payload)
+            return shape.model_validate(payload)
         except ValidationError as error:
-            raise PlannerError(f"{self.spec.name} returned an invalid plan: {error}") from error
+            raise PlannerError(f"{self.spec.name} returned an invalid {noun}: {error}") from error
 
     def _failure(self, detail: str) -> str:
         message = f"{self.spec.name} failed: {detail.strip()[:300] or 'no output'}"

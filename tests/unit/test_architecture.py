@@ -20,6 +20,7 @@ ALLOWED: dict[str, set[str]] = {
     "gateway": {"ir", "views", "errors", "_internal", "catalog"},
     "planner": {"ir", "views", "errors", "_internal", "catalog"},
     "compilers": {"ir", "errors", "catalog"},
+    "enrichment": {"ir", "views", "catalog", "planner"},
 }
 
 
