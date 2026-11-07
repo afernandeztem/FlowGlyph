@@ -152,6 +152,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   says what runs after an optional step. `Workflow.simulate` evaluates the rules. The UiPath
   adapter marks branch merges as `any`; the planner chooses a join per step and warns about
   steps that would be skipped with an optional predecessor.
+- Dependency floors are the oldest versions the code works with (`pydantic>=2.10`,
+  `pyyaml>=6.0.1`, `typer>=0.19`, `rich>=13`, `mcp>=2.1`, `jsonschema>=4.18`,
+  `anthropic>=2.0`) instead of the versions locked for development.
+- Connections must use `https://`; a connection that sets `allow_insecure: true` may use
+  `http://`. Every address, OAuth token URLs included, is checked when the file is loaded.
+- The ledger keeps the arguments of each run, so `flowglyph approvals` shows what a person
+  approves, and `flowglyph approve` records an `approve` audit event with the user's name.
+  Every audit record has an `actor` field, `null` when the agent acted.
 
 ### Fixed
 
@@ -191,3 +199,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   items) accept `null`, which is how `Nothing` reaches a workflow; the gateway refused the most
   common call to the ReFrameWork's `SetTransactionStatus`. Value types such as `Int32` do not,
   unless declared `Nullable`, and `Int16`, `Byte`, `Single`, `Guid` and `Char` get their JSON types.
+- An error that was not a `FlowGlyphError` raised by an executor escaped `Gateway.run`, leaving
+  the ledger row `running` until it expired and no audit line. Every run now ends as a result,
+  `failed` with the error text when the executor raised, and a `start` audit event is written
+  before executing.
+- A `--ref` that starts with `-` reached git as an option (`--upload-pack=...` ran a command).
+  Such refs are refused, and git is told where its options end before the remote and the URL.
+- An HTTP path argument of `..` called a different route; empty, `.` and `..` path values are
+  refused, and a header value with a line break fails cleanly instead of with a bare ValueError.
+- `import flowglyph.gateway` without the `[mcp]` extra failed with a bare `ModuleNotFoundError`;
+  it now says which extra to install.
+- Two capability ids that sanitise to the same MCP tool name collided and the last one won
+  silently; both now get a short hash suffix.
+- Argument validation checks string formats, so `format: uuid` (SAP `Edm.Guid`) rejects
+  anything that is not a UUID, and every OData literal emitted without quotes must match the
+  shape of its Edm type.
+- Capability titles, descriptions and cards lose control characters before they reach an MCP
+  client, and the server instructions say they are data from the sources, not instructions.

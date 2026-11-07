@@ -1,5 +1,6 @@
 """A small HTTP client for executors: JSON in and out, cookies kept, redirects refused."""
 
+import http.client
 import json
 import urllib.error
 import urllib.parse
@@ -120,6 +121,9 @@ class HttpClient:
         except (urllib.error.URLError, TimeoutError, OSError) as error:
             reason = getattr(error, "reason", error)
             raise ExecutionError(f"could not reach {url}: {reason}") from error
+        except (ValueError, http.client.HTTPException) as error:
+            # A header value or URL that the protocol cannot carry, such as a line break.
+            raise ExecutionError(f"{method} {url} could not be sent: {error}") from error
 
 
 def _read(answer: Any) -> bytes:

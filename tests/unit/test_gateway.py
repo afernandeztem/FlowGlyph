@@ -1,13 +1,16 @@
 import json
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 from typing import ClassVar
 
 import pytest
 
 import flowglyph
-from flowglyph.errors import FlowGlyphError
+from flowglyph.errors import ExecutionError, FlowGlyphError
 from flowglyph.gateway import Gateway, Policy, Rule
+from flowglyph.gateway.service import validate_arguments
 from flowglyph.ir import Capability
 
 CREATE = "openapi/Payments_API/createInvoice"
@@ -78,6 +81,15 @@ def test_invalid_arguments_are_explained(gateway: Gateway):
     assert any(error.startswith("body/vendor:") for error in result.errors)
 
 
+def test_formats_are_checked_so_a_guid_is_a_guid(gateway: Gateway):
+    schema = {"type": "object", "properties": {"SupplierID": {"type": "string", "format": "uuid"}}}
+    capability = gateway.catalog.get(LIST).model_copy(update={"input_schema": schema})
+    guid = "0c3f2c1e-5b6a-4d2e-9f1a-2b3c4d5e6f70"
+    assert validate_arguments(capability, {"SupplierID": guid}) == []
+    problems = validate_arguments(capability, {"SupplierID": "1) or true"})
+    assert problems == ["SupplierID: '1) or true' is not a 'uuid'"]
+
+
 def test_documentation_only_capabilities_cannot_run(gateway: Gateway):
     result = gateway.run("uipath/activity/SendMail", {})
     assert result.status == "invalid"
@@ -131,13 +143,72 @@ def test_failures_are_recorded_and_retryable(catalog_dir: Path):
     assert gateway.run(CREATE, arguments).status == "done"
 
 
+class Broken:
+    """An executor with a bug: it raises something that is not a FlowGlyphError."""
+
+    name: ClassVar[str] = "broken"
+
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+        self.calls = 0
+
+    def execute(self, capability: Capability, arguments: dict[str, object]) -> dict[str, object]:
+        self.calls += 1
+        if self.calls == 1:
+            raise self.error
+        return {"ok": True}
+
+
+def test_executor_bugs_become_failed_runs_that_can_be_retried(catalog_dir: Path):
+    gateway = Gateway(catalog_dir, executor=Broken(KeyError("Id")))
+    arguments = {"Idempotency-Key": "inv-9", "body": INVOICE}
+    failed = gateway.run(CREATE, arguments)
+    assert (failed.status, failed.errors) == ("failed", ["KeyError: 'Id'"])
+    assert failed.idempotency_key is not None
+    stored = gateway.ledger.get(failed.idempotency_key)
+    assert stored is not None
+    assert stored.status == "failed"
+    assert gateway.run(CREATE, arguments).status == "done"
+    events = [(entry["event"], entry.get("status")) for entry in audit(gateway)]
+    assert events == [("start", None), ("run", "failed"), ("start", None), ("run", "done")]
+
+
+def test_read_only_runs_report_execution_errors(catalog_dir: Path):
+    gateway = Gateway(catalog_dir, executor=Broken(ExecutionError("API answered 503")))
+    result = gateway.run(LIST, {"limit": 10})
+    assert (result.status, result.errors) == ("failed", ["API answered 503"])
+    assert result.enforcement == "none"
+    assert audit(gateway)[-1]["status"] == "failed"
+
+
+def test_approvals_show_the_arguments_and_name_the_approver(gateway: Gateway):
+    arguments = {"invoiceId": "INV-118"}
+    held = gateway.run(DELETE, arguments, idempotency_key="cleanup-118")
+    assert held.idempotency_key is not None
+    waiting = gateway.ledger.pending_approvals()
+    assert [run.arguments for run in waiting] == [arguments]
+    assert gateway.approve("nothing-here", actor="angel") is None
+    approved = gateway.approve(held.idempotency_key, actor="angel")
+    assert approved is not None
+    assert approved.status == "approved"
+    entry = audit(gateway)[-1]
+    assert (entry["event"], entry["actor"], entry["capability"]) == ("approve", "angel", DELETE)
+    assert entry["idempotency_key"] == held.idempotency_key
+    assert "INV-118" not in gateway.audit.path.read_text()
+
+
 def test_audit_log_never_contains_argument_values(gateway: Gateway):
-    gateway.run(CREATE, {"Idempotency-Key": "secret-key", "body": INVOICE})
+    result = gateway.run(CREATE, {"Idempotency-Key": "secret-key", "body": INVOICE})
     entries = audit(gateway)
     assert entries[-1]["argument_names"] == ["Idempotency-Key", "body"]
+    assert all(entry["actor"] is None for entry in entries)
     raw = gateway.audit.path.read_text()
     assert "ACME" not in raw
     assert "INV-118" not in raw
+    assert result.idempotency_key is not None
+    stored = gateway.ledger.get(result.idempotency_key)
+    assert stored is not None
+    assert stored.arguments == {"Idempotency-Key": "secret-key", "body": INVOICE}
 
 
 def test_catalog_changes_are_picked_up_without_restart(
@@ -150,3 +221,13 @@ def test_catalog_changes_are_picked_up_without_restart(
     flowglyph.extract(project).save(gateway.catalog_dir)
     with pytest.raises(FlowGlyphError):
         gateway.catalog.get("Steps/RequestApproval")
+
+
+def test_importing_the_gateway_without_its_extra_says_what_to_install():
+    code = "import sys; sys.modules['jsonschema'] = None; import flowglyph.gateway"
+    completed = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=False
+    )
+    assert completed.returncode == 1
+    assert "FlowGlyphError: the gateway needs extra packages" in completed.stderr
+    assert "pip install 'flowglyph[mcp]'" in completed.stderr

@@ -29,12 +29,13 @@ connections:
 ```
 """
 
+import urllib.parse
 from fnmatch import fnmatchcase
 from pathlib import Path
-from typing import Annotated, Any, ClassVar, Literal, cast
+from typing import Annotated, Any, ClassVar, Literal, Self, cast
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from flowglyph.errors import ExecutionError
 from flowglyph.gateway.executors.auth import Auth, NoAuth
@@ -52,10 +53,29 @@ class _Connection(BaseModel):
     capabilities: tuple[str, ...] = Field(min_length=1)
     auth: Auth = NoAuth()
     timeout_seconds: float = Field(default=60.0, gt=0)
+    allow_insecure: bool = False
 
     def matches(self, capability_id: str) -> bool:
         """Whether this connection runs the capability with `capability_id`."""
         return any(fnmatchcase(capability_id, pattern) for pattern in self.capabilities)
+
+    def addresses(self) -> dict[str, str]:
+        """The URLs this connection talks to, by field name."""
+        return {}
+
+    @model_validator(mode="after")
+    def check_addresses(self) -> Self:
+        """Every address is an http(s) URL, and https unless `allow_insecure` says otherwise."""
+        for name, url in {**self.addresses(), **self.auth.addresses()}.items():
+            parts = urllib.parse.urlsplit(url)
+            if parts.scheme not in {"http", "https"} or not parts.netloc:
+                raise ValueError(f"{name}: {url!r} is not an http(s) URL")
+            if parts.scheme == "http" and not self.allow_insecure:
+                raise ValueError(
+                    f"{name}: {url!r} would send credentials in clear text; use https, or set "
+                    "allow_insecure: true for a server you trust the network to"
+                )
+        return self
 
 
 class HttpConnection(_Connection):
@@ -63,6 +83,10 @@ class HttpConnection(_Connection):
 
     type: Literal["http"]
     base_url: str
+
+    def addresses(self) -> dict[str, str]:
+        """The API."""
+        return {"base_url": self.base_url}
 
     def executor(self) -> HttpExecutor:
         """The executor for this API."""
@@ -74,6 +98,10 @@ class ODataConnection(_Connection):
 
     type: Literal["odata"]
     service_url: str
+
+    def addresses(self) -> dict[str, str]:
+        """The service root."""
+        return {"service_url": self.service_url}
 
     def executor(self) -> ODataExecutor:
         """The executor for this service."""
@@ -89,6 +117,10 @@ class UiPathConnection(_Connection):
     processes: dict[str, str] = {}
     timeout_seconds: float = Field(default=600.0, gt=0)
     poll_seconds: float = Field(default=2.0, gt=0)
+
+    def addresses(self) -> dict[str, str]:
+        """The Orchestrator."""
+        return {"url": self.url}
 
     def executor(self) -> OrchestratorExecutor:
         """The executor for this Orchestrator."""

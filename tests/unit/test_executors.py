@@ -23,6 +23,7 @@ from flowglyph.gateway.executors import (
     OrchestratorExecutor,
 )
 from flowglyph.gateway.executors.auth import BasicAuth, BearerAuth, ClientCredentialsAuth, NoAuth
+from flowglyph.gateway.executors.odata import _literal
 from flowglyph.ir import Capability, Source, Trigger
 
 FIXTURES = Path(__file__).parents[1] / "fixtures"
@@ -166,6 +167,20 @@ def test_http_executor_sends_headers_body_path_and_query(
     assert system.calls[-1].query == {"status": "open", "limit": "5"}
 
 
+def test_http_executor_refuses_arguments_the_protocol_cannot_carry(
+    system: FakeSystem, payments: flowglyph.Catalog
+):
+    executor = HttpExecutor(system.url + "/v1", NoAuth())
+    for invoice_id in ("..", ".", ""):
+        with pytest.raises(ExecutionError, match=f"invoiceId cannot be {invoice_id!r}"):
+            executor.execute(payments.get("getInvoice"), {"invoiceId": invoice_id})
+    invoice = {"vendor": "ACME", "amount": 1, "currency": "EUR", "reference": "R1"}
+    injected = {"Idempotency-Key": "k\r\nX-Admin: yes", "body": invoice}
+    with pytest.raises(ExecutionError, match="could not be sent"):
+        executor.execute(payments.get("createInvoice"), injected)
+    assert system.calls == []
+
+
 def test_http_executor_reports_error_answers(system: FakeSystem, payments: flowglyph.Catalog):
     system.script = answer(422, {"message": "amount must be positive"})
     executor = HttpExecutor(system.url, NoAuth())
@@ -299,6 +314,25 @@ def test_odata_v4_bound_action_and_function(system: FakeSystem, sap: flowglyph.C
     assert system.calls[-1].method == "GET"
 
 
+def test_odata_literals_emitted_without_quotes_must_have_the_shape_of_their_type():
+    guid = "0c3f2c1e-5b6a-4d2e-9f1a-2b3c4d5e6f70"
+    assert _literal(guid, "Edm.Guid", 4) == guid
+    assert _literal(guid, "Edm.Guid", 2) == f"guid'{guid}'"
+    assert _literal(99.5, "Edm.Decimal", 2) == "99.5M"
+    assert _literal(7, "Edm.Int32", 4) == "7"
+    assert _literal("2026-02-03", "Edm.Date", 4) == "2026-02-03"
+    assert _literal("x) or 1 eq 1", "Edm.String", 4) == "'x) or 1 eq 1'"
+    for value, edm_type in [
+        ("1) or true", "Edm.Guid"),
+        (guid + "'", "Edm.Guid"),
+        ("12 or 1", "Edm.Int32"),
+        ("2026-02-03/other", "Edm.Date"),
+        ("Red", "Ns.Colour"),
+    ]:
+        with pytest.raises(ExecutionError, match=f"is not a valid {edm_type} literal"):
+            _literal(value, edm_type, 4)
+
+
 def test_odata_errors_quote_the_server_message(system: FakeSystem, sap: flowglyph.Catalog):
     error = {"error": {"code": "X", "message": {"lang": "en", "value": "Invoice is blocked"}}}
     state: dict[str, Any] = {"reply": answer(400, error)}
@@ -423,11 +457,13 @@ connections:
   payments:
     type: http
     base_url: {url}/v1
+    allow_insecure: true
     auth: {{type: header, header: X-Api-Key, value_env: PAY_KEY}}
     capabilities: ["openapi/Payments_API/*"]
   erp:
     type: odata
     service_url: {url}/svc
+    allow_insecure: true
     capabilities: ["sap/*"]
 """
 
@@ -475,6 +511,37 @@ def test_connections_files_are_checked(tmp_path: Path):
     )
     with pytest.raises(ExecutionError, match="token"):
         Connections.load(secrets)
+
+
+OAUTH = (
+    "auth: {type: client_credentials, token_url: http://id.example.com/token, "
+    "client_id_env: A, client_secret_env: B}"
+)
+
+
+@pytest.mark.parametrize(
+    ("connection", "problem", "insecure_is_enough"),
+    [
+        ("type: http\n    base_url: http://erp.internal/v1", "use https", True),
+        ("type: odata\n    service_url: erp.internal/svc", "is not an http", False),
+        ("type: uipath\n    url: ftp://robots/\n    folder: F", "is not an http", False),
+        (f"type: http\n    base_url: https://api.example.com\n    {OAUTH}", "token_url", True),
+    ],
+)
+def test_connections_must_use_https_unless_told_otherwise(
+    tmp_path: Path, connection: str, problem: str, insecure_is_enough: bool
+):
+    file = tmp_path / "flowglyph.connections.yaml"
+    document = f"connections:\n  a:\n    {connection}\n    capabilities: ['*']\n"
+    file.write_text(document, encoding="utf-8")
+    with pytest.raises(ExecutionError, match=problem):
+        Connections.load(file)
+    file.write_text(document + "    allow_insecure: true\n", encoding="utf-8")
+    if insecure_is_enough:
+        assert Connections.load(file).connections["a"].allow_insecure
+    else:
+        with pytest.raises(ExecutionError, match=problem):
+            Connections.load(file)
 
 
 def test_the_gateway_runs_through_connections(

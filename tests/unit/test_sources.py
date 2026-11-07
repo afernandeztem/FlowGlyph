@@ -6,7 +6,7 @@ import pytest
 
 import flowglyph
 from flowglyph import sources
-from flowglyph.errors import AdapterNotFoundError, CatalogError
+from flowglyph.errors import AdapterNotFoundError, CatalogError, SourceError
 
 
 def git(*arguments: str, cwd: Path) -> None:
@@ -97,7 +97,7 @@ def test_browser_links_to_folders_are_understood(monkeypatch: pytest.MonkeyPatch
         (tmp_path / "Framework").mkdir(exist_ok=True)
         return tmp_path
 
-    def fake_git(*arguments: str, cwd: Path | None = None) -> str:
+    def fake_git(*arguments: str | Path, cwd: Path | None = None) -> str:
         return "abc123"
 
     monkeypatch.setattr(sources, "_checkout", fake_checkout)
@@ -106,6 +106,39 @@ def test_browser_links_to_folders_are_understood(monkeypatch: pytest.MonkeyPatch
     assert calls == [("https://github.com/UiPath/ReFrameWork.git", "master", "Framework")]
     assert resolved.path == tmp_path / "Framework"
     assert resolved.revision == "abc123"
+
+
+def test_refs_that_look_like_git_options_are_refused(monkeypatch: pytest.MonkeyPatch):
+    ran: list[tuple[str | Path, ...]] = []
+
+    def record(*arguments: str | Path, cwd: Path | None = None) -> str:
+        ran.append(arguments)
+        return ""
+
+    monkeypatch.setattr(sources, "_git", record)
+    with pytest.raises(SourceError, match="is not a branch, tag or commit"):
+        sources.resolve("file:///tmp/upstream", ref="--upload-pack=touch pwned")
+    with pytest.raises(SourceError, match="is not a branch"):
+        sources.resolve("https://github.com/acme/flows/tree/--upload-pack=x/sub")
+    assert ran == []
+
+
+def test_git_is_told_where_its_options_end(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    ran: list[tuple[str | Path, ...]] = []
+
+    def record(*arguments: str | Path, cwd: Path | None = None) -> str:
+        ran.append(arguments)
+        return ""
+
+    monkeypatch.setenv("FLOWGLYPH_CACHE", str(tmp_path / "cache"))
+    monkeypatch.setattr(sources, "_git", record)
+    url = "https://github.com/acme/flows.git"
+    checkout = sources._checkout(url, "main")
+    assert ran[0][0] == "clone"
+    assert ran[0][-3:] == ("--end-of-options", url, checkout)
+    (checkout / ".git").mkdir(parents=True)
+    sources._checkout(url, "main")
+    assert ran[1] == ("fetch", "--depth", "1", "--end-of-options", "origin", "main")
 
 
 @pytest.mark.parametrize(

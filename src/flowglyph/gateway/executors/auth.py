@@ -28,6 +28,10 @@ class _Auth(BaseModel):
             if name.endswith("_env") and value
         ]
 
+    def addresses(self) -> dict[str, str]:
+        """The URLs this method talks to, by field name."""
+        return {}
+
 
 class NoAuth(_Auth):
     """No credentials, for local servers and public APIs."""
@@ -92,6 +96,10 @@ class ClientCredentialsAuth(_Auth):
     scope: str | None = None
     _token: str | None = PrivateAttr(default=None)
     _expires_at: float = PrivateAttr(default=0.0)
+
+    def addresses(self) -> dict[str, str]:
+        """The identity server."""
+        return {"token_url": self.token_url}
 
     def headers(self, client: HttpClient) -> dict[str, str]:
         """The authorization header, fetching a token when needed.

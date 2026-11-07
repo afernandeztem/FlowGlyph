@@ -1,11 +1,13 @@
 """Running the MCP gateway and deciding on the runs its policy holds back."""
 
 import asyncio
+import getpass
 import importlib
+import json
 import os
 from pathlib import Path
 from types import ModuleType
-from typing import TYPE_CHECKING, Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 import typer
 from rich.markup import escape
@@ -17,6 +19,8 @@ from flowglyph.errors import FlowGlyphError
 if TYPE_CHECKING:
     from flowglyph.gateway.executors import Executor
     from flowglyph.gateway.ledger import Ledger
+
+_VALUE_WIDTH = 40
 
 
 def serve(
@@ -41,7 +45,7 @@ def serve(
 ) -> None:
     """Serve the catalog to agents as an MCP server over stdio."""
     gateway = _gateway_module()
-    server = importlib.import_module("flowglyph.gateway.server")
+    server = _import("flowglyph.gateway.server")
     if not (catalog_dir / "catalog.jsonl").is_file():
         fail(f"{catalog_dir} has no catalog; run `flowglyph extract`")
     rules = gateway.Policy.load(policy) if policy else gateway.DEFAULT_POLICY
@@ -58,10 +62,11 @@ def approve(
     state: Annotated[Path | None, typer.Option(help="The gateway's state directory.")] = None,
 ) -> None:
     """Approve a run that a policy held back, so the agent's next attempt executes it."""
-    ledger = _ledger(catalog_dir, state)
-    if not ledger.approve(key):
+    gateway = _gateway_module().Gateway(catalog_dir, state_dir=state)
+    run = gateway.approve(key, actor=getpass.getuser())
+    if run is None:
         fail(f"no run is waiting for approval under {key!r}", code=1)
-    console.print(f"[bold green]Approved[/] {escape(key)}")
+    console.print(f"[bold green]Approved[/] {escape(key)}: {escape(run.capability)}")
 
 
 def approvals(
@@ -77,9 +82,24 @@ def approvals(
     table.add_column("Key", overflow="fold")
     table.add_column("Capability", overflow="fold")
     table.add_column("Version", no_wrap=True)
+    table.add_column("Arguments", no_wrap=True, overflow="ellipsis")
     for run in pending:
-        table.add_row(escape(run.key), escape(run.capability), run.version)
+        arguments = _arguments_line(run.arguments)
+        table.add_row(escape(run.key), escape(run.capability), run.version, escape(arguments))
     console.print(table)
+
+
+def _arguments_line(arguments: dict[str, Any] | None) -> str:
+    """The arguments of a run on one line, each value cut so a person can scan the table."""
+    if arguments is None:
+        return "(not recorded)"
+    parts: list[str] = []
+    for name, value in arguments.items():
+        text = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+        if len(text) > _VALUE_WIDTH:
+            text = text[: _VALUE_WIDTH - 3] + "..."
+        parts.append(f"{name}={text}")
+    return ", ".join(parts)
 
 
 def _executor(connections: Path | None) -> "Executor | None":
@@ -104,12 +124,18 @@ def _executor(connections: Path | None) -> "Executor | None":
 
 def _gateway_module() -> ModuleType:
     """The gateway package, imported late so the CLI works without the `[mcp]` extra."""
+    return _import("flowglyph.gateway")
+
+
+def _import(name: str) -> ModuleType:
     try:
-        return importlib.import_module("flowglyph.gateway")
+        return importlib.import_module(name)
+    except FlowGlyphError as error:
+        fail(error)
     except ModuleNotFoundError as error:
         if error.name not in {"mcp", "mcp_types", "jsonschema"}:
             raise
-        fail("the gateway needs: pip install 'flowglyph[mcp]'")
+        fail("the gateway needs extra packages: pip install 'flowglyph[mcp]'")
 
 
 def _ledger(catalog_dir: Path, state: Path | None) -> "Ledger":

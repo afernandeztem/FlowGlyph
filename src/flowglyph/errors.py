@@ -17,6 +17,10 @@ class CatalogError(FlowGlyphError):
     """A catalog could not be loaded, saved or queried."""
 
 
+class SourceError(CatalogError):
+    """A folder, file or repository could not be turned into local files."""
+
+
 class ValidationError(FlowGlyphError):
     """Arguments or IR documents do not match their schema."""
 
