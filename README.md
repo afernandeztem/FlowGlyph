@@ -15,8 +15,8 @@ understand, search and run safely.**
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-dark.svg">
-  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata, SAP Cloud Integration and SAP Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, compilers, an LLM wiki, an idempotency report, context files for coding agents and the Python library." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata, SAP Cloud Integration and SAP Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, compilers, an LLM wiki, an idempotency report, context files for coding agents and the Python library." src="docs/assets/pipeline-light.svg">
 </picture>
 
 ## Why
@@ -100,7 +100,7 @@ payments API and the process definition in Word, in one folder. This is that fol
 new robot in six commands. Every output is real; the sources are in `tests/fixtures`, the
 process document is a two-page Word file with a table of steps.
 
-<img alt="The six commands, animated: extract, the idempotency review and overrides, wiki and context, plan from the Word document, compile to XAML, serve with a policy." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/walkthrough.gif" width="100%">
+<img alt="The six commands, animated: extract, the idempotency review and overrides, wiki and context, plan from the Word document, compile to XAML, serve with a policy." src="docs/assets/walkthrough.gif" width="100%">
 
 *Seventy-five seconds, as a [video](docs/assets/walkthrough.mp4); rendered from the real output
 by `make walkthrough`.*
