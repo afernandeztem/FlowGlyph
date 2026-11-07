@@ -11,9 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `HOWTO.md`: every tool, what it does and how to use it, checked against the CLI by the
   test suite.
-- An animated walkthrough of the same six commands (`docs/assets/walkthrough.gif` and `.mp4`),
-  rendered frame by frame from `scripts/walkthrough/` by `make walkthrough`; every line it shows
-  is real output.
+- An animated walkthrough (`docs/assets/walkthrough.gif` and `.mp4`): the six things FlowGlyph
+  does, each introduced on its own and shown on one folder, plus one short clip per use case on
+  its page in `docs/use-cases/`. Rendered frame by frame from `scripts/walkthrough/` by
+  `make walkthrough`; every line it shows is real output.
 - README: the handover folder of a client taken to a new robot in six commands, with the real
   output of each; `docs/use-cases/`: the same six as stories of their own, with who each is
   for and how to tell it. Their commands are checked against the CLI by the test suite.

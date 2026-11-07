@@ -3,6 +3,8 @@
 **For:** process owners who think in BPMN, developers who finish in UiPath Studio.
 **Takes:** one command. **Needs:** `pip install "flowglyph[cli]"`.
 
+<img alt="The planned workflow compiled for Studio." src="../assets/walkthrough-compile.gif" width="100%">
+
 ## The situation
 
 A planned workflow is YAML. The process owner wants to see it in the modeler they use, the

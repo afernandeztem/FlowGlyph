@@ -3,6 +3,8 @@
 **For:** RPA leads, SAP integration teams, auditors, anyone who approves a retry.
 **Takes:** one command, seconds. **Needs:** `pip install "flowglyph[cli]"`.
 
+<img alt="The report, then the overrides that settle it." src="../assets/walkthrough-review.gif" width="100%">
+
 ## The situation
 
 A robot failed halfway. An iFlow timed out. An agent wants to call an OData action again.

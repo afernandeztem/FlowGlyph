@@ -1,5 +1,7 @@
 # Use cases
 
+<img alt="Six things FlowGlyph does, in one animation." src="../assets/walkthrough.gif" width="100%">
+
 One FlowGlyph, six situations. Each page tells one of them on its own: who it is for, what
 you run, what you see, and how to tell it to others. Every output quoted is the real output of
 the commands, replayed on the sources in `tests/fixtures`; the handover folder used throughout
@@ -15,5 +17,5 @@ definition, side by side.
 | [5. A robot from the client's document](05-design-from-the-clients-document.md) | Solution architects, delivery teams | The process definition as it came, PDF or Word, turned into a checked workflow with the gaps named |
 | [6. The same workflow in BPMN or Studio](06-bpmn-and-xaml.md) | Process owners, developers | A planned or existing workflow opened in a BPMN modeler or UiPath Studio |
 
-The six run in order as one story in the [README](../../README.md#from-a-clients-package-to-a-new-robot);
+The six run in order on one folder in the [README](../../README.md#six-things-on-one-folder);
 [HOWTO.md](../../HOWTO.md) is the reference for every command they use.

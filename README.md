@@ -93,16 +93,39 @@ item *In Progress*, so calling it twice takes two different items. A retry is no
 is the kind of fact FlowGlyph puts in front of you, from the sources alone, before an agent
 retries something it should not.
 
-## From a client's package to a new robot
+## Pick what you need
 
-What a client hands over is rarely a catalog: a UiPath project, the OpenAPI document of the
-payments API and the process definition in Word, in one folder. This is that folder taken to a
-new robot in six commands. Every output is real; the sources are in `tests/fixtures`, the
-process document is a two-page Word file with a table of steps.
+Every piece works on its own. Start with the first row and stop wherever you have what you need.
 
-<img alt="The six commands, animated: extract, the idempotency review and overrides, wiki and context, plan from the Word document, compile to XAML, serve with a policy." src="docs/assets/walkthrough.gif" width="100%">
+| I want to... | Run | Get |
+|---|---|---|
+| Know what every function does and whether it can be retried | `flowglyph idempotency <source>` | a table, or Markdown, CSV, JSON |
+| Keep a versioned catalog of all functions | `flowglyph extract <source> -o catalog` | `catalog.jsonl`, `graph.json`, `flowglyph.lock`, one card per function |
+| Fail CI when a contract breaks | `flowglyph diff old-catalog catalog --fail-on major` | a non-zero exit on breaking changes |
+| Give people and LLMs a wiki of the automations | `flowglyph wiki build <source> -o wiki` | linked pages, an index, a log and an `AGENTS.md` for the LLM |
+| Describe what sources leave undescribed | `flowglyph enrich catalog --via claude-code` | descriptions and business meaning, marked as generated, cached |
+| Let an AI agent use the automations safely | `flowglyph serve catalog --policy policy.yaml` | an MCP server with policy, idempotency and audit |
+| Design a new workflow from a description | `flowglyph plan requirements.md catalog` | a checked workflow, with the missing pieces named |
+| Turn a workflow into BPMN or UiPath | `flowglyph compile plan/workflow.ir.yaml --to bpmn` | a `.bpmn` or `.xaml` its tool opens |
+| Give coding agents context on a UiPath project | `flowglyph context ./robots` | `AGENTS.md`, project context and activity cards, from the sources |
+| Build my own tooling | `import flowglyph` | the same features as a typed Python API |
 
-*Seventy-five seconds, as a [video](docs/assets/walkthrough.mp4); rendered from the real output
+`<source>` is a folder, a single file, a git URL (a repository, a folder of it, or `--ref` a
+branch, tag or commit) or a catalog saved earlier. Each row is one section of
+[HOWTO.md](HOWTO.md).
+
+## Six things, on one folder
+
+Each row of the table above is a tool of its own. To show how they connect, here are six of
+them on one folder, the kind a client hands over: a UiPath project, the OpenAPI document of
+the payments API and the process definition in Word. Every output is real; the sources are in
+`tests/fixtures`, the process document is a two-page Word file with a table of steps. Each step
+is also a page of its own in [docs/use-cases](docs/use-cases/README.md), with who it is for
+and how to tell it.
+
+<img alt="Six things FlowGlyph does, animated on one folder: read everything into a catalog, audit retry safety and declare the rest, a wiki for LLMs and context for coding agents, a workflow planned from the client's Word document, compiled to XAML, and served to an agent behind a policy." src="docs/assets/walkthrough.gif" width="100%">
+
+*Eighty-five seconds, also as a [video](docs/assets/walkthrough.mp4); rendered from the real output
 by `make walkthrough`.*
 
 **1. Read everything that exists.** One command, every format it finds.
@@ -208,29 +231,7 @@ flowglyph serve catalog --policy policy.yaml
 ```
 
 Every call goes through the contract, your policy, the idempotency ledger and the audit log,
-and `executePayment` waits for a person. Each of these six steps is also a story of its own,
-with who it is for and what to show, in [docs/use-cases](docs/use-cases/README.md).
-
-## Pick what you need
-
-Every piece works on its own. Start with the first row and stop wherever you have what you need.
-
-| I want to... | Run | Get |
-|---|---|---|
-| Know what every function does and whether it can be retried | `flowglyph idempotency <source>` | a table, or Markdown, CSV, JSON |
-| Keep a versioned catalog of all functions | `flowglyph extract <source> -o catalog` | `catalog.jsonl`, `graph.json`, `flowglyph.lock`, one card per function |
-| Fail CI when a contract breaks | `flowglyph diff old-catalog catalog --fail-on major` | a non-zero exit on breaking changes |
-| Give people and LLMs a wiki of the automations | `flowglyph wiki build <source> -o wiki` | linked pages, an index, a log and an `AGENTS.md` for the LLM |
-| Describe what sources leave undescribed | `flowglyph enrich catalog --via claude-code` | descriptions and business meaning, marked as generated, cached |
-| Let an AI agent use the automations safely | `flowglyph serve catalog --policy policy.yaml` | an MCP server with policy, idempotency and audit |
-| Design a new workflow from a description | `flowglyph plan requirements.md catalog` | a checked workflow, with the missing pieces named |
-| Turn a workflow into BPMN or UiPath | `flowglyph compile plan/workflow.ir.yaml --to bpmn` | a `.bpmn` or `.xaml` its tool opens |
-| Give coding agents context on a UiPath project | `flowglyph context ./robots` | `AGENTS.md`, project context and activity cards, from the sources |
-| Build my own tooling | `import flowglyph` | the same features as a typed Python API |
-
-`<source>` is a folder, a single file, a git URL (a repository, a folder of it, or `--ref` a
-branch, tag or commit) or a catalog saved earlier. Each row is one section of
-[HOWTO.md](HOWTO.md).
+and `executePayment` waits for a person.
 
 ## What it reads
 
