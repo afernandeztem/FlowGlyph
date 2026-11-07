@@ -10,6 +10,7 @@ import pytest
 import flowglyph
 from flowglyph.errors import ExecutionError, FlowGlyphError
 from flowglyph.gateway import Gateway, Policy, Rule
+from flowglyph.gateway.service import validate_arguments
 from flowglyph.ir import Capability
 
 CREATE = "openapi/Payments_API/createInvoice"
@@ -78,6 +79,15 @@ def test_invalid_arguments_are_explained(gateway: Gateway):
     assert result.status == "invalid"
     assert "'Idempotency-Key' is a required property" in result.errors
     assert any(error.startswith("body/vendor:") for error in result.errors)
+
+
+def test_formats_are_checked_so_a_guid_is_a_guid(gateway: Gateway):
+    schema = {"type": "object", "properties": {"SupplierID": {"type": "string", "format": "uuid"}}}
+    capability = gateway.catalog.get(LIST).model_copy(update={"input_schema": schema})
+    guid = "0c3f2c1e-5b6a-4d2e-9f1a-2b3c4d5e6f70"
+    assert validate_arguments(capability, {"SupplierID": guid}) == []
+    problems = validate_arguments(capability, {"SupplierID": "1) or true"})
+    assert problems == ["SupplierID: '1) or true' is not a 'uuid'"]
 
 
 def test_documentation_only_capabilities_cannot_run(gateway: Gateway):

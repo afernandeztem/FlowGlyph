@@ -296,7 +296,9 @@ def idempotency_key_for(
 
 def validate_arguments(capability: Capability, arguments: dict[str, Any]) -> list[str]:
     """Problems with `arguments` against the capability's input schema, as readable messages."""
-    validator = Draft202012Validator(capability.input_schema)
+    validator = Draft202012Validator(
+        capability.input_schema, format_checker=Draft202012Validator.FORMAT_CHECKER
+    )
     errors = cast("Iterable[SchemaError]", validator.iter_errors(arguments))  # pyright: ignore[reportUnknownMemberType]
     problems: list[str] = []
     for error in sorted(errors, key=lambda e: [str(part) for part in e.path]):

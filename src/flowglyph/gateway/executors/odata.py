@@ -5,6 +5,7 @@ one when the server says it expired. Updates and deletes send `If-Match: *`: the
 the latest version of the record, which is what a single call means.
 """
 
+import re
 import urllib.parse
 from dataclasses import dataclass, field
 from http import HTTPStatus
@@ -30,6 +31,19 @@ _V2_PREFIX = {
     "Edm.Binary": "binary",
 }
 _V4_PREFIX = {"Edm.Binary": "binary", "Edm.Duration": "duration"}
+_NUMBER = re.compile(r"-?\d+(\.\d+)?([eE][+-]?\d+)?")
+_HEX = "[0-9A-Fa-f]"
+_RAW_SHAPES = {
+    "Edm.Guid": re.compile(f"{_HEX}{{8}}-{_HEX}{{4}}-{_HEX}{{4}}-{_HEX}{{4}}-{_HEX}{{12}}"),
+    "Edm.Boolean": re.compile(r"true|false"),
+    "Edm.Date": re.compile(r"\d{4}-\d{2}-\d{2}"),
+    "Edm.TimeOfDay": re.compile(r"\d{2}:\d{2}(:\d{2}(\.\d+)?)?"),
+    "Edm.DateTimeOffset": re.compile(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})"
+    ),
+    **dict.fromkeys(("Edm.Decimal", "Edm.Double", "Edm.Single", "Edm.Byte", "Edm.SByte"), _NUMBER),
+    **dict.fromkeys(("Edm.Int16", "Edm.Int32", "Edm.Int64"), _NUMBER),
+}
 
 
 @dataclass
@@ -191,20 +205,35 @@ def _predicate(literals: dict[str, str], *, named: bool = False) -> str:
 
 
 def _literal(value: Any, edm_type: str, version: Version) -> str:
-    """`value` written as an OData URL literal of `edm_type`."""
+    """`value` written as an OData URL literal of `edm_type`.
+
+    Raises:
+        ExecutionError: If `value` does not have the shape of `edm_type`.
+    """
     if isinstance(value, bool):
         return "true" if value else "false"
-    text = str(value)
+    text = _raw(value, edm_type) if edm_type == "Edm.Guid" else str(value)
     quoted = "'" + text.replace("'", "''") + "'"
-    if version == _V2:
-        if edm_type in _V2_PREFIX:
-            return _V2_PREFIX[edm_type] + quoted
-        if edm_type in _V2_SUFFIX:
-            return text + _V2_SUFFIX[edm_type]
-        return quoted if edm_type == "Edm.String" or isinstance(value, str) else text
-    if edm_type in _V4_PREFIX:
-        return _V4_PREFIX[edm_type] + quoted
-    return quoted if edm_type == "Edm.String" else text
+    prefix = (_V2_PREFIX if version == _V2 else _V4_PREFIX).get(edm_type)
+    if prefix is not None:
+        return prefix + quoted
+    if version == _V2 and edm_type in _V2_SUFFIX:
+        return _raw(value, edm_type) + _V2_SUFFIX[edm_type]
+    if edm_type == "Edm.String" or (version == _V2 and isinstance(value, str)):
+        return quoted
+    return _raw(value, edm_type)
+
+
+def _raw(value: Any, edm_type: str) -> str:
+    """`value` as an unquoted literal, only when it has the shape `edm_type` allows.
+
+    Anything else could close the key predicate early and address another resource.
+    """
+    text = str(value)
+    shape = _RAW_SHAPES.get(edm_type, _NUMBER if isinstance(value, int | float) else None)
+    if shape is None or not shape.fullmatch(text):
+        raise ExecutionError(f"{text!r} is not a valid {edm_type} literal")
+    return text
 
 
 def _result(payload: Any, version: Version, shape: Shape) -> dict[str, Any]:
