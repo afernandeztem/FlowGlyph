@@ -212,15 +212,25 @@ class _ServiceReader:
         inputs: dict[str, JsonSchema] = {}
         required: list[str] = []
         prefix = ""
+        safe = operation.safe
+        method = "GET" if safe else "POST"
+        request = f"{method} {operation.name}()"
         if operation.bound_to:
             entity = self.service.entity_type(operation.bound_to)
             entity_set = self.service.set_for(operation.bound_to)
             prefix = f"{entity_set.name}/" if entity_set else ""
+            if entity_set:
+                qualified = f"{operation.namespace}.{operation.name}".lstrip(".")
+                request = f"{method} {entity_set.name}(key)/{qualified}()"
             if entity is not None:
                 inputs.update(self._keys(entity))
                 required.extend(entity.keys)
         for parameter in operation.parameters:
-            inputs[parameter.name] = json_schema_for(parameter.type, self.service)
+            # Executors format OData URL literals from the EDM type, not the JSON type.
+            inputs[parameter.name] = {
+                **json_schema_for(parameter.type, self.service),
+                "x-edm-type": parameter.type,
+            }
             if not parameter.nullable:
                 required.append(parameter.name)
         returns: JsonSchema = {"type": "object", "properties": {}}
@@ -229,12 +239,11 @@ class _ServiceReader:
                 "type": "object",
                 "properties": {"value": json_schema_for(operation.return_type, self.service)},
             }
-        safe = operation.safe
         return self._capability(
             _Operation(
                 name=f"{prefix}{operation.name}",
                 description=operation.label or operation.name,
-                request=f"{'GET' if safe else 'POST'} {operation.name}",
+                request=request,
                 inputs=_object(inputs, required),
                 outputs=returns,
                 effects=_READ if safe else _ACTION,
@@ -249,7 +258,9 @@ class _ServiceReader:
         keys: dict[str, JsonSchema] = {}
         for name in entity.keys:
             prop = entity.property(name)
-            keys[name] = property_schema(prop) if prop else {"type": "string"}
+            schema = property_schema(prop) if prop else {"type": "string"}
+            # Bound actions mix keys and parameters in one input, so executors need the mark.
+            keys[name] = {**schema, "x-odata-key": True}
         return keys
 
     def _capability(self, operation: "_Operation") -> Capability:

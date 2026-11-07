@@ -264,3 +264,26 @@ def test_the_suggested_approval_command_approves_the_run(
     code, output = invoke(*command[1:])
     assert code == 0, output
     assert gateway.run(delete, {"invoiceId": "INV-118"}, idempotency_key="it's-118").ok
+
+
+def test_serve_checks_connection_credentials_before_starting(
+    project: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.delenv("PAY_TOKEN", raising=False)
+    catalog_dir = flowglyph.extract(project).save(tmp_path / "catalog")
+    connections = tmp_path / "flowglyph.connections.yaml"
+    connections.write_text(
+        "connections:\n"
+        "  payments:\n"
+        "    type: http\n"
+        "    base_url: https://api.example.com\n"
+        "    auth: {type: bearer, token_env: PAY_TOKEN}\n"
+        "    capabilities: ['openapi/*']\n",
+        encoding="utf-8",
+    )
+    code, output = invoke("serve", catalog_dir, "--connections", connections)
+    assert code == 2
+    assert "set these environment variables before serving: PAY_TOKEN" in output
+    code, output = invoke("serve", catalog_dir, "--connections", tmp_path / "nope.yaml")
+    assert code == 2
+    assert "does not exist" in output

@@ -15,7 +15,7 @@ block
 - **Source:** `odata/zbusinesspartner_v4.xml#BusinessPartner/block` (sap)
 - **Effects:** reads: unknown, mutates state: unknown, destructive: unknown, external: yes
 - **Idempotency:** none, not idempotent: run through the gateway with an idempotency key (inferred, confidence 0.6)
-- **Started by:** a call through OData V4 at `POST block`
+- **Started by:** a call through OData V4 at `POST BusinessPartner(key)/zbusinesspartner.block()`
 
 ## Inputs
 
@@ -40,10 +40,12 @@ block
       "BusinessPartner": {
         "type": "string",
         "x-edm-type": "Edm.String",
-        "maxLength": 10
+        "maxLength": 10,
+        "x-odata-key": true
       },
       "Reason": {
-        "type": "string"
+        "type": "string",
+        "x-edm-type": "Edm.String"
       }
     },
     "required": [

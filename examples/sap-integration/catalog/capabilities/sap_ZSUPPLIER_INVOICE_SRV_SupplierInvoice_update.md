@@ -40,13 +40,15 @@ None.
         "type": "string",
         "x-edm-type": "Edm.String",
         "description": "Invoice document",
-        "maxLength": 10
+        "maxLength": 10,
+        "x-odata-key": true
       },
       "FiscalYear": {
         "type": "string",
         "x-edm-type": "Edm.String",
         "description": "Fiscal year",
-        "maxLength": 4
+        "maxLength": 4,
+        "x-odata-key": true
       },
       "body": {
         "type": "object",

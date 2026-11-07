@@ -42,7 +42,8 @@ Read one Supplier by its key
         "type": "string",
         "x-edm-type": "Edm.String",
         "description": "Supplier",
-        "maxLength": 10
+        "maxLength": 10,
+        "x-odata-key": true
       }
     },
     "required": [

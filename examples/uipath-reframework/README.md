@@ -260,5 +260,7 @@ The same gateway serves agents over MCP:
 $ flowglyph serve catalog --policy policy.yaml
 ```
 
-Running workflows for real, through Orchestrator, is on the [roadmap](../../README.md#roadmap);
-until then every run is a dry run that reports what would have been started.
+To run `Main` for real, describe your Orchestrator once in a connections file and serve with
+`--connections` (see [the README](../../README.md#4-let-an-ai-agent-use-the-automations)): the
+gateway then starts the published process as a job in the folder you name, passes
+`in_OrchestratorQueueName` as its input argument and waits for it to finish.

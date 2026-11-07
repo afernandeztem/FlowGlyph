@@ -261,7 +261,8 @@ The agent never runs anything directly. It goes through the gateway, which on ev
 2. applies your policy: allow, deny, or hold for a person's approval;
 3. runs anything with side effects at most once per idempotency key, and gives a retry the stored
    result;
-4. executes it (a dry run in this release: you see exactly what would be sent);
+4. executes it: as a dry run that shows exactly what would be sent, or for real through the
+   systems named in a connections file;
 5. records the call in an audit log, without the argument values.
 
 <picture>
@@ -276,6 +277,43 @@ The agent never runs anything directly. It goes through the gateway, which on ev
 | `catalog_contract` | the full L2 contract |
 | `run_capability`, or one tool per function | a run through the gateway |
 | `run_status` | the outcome of an earlier run |
+
+To run for real, describe each system once in `flowglyph.connections.yaml` and serve with
+`--connections`. The file names the environment variables that hold credentials; it never holds
+them. Capabilities no connection claims are refused, not dry-run.
+
+```yaml
+# flowglyph.connections.yaml
+connections:
+  erp:
+    type: odata
+    service_url: https://erp.example.com/sap/opu/odata/sap/ZSUPPLIER_INVOICE_SRV
+    auth: {type: basic, user_env: SAP_USER, password_env: SAP_PASSWORD}
+    capabilities: ["sap/ZSUPPLIER_INVOICE_SRV/*"]
+  robots:
+    type: uipath
+    url: https://cloud.uipath.com/acme/finance/orchestrator_
+    folder: Finance/Invoices
+    auth: {type: client_credentials, token_url: https://cloud.uipath.com/identity_/connect/token,
+           client_id_env: UIPATH_CLIENT_ID, client_secret_env: UIPATH_CLIENT_SECRET,
+           scope: OR.Folders.Read OR.Execution OR.Jobs}
+    capabilities: ["uipath/*"]
+  payments:
+    type: http
+    base_url: https://api.example.com/v1
+    auth: {type: bearer, token_env: PAYMENTS_TOKEN}
+    capabilities: ["openapi/Payments_API/*"]
+```
+
+```bash
+flowglyph serve catalog --policy policy.yaml --connections flowglyph.connections.yaml
+```
+
+| Connection | Runs | How |
+|---|---|---|
+| `http` | OpenAPI operations | each argument goes where the document puts it: path, query, header, cookie or body |
+| `odata` | SAP OData V2 and V4 operations | CSRF token fetched and refreshed as SAP requires, keys and parameters written as OData literals, `MERGE` for V2 updates, SAP error messages quoted |
+| `uipath` | the entry point of a UiPath project, as a published process | starts a job in the folder, passes the inputs as job arguments, waits for it and returns its output arguments |
 
 ```yaml
 # policy.yaml
@@ -422,7 +460,7 @@ Every command has `--help`.
 - [x] Idempotency report and LLM wiki
 - [x] MCP gateway with policy, idempotency ledger and audit log (dry-run execution)
 - [x] Planner with any model provider or coding assistant
-- [ ] Executors that run against UiPath Orchestrator, SAP and HTTP APIs
+- [x] Executors that run against UiPath Orchestrator, SAP OData and HTTP APIs
 - [ ] LLM enrichment cached by source hash; more adapters (BPMN, SAP Build Process Automation, n8n)
 - [ ] Compilers from workflow IR back to BPMN and XAML
 

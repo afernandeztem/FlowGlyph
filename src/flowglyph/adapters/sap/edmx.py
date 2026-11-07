@@ -88,6 +88,7 @@ class Operation:
     return_type: str | None
     label: str | None
     bound_to: str | None = None
+    namespace: str = ""
 
 
 @dataclass
@@ -134,7 +135,11 @@ def parse_service(root: ET.Element, fallback_name: str) -> Service:
                 entity = _entity_type(element)
                 service.entity_types[entity.name] = entity
             elif local in {"Action", "Function"}:
-                service.operations.append(_v4_operation(element, safe=local == "Function"))
+                service.operations.append(
+                    _v4_operation(
+                        element, safe=local == "Function", namespace=schema.get("Namespace", "")
+                    )
+                )
             elif local == "EntityContainer":
                 _container(element, service, restrictions)
     return service
@@ -227,7 +232,7 @@ def _container(
             )
 
 
-def _v4_operation(element: ET.Element, *, safe: bool) -> Operation:
+def _v4_operation(element: ET.Element, *, safe: bool, namespace: str) -> Operation:
     parameters = _parameters(element)
     bound_to = None
     if element.get("IsBound") == "true" and parameters:
@@ -240,6 +245,7 @@ def _v4_operation(element: ET.Element, *, safe: bool) -> Operation:
         return_type=returns.get("Type") if returns is not None else None,
         label=None,
         bound_to=bound_to,
+        namespace=namespace,
     )
 
 

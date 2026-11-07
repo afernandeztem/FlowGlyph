@@ -153,7 +153,13 @@ and this page disagree, the code is wrong or this page is out of date: please op
   else the values of the capability's key fields, else a hash of all the arguments.
 
 **Executor**
-: What actually runs a capability for the gateway. The built-in one is a dry run.
+: What actually runs a capability for the gateway. The default is a dry run; the *connected*
+  executor routes each capability to the *connection* that runs it.
+
+**Connection**
+: One entry of `flowglyph.connections.yaml`: a system (an HTTP API, an SAP OData service, a
+  UiPath Orchestrator folder), how to authenticate with it, and the capability id patterns it
+  runs. Credentials are named environment variables, never values.
 
 **Plan, resolver**
 : A *plan* is the workflow an LLM proposes from requirements. The *resolver* checks every step
