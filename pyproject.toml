@@ -84,6 +84,7 @@ packages = ["src/flowglyph"]
 
 [tool.ruff]
 line-length = 100
+extend-exclude = [".claude"]
 target-version = "py312"
 src = ["src", "tests"]
 
