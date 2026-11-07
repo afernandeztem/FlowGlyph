@@ -5,7 +5,7 @@ from typing import Annotated
 import typer
 
 import flowglyph
-from flowglyph.cli._shared import console
+from flowglyph.cli._shared import console, reporting_errors
 from flowglyph.cli.commands import (
     catalog,
     compile,
@@ -42,7 +42,7 @@ for command in (
     catalog.adapters,
     explore.idempotency,
 ):
-    app.command()(command)
+    app.command()(reporting_errors(command))
 app.add_typer(wiki.app, name="wiki")
 
 
