@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `HOWTO.md`: every tool, what it does and how to use it, checked against the CLI by the
   test suite.
+- An animated walkthrough of the same six commands (`docs/assets/walkthrough.gif` and `.mp4`),
+  rendered frame by frame from `scripts/walkthrough/` by `make walkthrough`; every line it shows
+  is real output.
 - README: the handover folder of a client taken to a new robot in six commands, with the real
   output of each; `docs/use-cases/`: the same six as stories of their own, with who each is
   for and how to tell it. Their commands are checked against the CLI by the test suite.
@@ -166,6 +169,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The ledger keeps the arguments of each run, so `flowglyph approvals` shows what a person
   approves, and `flowglyph approve` records an `approve` audit event with the user's name.
   Every audit record has an `actor` field, `null` when the agent acted.
+
+### Changed
+
+- Pipeline diagram: LLM enrichment drawn as shipped, the planner's document inputs, and the
+  coding-agent context as an output with its own consumer; token-flow diagram: an L1 card is
+  about 400 tokens, measured.
 
 ### Fixed
 

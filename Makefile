@@ -1,4 +1,4 @@
-.PHONY: install lint format typecheck test test-llm check diagrams schemas examples build clean
+.PHONY: install lint format typecheck test test-llm check diagrams walkthrough schemas examples build clean
 
 install:
 	uv sync --all-extras
@@ -25,6 +25,9 @@ check: lint typecheck test
 
 diagrams:
 	cd scripts && npm ci && node export_diagrams.mjs
+
+walkthrough:
+	cd scripts && npm ci && node walkthrough/render.mjs full ../docs/assets && rm -rf ../docs/assets/frames
 
 build:
 	uv build
