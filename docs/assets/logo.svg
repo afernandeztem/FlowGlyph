@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#161d2e"/><stop offset="1" stop-color="#0b0f17"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)" stroke="#1f2937" stroke-width="4"/>
+  <!-- a call tree that reads as an F: the entry point, then the calls it makes -->
+  <path d="M74 62 V 182" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round"/>
+  <path d="M74 112 H 170" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round"/>
+  <path d="M74 182 H 142" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="74" cy="58" r="27" fill="#f59e0b"/>
+  <circle cx="186" cy="112" r="24" fill="#0b0f17" stroke="#f59e0b" stroke-width="12"/>
+  <circle cx="160" cy="182" r="24" fill="#0b0f17" stroke="#e5e7eb" stroke-width="12"/>
+  <path d="M149 182 l8 8 l15 -17" fill="none" stroke="#e5e7eb" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

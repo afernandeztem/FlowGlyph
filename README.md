@@ -1,9 +1,13 @@
 <div align="center">
 
+<img src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/logo.svg" alt="FlowGlyph" width="112" height="112">
+
 # FlowGlyph
 
-**Turn enterprise automations into a catalog of functions that people and AI agents can
-understand, search and run safely.**
+**Make automation workflows discoverable, executable and safe for AI agents.**
+
+Turn UiPath, SAP, BPMN, n8n and OpenAPI workflows into reusable, searchable functions for
+humans and AI agents.
 
 [![PyPI](https://img.shields.io/pypi/v/flowglyph.svg)](https://pypi.org/project/flowglyph/)
 [![CI](https://github.com/afernandeztem/FlowGlyph/actions/workflows/ci.yml/badge.svg)](https://github.com/afernandeztem/FlowGlyph/actions/workflows/ci.yml)
