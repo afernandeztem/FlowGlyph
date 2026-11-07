@@ -8,8 +8,9 @@ what triggers it.
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from flowglyph._internal.graph import follow, with_joins
 from flowglyph.adapters.bpmn.model import GATEWAYS, TASKS, Process, Step
-from flowglyph.ir import Edge, Node, Workflow
+from flowglyph.ir import OTHERWISE, Edge, Node, Workflow
 
 
 @dataclass
@@ -30,20 +31,11 @@ class GraphBuilder:
             if step.called and step.id not in kept_ids:
                 self._resolve(step.called)
         edges = self._edges(kept_ids)
-        sources: defaultdict[str, set[str]] = defaultdict(set)
-        for edge in edges:
-            sources[edge.target].add(edge.source)
         parallel = {step.id for step in kept if step.kind == "parallelGateway"}
-        nodes = [
-            node.model_copy(update={"join": "any"})
-            if len(sources[node.id]) > 1 and node.id not in parallel
-            else node
-            for node in nodes
-        ]
         return Workflow(
             id=capability_id,
             capability=capability_id,
-            nodes=tuple(nodes),
+            nodes=tuple(with_joins(nodes, edges, parallel)),
             edges=tuple(edges),
             calls=tuple(dict.fromkeys(self.calls)),
             unresolved_calls=tuple(dict.fromkeys(self.unresolved)),
@@ -82,7 +74,7 @@ class GraphBuilder:
             source = steps.get(flow.source)
             condition = flow.condition
             if source is not None and source.default_flow == flow.id:
-                condition = "otherwise"
+                condition = OTHERWISE
             elif condition is None and flow.name and source is not None and source.kind in GATEWAYS:
                 condition = flow.name
             outgoing[flow.source].append((flow.target, condition))
@@ -90,15 +82,4 @@ class GraphBuilder:
             if step.kind == "boundaryEvent" and step.attached_to:
                 trigger = f"on {step.event or 'event'}: {step.name}"
                 outgoing[step.attached_to].append((step.id, trigger))
-        edges: list[Edge] = []
-        for start in kept:
-            seen: set[str] = set()
-            pending = list(outgoing[start])
-            while pending:
-                target, condition = pending.pop()
-                if target in kept:
-                    edges.append(Edge(source=start, target=target, condition=condition))
-                elif target not in seen:
-                    seen.add(target)
-                    pending.extend((nxt, condition or cond) for nxt, cond in outgoing[target])
-        return sorted(set(edges), key=lambda e: (e.source, e.target, e.condition or ""))
+        return follow(outgoing, kept)

@@ -99,6 +99,34 @@ def test_node_rules(node: dict[str, object], expected: str | None):
     assert observed == expected
 
 
+def test_branches_that_meet_again_keep_both_conditions(tmp_path: Path):
+    def node(name: str, kind: str, **parameters: str) -> dict[str, object]:
+        return {"name": name, "type": f"n8n-nodes-base.{kind}", "parameters": parameters}
+
+    export = {
+        "name": "Merge",
+        "nodes": [
+            node("Trigger", "manualTrigger"),
+            node("Check", "if"),
+            node("Prep", "set"),
+            node("Call", "httpRequest", method="POST"),
+        ],
+        "connections": {
+            "Trigger": {"main": [[{"node": "Check"}]]},
+            "Check": {"main": [[{"node": "Prep"}], [{"node": "Prep"}]]},
+            "Prep": {"main": [[{"node": "Call"}]]},
+        },
+    }
+    (tmp_path / "merge.json").write_text(json.dumps(export), encoding="utf-8")
+    graph = N8nAdapter().extract(tmp_path).workflows[0]
+    assert [(e.source, e.target, e.condition) for e in graph.edges] == [
+        ("Check", "Call", "false"),
+        ("Check", "Call", "true"),
+    ]
+    for truth in ("true", "false"):
+        assert graph.simulate(lambda c, truth=truth: c == truth) == ["Check", "Call"]
+
+
 def test_only_n8n_exports_are_claimed(tmp_path: Path):
     (tmp_path / "package.json").write_text(json.dumps({"name": "x", "dependencies": {}}))
     (tmp_path / "openapi.json").write_text(json.dumps({"openapi": "3.1.0", "paths": {}}))
