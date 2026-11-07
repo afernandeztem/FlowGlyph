@@ -9,7 +9,6 @@ coverage.xml
 htmlcov/
 .pytest_cache/
 .ruff_cache/
-.hypothesis/
 .flowglyph/
 *.ledger.sqlite
 node_modules/

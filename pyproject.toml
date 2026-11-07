@@ -26,14 +26,14 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "pydantic>=2.14.2",
-    "pyyaml>=6.0.3",
+    "pydantic>=2.10",
+    "pyyaml>=6.0.1",
 ]
 
 [project.optional-dependencies]
-cli = ["typer>=0.27.3", "rich>=15.0.0"]
-mcp = ["flowglyph[cli]", "mcp>=2.3.0", "jsonschema>=4.26.0"]
-llm = ["anthropic>=2.4.0"]
+cli = ["typer>=0.19", "rich>=13"]
+mcp = ["flowglyph[cli]", "mcp>=2.1", "jsonschema>=4.18"]
+llm = ["anthropic>=2.0"]
 all = ["flowglyph[cli,mcp,llm]"]
 
 [project.scripts]
@@ -60,7 +60,6 @@ dev = [
     "pytest>=9.2.0",
     "pytest-asyncio>=1.4.1",
     "pytest-cov>=7.1.0",
-    "hypothesis>=6.170.14",
     "ruff>=0.17.3",
     "pyright>=1.1.414",
     "pre-commit>=4.7.0",
