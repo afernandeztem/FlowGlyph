@@ -19,10 +19,10 @@ humans and AI agents.
 
 </div>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-dark.svg">
-  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata, SAP Cloud Integration and SAP Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, compilers, an LLM wiki, an idempotency report, context files for coding agents and the Python library." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-light.svg">
-</picture>
+<img alt="Six things FlowGlyph does, animated on one folder: read everything into a catalog, audit retry safety and declare the rest, a wiki for LLMs and context for coding agents, a workflow planned from the client's Word document, compiled to XAML, and served to an agent behind a policy." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/walkthrough.gif" width="100%">
+
+*Eighty-five seconds, also as a [video](docs/assets/walkthrough.mp4); rendered from the real output
+by `make walkthrough`.*
 
 ## Why
 
@@ -127,11 +127,6 @@ the payments API and the process definition in Word. Every output is real; the s
 `tests/fixtures`, the process document is a two-page Word file with a table of steps. Each step
 is also a page of its own in [docs/use-cases](docs/use-cases/README.md), with who it is for
 and how to tell it.
-
-<img alt="Six things FlowGlyph does, animated on one folder: read everything into a catalog, audit retry safety and declare the rest, a wiki for LLMs and context for coding agents, a workflow planned from the client's Word document, compiled to XAML, and served to an agent behind a policy." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/walkthrough.gif" width="100%">
-
-*Eighty-five seconds, also as a [video](docs/assets/walkthrough.mp4); rendered from the real output
-by `make walkthrough`.*
 
 **1. Read everything that exists.** One command, every format it finds.
 
@@ -275,6 +270,11 @@ operation needs, what it returns, what it does to the world (`reads`, `mutates_s
 `key`, `conditional`, `none`). A `Workflow` is the graph behind it: steps, guarded edges, and a
 `join` on each step that says whether it needs every predecessor to have run or just one. The
 full specification is in [docs/ir-spec.md](docs/ir-spec.md).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-dark.svg">
+  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata, SAP Cloud Integration and SAP Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, compilers, an LLM wiki, an idempotency report, context files for coding agents and the Python library." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-light.svg">
+</picture>
 
 ```yaml
 id: sap/ZSUPPLIER_INVOICE_SRV/SupplierInvoice/create
