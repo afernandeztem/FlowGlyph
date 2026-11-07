@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "flowglyph"
-description = "Turn enterprise automations into a vendor-neutral IR that agents can discover, plan with and run safely."
+description = "Make automation workflows discoverable, executable and safe for AI agents."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
