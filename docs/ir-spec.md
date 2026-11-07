@@ -11,7 +11,7 @@ an agent calls it*. It has two documents: **Capability** and **Workflow**.
 One operation. Example, extracted from the UiPath ReFrameWork:
 
 ```yaml
-id: uipath/reframework/Framework/InitAllSettings
+id: uipath/ReFrameWork/Framework/InitAllSettings
 version: 1.0.0
 kind: workflow
 title: InitiAllSettings
@@ -77,7 +77,7 @@ harmless, and the IR does not pretend it can: consumers must treat `unknown` as 
 those of the workflows it invokes.
 
 The compact form used in L0 cards (`flowglyph.views.effects_code`) writes `R`, `W`, `D`, `X`
-for yes and lower case for unknown: `RwX` reads, may write, and is external.
+for yes and lower case when it may (the sources do not say): `RwX` reads, may write, and is external.
 
 ### Idempotency
 
@@ -146,7 +146,7 @@ their children flattened in document order; their edges do not represent real co
 
 | Level | What | Size | Use |
 |---|---|---|---|
-| L0 | `flowglyph.views.l0_card`: id, one-line description, parameter names, effects code, idempotency mode | tens of bytes | Discovery across thousands of capabilities. |
+| L0 | `flowglyph.views.l0_card`: id, one-line description, parameter names, effects code, idempotency mode | about 40 tokens | Discovery across thousands of capabilities. |
 | L1 | The Markdown card | a few hundred tokens | Choosing between candidates and filling arguments. |
 | L2 | The full Capability document | full contract | Validation and execution. |
 

@@ -46,7 +46,7 @@ If `flowglyph --version` fails, install it with `pip install "flowglyph[cli]"`, 
 ## Reading the answers
 
 - **Effects code:** `R`ead, `W`rite, `D`estroy, e`X`ternal. Upper case means yes, lower case
-  means unknown, a missing letter means no. `RwX` reads, may write and calls another system.
+  means it may (the sources do not say), a missing letter means no. `RwX` reads, may write and calls another system.
 - **Idempotency:** `natural` (repeating changes nothing), `key` (safe when deduplicated on the
   listed key fields), `conditional` (safe under documented conditions), `none` (every run has
   an effect).

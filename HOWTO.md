@@ -56,6 +56,22 @@ runtime.
 **Options:** `--adapter` to read one kind of source, `--ref` for a branch, tag or commit of a
 repository, `--strict` to fail when a file cannot be parsed.
 
+**Where it reads from:**
+
+```bash
+flowglyph extract ./automations                                   # a folder: every project inside
+flowglyph extract ./services/ZSUPPLIER_INVOICE_SRV.edmx           # a single file
+flowglyph extract https://github.com/acme/rpa                     # a repository
+flowglyph extract https://github.com/acme/rpa/tree/main/finance   # a folder of a repository, as copied from the browser
+flowglyph extract git@github.com:acme/rpa.git --ref release-4.2   # a branch, tag or commit
+```
+
+A folder is walked completely. A repository holding forty UiPath projects, a few SAP service
+definitions and some OpenAPI specs becomes **one** catalog: each project keeps its own name in
+the capability ids, and nested projects are read once. Repositories are shallow-cloned into
+`~/.cache/flowglyph` (or `$FLOWGLYPH_CACHE`) and refreshed on the next run; the lock file records
+the URL and the exact commit, so every catalog can be traced back to what it was built from.
+
 ### adapters
 
 **What it does:** lists the formats FlowGlyph can read, including plugins you installed.
@@ -64,15 +80,49 @@ repository, `--strict` to fail when a file cannot be parsed.
 flowglyph adapters
 ```
 
-| Adapter | Reads |
+| Adapter | Reads | Each capability is |
+|---|---|---|
+| `uipath` | UiPath Studio projects: `project.json` and every `.xaml` | a workflow, typed from its arguments, with its graph of steps; plus one entry per activity type in use |
+| `sap` | SAP OData `$metadata` documents (EDMX, OData V2 and V4) from SAP S/4HANA, SAP Gateway or SAP BTP | an entity operation (query, read, create, update, delete), a function import, a function or an action |
+| `sap-cpi` | SAP Cloud Integration (SAP Integration Suite) iFlows, exported as `.zip` or unpacked | an endpoint the iFlow exposes (HTTPS, SOAP, OData, IDoc, ProcessDirect...), with the iFlow's steps as its graph |
+| `sbpa` | SAP Build Process Automation projects, exported as `.mtar` or unpacked | a process, and the automations and decisions it runs |
+| `bpmn` | BPMN 2.0 models (`.bpmn`), with Camunda 7 and Camunda 8 (Zeebe) extensions | a process, with its tasks, gateways and call activities as its graph |
+| `n8n` | n8n workflows exported as JSON, one per file or a list | a workflow, started by its webhook, form, schedule or a parent workflow |
+| `openapi` | OpenAPI 3.0 and 3.1 documents, JSON or YAML | an API operation |
+
+By default every adapter is tried and everything found is extracted. `--adapter` picks one:
+
+```bash
+flowglyph extract ./landscape --adapter sap      # only the SAP OData services
+flowglyph idempotency ./landscape -a uipath      # only the robots
+```
+
+For SAP Cloud Integration, export the integration flows from the Integration Suite design
+workspace (or keep them unpacked in git, as most teams do) and point FlowGlyph at the folder.
+Besides the catalog, the adapter reviews each iFlow's design and keeps the findings on its
+capability, where `wiki lint` shows them: a main process without an exception subprocess,
+receivers over plain HTTP or without a timeout, hard-coded addresses, routers without a default
+route, splitters that do not stream, the whole body copied into a property, CSRF protection
+turned off. Values in `parameters.prop` are never read, only the names of the parameters.
+
+To get the metadata of an SAP service, open
+`https://<host>/sap/opu/odata/sap/<SERVICE_NAME>/$metadata` (OData V2) or the `$metadata` of the
+V4 service and save it, or download it from the SAP Business Accelerator Hub. Files named
+`$metadata`, `*.edmx` or `*.xml` are recognised by their content.
+
+**How effects and idempotency are decided.** Nothing is guessed by a model. Each adapter applies
+the semantics of its platform, and every answer records whether it was inferred, or declared by
+the source itself or by a person:
+
+| Source | Rule |
 |---|---|
-| `uipath` | UiPath Studio projects (`project.json`, `.xaml`) |
-| `sap` | SAP OData `$metadata`, V2 and V4 |
-| `sap-cpi` | SAP Cloud Integration iFlows, `.zip` or unpacked |
-| `sbpa` | SAP Build Process Automation projects (`.mtar`) |
-| `bpmn` | BPMN 2.0, with Camunda 7 and Camunda 8 extensions |
-| `n8n` | n8n workflow exports (`.json`) |
-| `openapi` | OpenAPI 3.0 and 3.1 documents |
+| UiPath | Each activity is classified by an [editable taxonomy](src/flowglyph/adapters/uipath/taxonomy.yaml) (Excel, mail, Orchestrator, UI, file system...). A workflow has the effects of its activities and of every workflow it invokes. UI automation is never assumed harmless. |
+| SAP Cloud Integration | Receivers decide the effects: an HTTP `GET` reads, `POST` writes, `DELETE` destroys; mail, SFTP, IDoc and SOAP receivers send; Data Store writes change tenant state. ProcessDirect calls between iFlows become calls in the graph, so an iFlow inherits the effects of the iFlows it hands over to. Idempotency the iFlow declares itself (an idempotent process call, an exactly-once adapter) is taken as declared; a Data Store write without overwrite makes it conditional. |
+| SAP OData | Query and read are read-only and idempotent. Update and delete are idempotent; delete is destructive. Create and actions are not idempotent. Operations the service forbids (`sap:creatable="false"`, V4 `InsertRestrictions`...) are not generated at all. |
+| OpenAPI | HTTP semantics (RFC 9110): `GET` reads, `PUT` and `DELETE` are idempotent, `POST` is retry-safe only when the operation accepts an `Idempotency-Key` header. |
+| BPMN | Starting a process creates an instance, so a process always writes and is never naturally idempotent. Service and script tasks are unknown, send tasks write, receive tasks read, user tasks involve a person, business rule tasks only decide. Call activities link processes across files, and effects travel along them. A gateway without a default flow and a service task without an implementation are reported. |
+| n8n | Each node by its type and operation: HTTP requests by method, app nodes by the verb of their operation (`getAll` reads, `create` writes, `delete` destroys), code and command nodes are unknown, data and routing nodes are pure. `Execute Workflow` nodes link workflows, and credentials are recorded by name. |
+| SAP Build Process Automation | Starting a process creates an instance. Automations (desktop and API bots) are unknown, forms involve a person, decisions only compute. Processes invoke their automations and decisions in the graph, with SAP's own conditions on each branch. |
 
 ## Understand them
 
@@ -246,7 +296,7 @@ key (a retry gets the first result back), and writes the decision to an audit lo
 
 **Options:**
 - `--policy`: what an agent may run. Without it, destructive functions wait for a person.
-- `--connections`: run for real against the systems in a [connections file](#flowglyphconnectionsyaml). Without it, every run is a dry run that shows what would be sent.
+- `--connections`: run for real against the systems in a [connections file](#flowglyphconnectionsyaml). Without it, every run is a dry run that shows what would be sent. Capabilities no connection claims are refused, not dry-run.
 - `--expose`: `all` gives the agent one tool per function, `meta` only the search tools, and `auto` (the default) picks `meta` above 40 functions.
 - `--state`: where the ledger and audit log are kept.
 
@@ -320,7 +370,7 @@ When an agent connects to [`serve`](#serve), it gets these MCP tools:
 
 | Tool | What it does |
 |---|---|
-| `catalog_search` | finds functions by what they do; returns short cards (a few dozen bytes each) so an agent can scan thousands |
+| `catalog_search` | finds functions by what they do; returns short cards (about 40 tokens each) so an agent can scan thousands |
 | `catalog_card` | one function's card: inputs, outputs, steps, how to retry it |
 | `catalog_contract` | one function's full contract: schemas, effects, idempotency |
 | `run_capability` | asks the gateway to run a function, with its arguments and an optional `idempotency_key` |
@@ -405,6 +455,12 @@ connections:
 Authentication types: `none`, `bearer`, `basic`, `header` (an API key in a header you name) and
 `client_credentials` (OAuth).
 
+| Connection | Runs | How |
+|---|---|---|
+| `http` | OpenAPI operations | each argument goes where the document puts it: path, query, header, cookie or body |
+| `odata` | SAP OData V2 and V4 operations | CSRF token fetched and refreshed as SAP requires, keys and parameters written as OData literals, `MERGE` for V2 updates, SAP error messages quoted |
+| `uipath` | the entry point of a UiPath project, as a published process | starts a job in the folder, passes the inputs as job arguments, waits for it and returns its output arguments |
+
 ## Files FlowGlyph writes
 
 | File | Written by | Holds |
@@ -436,18 +492,39 @@ Everything is also a library:
 
 ```python
 import flowglyph
+from flowglyph import report, wiki
 from flowglyph.views import effects_code
 
-catalog = flowglyph.extract("./automations")
-for capability in catalog.search("book an invoice", limit=3):
-    print(capability.id, effects_code(capability.effects), capability.idempotency.mode)
+catalog = flowglyph.extract("https://github.com/acme/rpa", adapter="uipath")
+
+for row in report.rows(catalog, side_effects_only=True, statuses=["review"]):
+    print(row.id, row.effects, row.advice)
+
+invoice = catalog.get("Steps/BookInvoice")
+print([p.name for p in invoice.inputs], effects_code(invoice.effects), invoice.idempotency.mode)
+
+workflow = catalog.workflow("Main")
+print(workflow.simulate(lambda condition: False))  # which steps run when every condition is false
+
+catalog.save("catalog")
+wiki.build_wiki(catalog, "wiki")
+```
+
+The gateway needs `pip install "flowglyph[mcp]"`, and works without an MCP client:
+
+```python
+from flowglyph.gateway import Gateway, Policy
+
+gateway = Gateway("catalog", policy=Policy.load("policy.yaml"))
+result = gateway.run("createInvoice", {"Idempotency-Key": "inv-118", "body": invoice_body})
+print(result.status)  # done, replayed, approval_required, denied, invalid...
 ```
 
 ## Reading the answers
 
 **Effects code:** `R`ead, `W`rite, `D`estroy, e`X`ternal. Upper case means yes, lower case
-means it may, a missing letter means no. `RwX` reads, may write and calls another system;
-`none` changes nothing.
+means it may (the sources do not say), a missing letter means no. `RwX` reads, may write and
+calls another system; `pure` changes nothing.
 
 **Idempotency:**
 

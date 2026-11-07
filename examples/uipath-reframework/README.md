@@ -15,7 +15,9 @@ catalog/                   what steps 1 to 5 produce, committed
 ```
 
 Run every command from this directory with `flowglyph[cli]` installed
-(`pip install "flowglyph[cli]"`, or `uv run` in a checkout).
+(`pip install "flowglyph[cli]"`, or prefix them with `uv run` in a checkout). The committed
+`catalog/` is what step 5 leaves behind; to replay the steps from the start, remove it first
+(`rm -rf catalog`) and restore it afterwards with `git checkout catalog`.
 
 ## 1. Extract the project
 
@@ -53,7 +55,7 @@ Main RWdX none
 ```
 
 Each line shows a workflow, its effects and its idempotency. The effects code reads `R`ead,
-`W`rite, `D`estroy, e`X`ternal: upper case for yes, lower case for unknown, absent for no. Effects
+`W`rite, `D`estroy, e`X`ternal: upper case for yes, lower case when it may, absent for no. Effects
 travel up the tree, so `Main` reads, writes and calls other systems because the workflows it
 invokes do.
 
@@ -66,18 +68,18 @@ pure the moment you fill them in; step 6 shows what happens then.
 ```console
 $ flowglyph idempotency catalog --kind workflow
  Capability                                         Kind      Effects  Idempotency  Status
- uipath/ReFrameWork/Framework/CloseAllApplications  workflow  none     natural      safe
+ uipath/ReFrameWork/Framework/CloseAllApplications  workflow  pure     natural      safe
  uipath/ReFrameWork/Framework/GetAppCredentials     workflow  RWX      none         review
  uipath/ReFrameWork/Framework/GetTransactionData    workflow  RWX      none         review
- uipath/ReFrameWork/Framework/InitAllApplications   workflow  none     natural      safe
+ uipath/ReFrameWork/Framework/InitAllApplications   workflow  pure     natural      safe
  uipath/ReFrameWork/Framework/InitAllSettings       workflow  RX       natural      safe
- uipath/ReFrameWork/Framework/KillAllProcesses      workflow  none     natural      safe
+ uipath/ReFrameWork/Framework/KillAllProcesses      workflow  pure     natural      safe
  uipath/ReFrameWork/Framework/SetTransactionStatus  workflow  RWdX     none         review
  uipath/ReFrameWork/Framework/TakeScreenshot        workflow  RWdX     none         review
  uipath/ReFrameWork/Main                            workflow  RWdX     none         review
- uipath/ReFrameWork/Process                         workflow  none     natural      safe
+ uipath/ReFrameWork/Process                         workflow  pure     natural      safe
  uipath/ReFrameWork/Tests/RunAllTests               workflow  RWdX     none         review
- uipath/ReFrameWork/Tests/RunAllTests_Logging       workflow  none     natural      safe
+ uipath/ReFrameWork/Tests/RunAllTests_Logging       workflow  pure     natural      safe
  uipath/ReFrameWork/Tests/TestWorkflowTemplate      workflow  RX       natural      safe
 13 capabilities, 6 to review.
 ```

@@ -8,17 +8,19 @@ something. The words in *italics* are defined in the [glossary](glossary.md).
 ## The pipeline
 
 ```
-          sources                    ingestion                    catalog
- ┌──────────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐
- │ folder, file, git URL│──►│ adapters: UiPath, SAP │──►│ versioned, searchable │
- └──────────────────────┘   │ OData, SAP CPI,       │   │ capabilities and      │
-                            │ OpenAPI, plugins      │   │ workflows + lock file │
-                            └───────────────────────┘   └───────────┬───────────┘
-                                                                    │
-                ┌───────────────────┬───────────────────┬───────────┴───────┬──────────────┐
-                ▼                   ▼                   ▼                   ▼              ▼
-         idempotency report     LLM wiki        MCP gateway (policy,     planner      your code
-                                                ledger, audit)                     (import flowglyph)
+          sources                    ingestion                       catalog
+ ┌──────────────────────┐   ┌─────────────────────────┐   ┌───────────────────────┐
+ │ folder, file, git URL│──►│ adapters: UiPath, SAP   │──►│ versioned, searchable │
+ └──────────────────────┘   │ OData, SAP CPI, SAP     │   │ capabilities and      │
+                            │ Build, BPMN, n8n,       │   │ workflows + lock file │
+                            │ OpenAPI, plugins        │   └───────────┬───────────┘
+                            └─────────────────────────┘               │ enrichment: a model
+                                                                      │ describes, once, cached
+        ┌──────────────┬──────────────┬───────────────┬───────────────┼──────────────┬─────────────────┐
+        ▼              ▼              ▼               ▼               ▼              ▼                 ▼
+  idempotency      LLM wiki     MCP gateway        planner        compilers      context for       your code
+     report                  (policy, ledger,                   (BPMN, XAML)   coding agents  (import flowglyph)
+                                  audit)
 ```
 
 Each stage only reads what the stage before it produced, so every stage can be used, tested and
