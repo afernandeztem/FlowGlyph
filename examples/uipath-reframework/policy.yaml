@@ -1,0 +1,8 @@
+default: allow
+rules:
+  - capabilities: "uipath/ReFrameWork/Tests/*"
+    action: deny
+    reason: test workflows run in Studio, not on behalf of an agent
+  - capabilities: "uipath/ReFrameWork/Main"
+    action: require_approval
+    reason: starting the whole process works through the live queue

@@ -1,4 +1,5 @@
-exclude: ^tests/fixtures/
+# Sources, generated catalogs and patches are compared byte for byte, so no hook may rewrite them.
+exclude: ^tests/fixtures/|^examples/[^/]+/(sources|catalog)/|\.patch$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

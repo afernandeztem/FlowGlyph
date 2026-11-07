@@ -157,10 +157,15 @@ answer records whether it was inferred, or declared by the source itself or by a
 
 ## Recipes
 
-Two complete walkthroughs, with real output, live in `examples/`:
-[an SAP landscape](examples/sap-integration) (OData services and Cloud Integration iFlows
-through report, overrides, wiki and gateway) and
-[supplier invoice intake](examples/invoice-processing) (UiPath and OpenAPI, planned and served).
+Three complete walkthroughs, with real output, live in `examples/`:
+
+- [A UiPath process on the ReFrameWork](examples/uipath-reframework): UiPath's own template
+  through the call tree, the idempotency report, overrides, a change made in Studio, the wiki
+  and the gateway.
+- [An SAP landscape](examples/sap-integration): OData services and Cloud Integration iFlows
+  through the report, overrides, the wiki and the gateway.
+- [Supplier invoice intake](examples/invoice-processing): a UiPath project and an OpenAPI
+  document in one catalog, planned and served.
 
 ### 1. Only the functions and their idempotency
 

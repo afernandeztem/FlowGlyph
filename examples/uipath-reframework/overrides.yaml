@@ -1,0 +1,21 @@
+# What the team that owns this process knows and the XAML cannot say.
+capabilities:
+  uipath/ReFrameWork/Main:
+    description: >-
+      Process supplier invoices from the AP_Invoices queue: take each item, book it in the ERP
+      and set its status in Orchestrator.
+    idempotency:
+      mode: natural
+      scope: the queue; items already processed are never taken again
+    security: {approval_required: true}
+  uipath/ReFrameWork/Framework/GetTransactionData:
+    idempotency:
+      mode: none
+      scope: taking an item marks it In Progress, so a retry takes the next one
+  uipath/ReFrameWork/Framework/SetTransactionStatus:
+    idempotency:
+      mode: key
+      key_fields: [in_TransactionID]
+      scope: one final status per queue item
+  uipath/ReFrameWork/Framework/GetAppCredentials:
+    idempotency: {mode: natural}

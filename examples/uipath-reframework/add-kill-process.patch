@@ -1,0 +1,10 @@
+--- a/Framework/KillAllProcesses.xaml
++++ b/Framework/KillAllProcesses.xaml
+@@ -57,6 +57,7 @@
+   </TextExpression.ReferencesForImplementation>
+   <Sequence sap2010:Annotation.AnnotationText="Use the Kill Process activity to force the termination of the Windows processes representing applications used in the business process.&#xA;Note that killing processes might have undesired outcomes, like losing unsaved changes to files." DisplayName="Kill All Processes" sap2010:WorkflowViewState.IdRef="Sequence_2">
+     <ui:LogMessage DisplayName="Log message (Kill processes)" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Trace" Message="Killing processes..." />
++    <ui:KillProcess DisplayName="Kill process (Excel)" ProcessName="EXCEL" sap2010:WorkflowViewState.IdRef="KillProcess_1" />
+     <sads:DebugSymbol.Symbol>d1FDOlxVc2Vyc1xNYXRldXMgQ3J1elxEb2N1bWVudHNcR2l0SHViXFJlRnJhbWVXb3JrXEZyYW1ld29ya1xLaWxsQWxsUHJvY2Vzc2VzLnhhbWwDOgM9DgIBATsFO50BAgECO4QBO5oBAgED</sads:DebugSymbol.Symbol>
+   </Sequence>
+   <sap2010:WorkflowViewState.ViewStateManager>

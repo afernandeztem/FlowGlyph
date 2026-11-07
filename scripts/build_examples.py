@@ -27,7 +27,15 @@ def build_invoice_processing(target: Path) -> flowglyph.Catalog:
 
 def build_sap_integration(target: Path) -> flowglyph.Catalog:
     """Extract the SAP sources, then extract again with the owners' overrides in place."""
-    example = EXAMPLES / "sap-integration"
+    return _extract_with_overrides(EXAMPLES / "sap-integration", target)
+
+
+def build_uipath_reframework(target: Path) -> flowglyph.Catalog:
+    """Extract the ReFrameWork, then extract again with the owners' overrides in place."""
+    return _extract_with_overrides(EXAMPLES / "uipath-reframework", target)
+
+
+def _extract_with_overrides(example: Path, target: Path) -> flowglyph.Catalog:
     with tempfile.TemporaryDirectory() as scratch:
         sources = Path(shutil.copytree(example / "sources", Path(scratch) / "sources"))
         first = flowglyph.extract(sources)
@@ -42,6 +50,7 @@ def main() -> None:
     for name, build in (
         ("invoice-processing", build_invoice_processing),
         ("sap-integration", build_sap_integration),
+        ("uipath-reframework", build_uipath_reframework),
     ):
         target = EXAMPLES / name / "catalog"
         shutil.rmtree(target, ignore_errors=True)

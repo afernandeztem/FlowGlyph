@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reads every project and document it finds, records the origin and commit in the lock, and
   `--adapter` limits it to one source type.
 - `flowglyph idempotency`: the catalog and nothing else, one row per function with its effects,
-  idempotency and a status (`safe`, `keyed`, `declared`, `review`), filterable by kind, provider,
+  idempotency and a status (`safe`, `keyed`, `declared`, `review`, `n/a`), filterable by kind, provider,
   side effects or pending review, as a table, Markdown, CSV or JSON. Also `flowglyph.report`.
 - `flowglyph adapters` lists the source formats available, plugins included.
 - `flowglyph wiki build` and `wiki lint`: an LLM wiki of the catalog in the shape of Karpathy's
@@ -65,6 +65,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `examples/sap-integration`: OData services and Cloud Integration iFlows taken through the
   report, overrides, the wiki and the gateway, with real output. `make examples` regenerates the
   committed example catalogs, and a test fails when they are out of date.
+- `examples/uipath-reframework`: UiPath's ReFrameWork template through the call tree, the
+  idempotency report, overrides, a change made in Studio and its versions, the wiki and the
+  gateway, with real output.
 - Documentation: an architecture guide by bounded context, a glossary, decision records 0005 to
   0010, and guides with tested examples for writing an adapter or a planner backend.
 
@@ -102,3 +105,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On Windows, command-line planner backends refuse a `.cmd` or `.bat` launcher when the
   arguments it would receive contain cmd.exe syntax, such as the JSON Schema, instead of letting
   cmd.exe cut them short or redirect them. Arguments without it, such as file paths, still work.
+- `flowglyph diff --fail-on major` failed whenever a capability was added. Additions are now a
+  minor change and removals stay major, so the check fails only on changes that break a caller.
+- Capabilities that cannot run on their own, such as UiPath activity types, were reported as
+  `review`, which no override could usefully settle. Their status is now `n/a`, in the report,
+  the CLI and wiki lint.
+- UiPath arguments of .NET reference types (strings, arrays, objects such as exceptions or queue
+  items) accept `null`, which is how `Nothing` reaches a workflow; the gateway refused the most
+  common call to the ReFrameWork's `SetTransactionStatus`. Value types such as `Int32` do not,
+  unless declared `Nullable`, and `Int16`, `Byte`, `Single`, `Guid` and `Char` get their JSON types.
