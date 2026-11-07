@@ -166,6 +166,20 @@ def test_http_executor_sends_headers_body_path_and_query(
     assert system.calls[-1].query == {"status": "open", "limit": "5"}
 
 
+def test_http_executor_refuses_arguments_the_protocol_cannot_carry(
+    system: FakeSystem, payments: flowglyph.Catalog
+):
+    executor = HttpExecutor(system.url + "/v1", NoAuth())
+    for invoice_id in ("..", ".", ""):
+        with pytest.raises(ExecutionError, match=f"invoiceId cannot be {invoice_id!r}"):
+            executor.execute(payments.get("getInvoice"), {"invoiceId": invoice_id})
+    invoice = {"vendor": "ACME", "amount": 1, "currency": "EUR", "reference": "R1"}
+    injected = {"Idempotency-Key": "k\r\nX-Admin: yes", "body": invoice}
+    with pytest.raises(ExecutionError, match="could not be sent"):
+        executor.execute(payments.get("createInvoice"), injected)
+    assert system.calls == []
+
+
 def test_http_executor_reports_error_answers(system: FakeSystem, payments: flowglyph.Catalog):
     system.script = answer(422, {"message": "amount must be positive"})
     executor = HttpExecutor(system.url, NoAuth())
