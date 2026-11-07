@@ -65,7 +65,8 @@ def test_notes_are_kept_and_foreign_files_are_not_overwritten(project: Path, fil
     written = context.write(project, files)
     assert {item.action for item in written} == {"created"}
     agents = project / context.AGENTS_FILE
-    agents.write_text(agents.read_text(encoding="utf-8") + "Runs from the Finance folder.\n")
+    notes = agents.read_text(encoding="utf-8") + "Runs from the Finance folder.\n"
+    agents.write_text(notes, encoding="utf-8")
     assert {item.action for item in context.write(project, files)} == {"unchanged"}
     assert agents.read_text(encoding="utf-8").endswith("Runs from the Finance folder.\n")
     rules = project / context.RULES_FILE
