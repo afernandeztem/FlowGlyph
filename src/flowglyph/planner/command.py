@@ -156,7 +156,10 @@ class CommandPlanModel:
         """
         executable = shutil.which(self.spec.argv[0])
         if executable is None:
-            raise PlannerError(f"{self.spec.name}: {self.spec.argv[0]!r} is not on PATH")
+            raise PlannerError(
+                f"{self.spec.name}: the {self.spec.argv[0]!r} command is not on PATH; install "
+                "it or choose another --via"
+            )
         with tempfile.TemporaryDirectory(prefix="flowglyph-plan-") as scratch:
             schema_file = Path(scratch) / "plan.schema.json"
             output_file = Path(scratch) / "plan.json"

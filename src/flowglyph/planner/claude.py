@@ -13,6 +13,10 @@ from flowglyph.planner.prompt import SYSTEM_PROMPT, request_text
 
 DEFAULT_MODEL = "claude-opus-5-5"
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
+NO_CREDENTIALS = (
+    "no Anthropic credentials: set ANTHROPIC_API_KEY or run `ant auth login`, or use a backend "
+    "that needs none: --via claude-code, codex, gemini, cursor or openai-compatible"
+)
 
 type Effort = Literal["low", "medium", "high", "xhigh", "max"]
 
@@ -31,10 +35,15 @@ class ClaudePlanModel:
         effort: Effort = "high",
         client: anthropic.Anthropic | None = None,
     ) -> None:
-        """Configure the model; credentials come from the environment or `ant auth login`."""
+        """Configure the model; credentials come from the environment or `ant auth login`.
+
+        Raises:
+            PlannerError: If no client is given and the SDK finds no credentials, which it
+                would otherwise only report as a `TypeError` at the first request.
+        """
         self.model = model
         self.effort: Effort = effort
-        self.client = client or anthropic.Anthropic()
+        self.client = client if client is not None else _default_client()
 
     def propose(self, requirements: str, candidates: Sequence[dict[str, Any]]) -> Plan:
         """Ask Claude for a plan.
@@ -64,7 +73,7 @@ class ClaudePlanModel:
             )
         except anthropic.AuthenticationError as error:
             raise PlannerError(
-                "no valid Anthropic credentials: set ANTHROPIC_API_KEY or run `ant auth login`"
+                f"the Anthropic API rejected the credentials: {error.message}"
             ) from error
         except anthropic.APIStatusError as error:
             raise PlannerError(
@@ -77,3 +86,13 @@ class ClaudePlanModel:
         if response.stop_reason == "max_tokens" or response.parsed_output is None:
             raise PlannerError(f"the model did not return a complete {noun}")
         return response.parsed_output
+
+
+def _default_client() -> anthropic.Anthropic:
+    try:
+        client = anthropic.Anthropic()
+    except anthropic.CredentialsError as error:
+        raise PlannerError(f"Anthropic credentials could not be read: {error}") from error
+    if not (client.api_key or client.auth_token or client.credentials):
+        raise PlannerError(NO_CREDENTIALS)
+    return client

@@ -358,6 +358,8 @@ Every command has `--help`.
 | `git clone failed` | the repository is private or the URL is wrong; clone it yourself and extract the folder |
 | `set these environment variables before serving` | export the variables your connections file names |
 | `the gateway needs: pip install 'flowglyph[mcp]'` | install the extra it names |
+| `no Anthropic credentials` | export `ANTHROPIC_API_KEY`, or plan with the assistant you are signed in to: `--via claude-code`, `codex`, `gemini` or `cursor` |
+| `the 'claude' command is not on PATH` | install that assistant's command line, or choose another `--via` |
 | `... is a batch file, and cmd.exe cannot pass it the plan schema` | on Windows, use the assistant's native executable or `--via anthropic` |
 | `conditions are copied as written` | rewrite those conditions in the target tool's expression language |
 | many rows in `review` | normal at first: declare what you know in `flowglyph.overrides.yaml` and extract again |

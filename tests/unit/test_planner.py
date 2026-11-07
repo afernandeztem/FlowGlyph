@@ -334,6 +334,18 @@ def test_claude_failures_become_planner_errors(outcome: object, message: str):
         model.propose("Do things.", [])
 
 
+@pytest.mark.usefixtures("no_anthropic_credentials")
+def test_missing_credentials_are_reported_before_any_request(monkeypatch: pytest.MonkeyPatch):
+    with pytest.raises(PlannerError, match=r"set ANTHROPIC_API_KEY .* --via claude-code"):
+        ClaudePlanModel()
+    monkeypatch.setenv("ANTHROPIC_PROFILE", "nope")
+    with pytest.raises(PlannerError, match="could not be read"):
+        ClaudePlanModel()
+    monkeypatch.delenv("ANTHROPIC_PROFILE")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    assert ClaudePlanModel().client.api_key == "sk-test"
+
+
 def test_steps_that_depend_on_an_optional_step_are_flagged(catalog: Catalog):
     proposal = good_plan()
     report = plan(REQUIREMENTS, catalog, FakeModel(proposal))

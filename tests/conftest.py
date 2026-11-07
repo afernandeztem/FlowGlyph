@@ -29,6 +29,15 @@ def synthetic() -> Path:
 
 
 @pytest.fixture
+def no_anthropic_credentials(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """No key or token in the environment, and no `ant auth login` profile on disk."""
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("APPDATA", str(tmp_path))
+
+
+@pytest.fixture
 def golden(request: pytest.FixtureRequest) -> GoldenCheck:
     update = bool(request.config.getoption("--update-golden"))
 
