@@ -11,7 +11,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 IR_VERSION = "0.4.0"
 
@@ -95,6 +95,16 @@ class Idempotency(_Model):
     provenance: Provenance = "inferred"
     confidence: float = Field(default=0.5, ge=0.0, le=1.0)
     inferred_by: Literal["heuristic", "llm"] | None = "heuristic"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _nobody_inferred_what_was_declared(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        fields = cast("dict[str, Any]", data)
+        if fields.get("provenance") == "declared":
+            return {**fields, "inferred_by": None}
+        return fields
 
 
 class Semantics(_Model):

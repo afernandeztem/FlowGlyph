@@ -159,9 +159,11 @@ shown lives in `flowglyph.views` ([ADR-0005](adr/0005-typed-capability-facts-and
 
 | Change | Bump |
 |---|---|
-| Input or output removed, retyped, or an input becomes required | major |
-| Optional input or new output added, effects, idempotency or security changed, or marked deprecated | minor |
-| Only titles, descriptions or parameter descriptions changed | patch |
+| A call that was valid can now be rejected: an input removed, narrowed (a type or `null` no longer accepted, a nested property dropped) or made required | major |
+| A result can now hold something a caller did not expect: an output removed, widened, no longer required, or newly nullable | major |
+| The capability is no longer invocable | major |
+| Optional input or new output added, an input widened, effects, idempotency or security changed, or marked deprecated | minor |
+| Only titles or descriptions changed, anywhere in the contract | patch |
 | Only layout, designer metadata or comments changed | none |
 
 Between two catalogs, a capability that appears is a `minor` change, since no caller depended on
