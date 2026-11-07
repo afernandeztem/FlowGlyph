@@ -317,7 +317,7 @@ def _overview(catalog: Catalog, by_source: dict[str, list[Capability]]) -> str:
         "## To review",
         "",
     ]
-    pending = [row for row in rows if row.status == "review" and row.kind != "activity"]
+    pending = [row for row in rows if row.status == "review"]
     lines += [
         f"- [{row.id}](capabilities/{page_name(row.id)}): {row.effects}" for row in pending
     ] or ["Nothing."]

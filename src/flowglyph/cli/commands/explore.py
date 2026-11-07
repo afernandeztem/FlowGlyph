@@ -18,7 +18,13 @@ from flowglyph.errors import FlowGlyphError
 from flowglyph.ir import Capability, CapabilityKind
 from flowglyph.views import effects_code
 
-_STATUS_STYLE = {"safe": "green", "keyed": "cyan", "declared": "blue", "review": "bold yellow"}
+_STATUS_STYLE = {
+    "safe": "green",
+    "keyed": "cyan",
+    "declared": "blue",
+    "review": "bold yellow",
+    "n/a": "dim",
+}
 
 
 def inspect(

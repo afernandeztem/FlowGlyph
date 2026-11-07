@@ -161,6 +161,10 @@ shown lives in `flowglyph.views` ([ADR-0005](adr/0005-typed-capability-facts-and
 | Only titles, descriptions or parameter descriptions changed | patch |
 | Only layout, designer metadata or comments changed | none |
 
+Between two catalogs, a capability that appears is a `minor` change, since no caller depended on
+it, and one that disappears is `major`. `flowglyph diff --fail-on major` therefore fails only on
+changes that can break a caller.
+
 Trigger, entry point, configuration, usage and tags describe where a capability sits, not its
 contract, so changing them does not bump the version.
 

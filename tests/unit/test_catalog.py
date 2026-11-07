@@ -91,6 +91,15 @@ def test_deprecation_is_minor_and_placement_is_not_versioned(project: Path):
     assert reextract(project, first).get(MAIN).version == "1.1.0"
 
 
+def test_new_capabilities_are_not_breaking(project: Path):
+    first = flowglyph.extract(project)
+    shutil.copy(project / "Steps" / "ValidateVendor.xaml", project / "Steps" / "CheckVendor.xaml")
+    changes = reextract(project, first).changes
+    assert [(c.capability, c.kind, c.bump) for c in changes] == [
+        ("uipath/Invoices/Steps/CheckVendor", "added", Bump.MINOR)
+    ]
+
+
 def test_removed_capabilities_are_reported(project: Path):
     first = flowglyph.extract(project)
     (project / "Steps" / "ValidateVendor.xaml").unlink()

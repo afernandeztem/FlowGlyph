@@ -39,7 +39,7 @@ def assign_versions(
         before = previous.capabilities.get(capability.id) if previous else None
         if before is None:
             if previous is not None:
-                changes.append(Change(capability.id, "added", Bump.MAJOR, None, entry.version))
+                changes.append(Change(capability.id, "added", Bump.MINOR, None, entry.version))
         else:
             bump = _bump(before, entry)
             version = _increment(before.version, bump)
@@ -64,7 +64,7 @@ def diff_locks(old: Lock, new: Lock) -> list[Change]:
         before = old.capabilities.get(capability_id)
         after = new.capabilities.get(capability_id)
         if before is None and after is not None:
-            changes.append(Change(capability_id, "added", Bump.MAJOR, None, after.version))
+            changes.append(Change(capability_id, "added", Bump.MINOR, None, after.version))
         elif after is None and before is not None:
             changes.append(Change(capability_id, "removed", Bump.MAJOR, before.version, None))
         elif before is not None and after is not None:

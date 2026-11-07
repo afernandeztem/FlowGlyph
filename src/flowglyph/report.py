@@ -17,13 +17,14 @@ from flowglyph.ir import Capability, CapabilityKind
 from flowglyph.views import effects_code, retry_advice
 
 type ReportFormat = Literal["markdown", "csv", "json"]
-type Status = Literal["safe", "keyed", "declared", "review"]
+type Status = Literal["safe", "keyed", "declared", "review", "n/a"]
 
 _STATUS_HELP = {
     "safe": "no side effects, or naturally idempotent",
     "keyed": "retry-safe when called with its idempotency key",
     "declared": "idempotency declared by the source or by a person",
     "review": "has side effects and no retry guarantee: declare one in the overrides",
+    "n/a": "cannot be run on its own, so there is no retry to decide",
 }
 
 
@@ -47,6 +48,9 @@ class Row:
 
 def status(capability: Capability) -> Status:
     """Whether a capability's retry behaviour is settled or still needs a person."""
+    if not capability.invocable:
+        # Activity types and timer-only flows only run inside something else, which decides.
+        return "n/a"
     idempotency = capability.idempotency
     if idempotency.provenance == "declared":
         return "declared"

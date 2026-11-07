@@ -130,8 +130,9 @@ and this page disagree, the code is wrong or this page is out of date: please op
   and running.
 
 **Review status**
-: The idempotency report's verdict per capability: `safe`, `keyed`, `declared`, or `review`
-  when it has side effects and no retry guarantee, which a person should settle.
+: The idempotency report's verdict per capability: `safe`, `keyed`, `declared`, `review` when
+  it has side effects and no retry guarantee, which a person should settle, or `n/a` when it
+  cannot be run on its own, such as an activity type, so the workflows using it decide instead.
 
 ## Using the catalog
 

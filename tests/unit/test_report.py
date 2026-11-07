@@ -16,6 +16,13 @@ def test_rows_classify_what_still_needs_a_person(synthetic: Path):
     assert statuses["executePayment"] == "review"
 
 
+def test_what_cannot_run_on_its_own_has_nothing_to_review(reframework: Path):
+    rows = report.rows(flowglyph.extract(reframework), kinds=["activity"])
+    create_file = next(row for row in rows if row.id == "uipath/activity/CreateFile")
+    assert create_file.side_effects
+    assert {row.status for row in rows} == {"n/a"}
+
+
 def test_filters(synthetic: Path, reframework: Path):
     catalog = flowglyph.extract(synthetic / "invoices").merge(flowglyph.extract(reframework))
     workflows = report.rows(catalog, kinds=["workflow"])
