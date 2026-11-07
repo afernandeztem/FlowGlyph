@@ -403,7 +403,8 @@ connections:
 ```
 
 Authentication types: `none`, `bearer`, `basic`, `header` (an API key in a header you name) and
-`client_credentials` (OAuth).
+`client_credentials` (OAuth). Every address, token URLs included, must be `https://`; a
+connection with `allow_insecure: true` may use `http://`, for a server on your own machine.
 
 ## Files FlowGlyph writes
 
