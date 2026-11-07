@@ -20,8 +20,9 @@ with the backend named in `FLOWGLYPH_PLANNER` (`anthropic` by default, which nee
 `ANTHROPIC_API_KEY`; `claude-code`, `codex`, `gemini` or `cursor` use that tool's own sign-in).
 Every run uses real model capacity.
 
-Before changing code, read [docs/architecture.md](docs/architecture.md) for how the code is
-divided and [docs/glossary.md](docs/glossary.md) for what its words mean.
+Before changing code, read [docs/guide.md](docs/guide.md) to see what FlowGlyph does from a
+user's side, [docs/architecture.md](docs/architecture.md) for how the code is divided and
+[docs/glossary.md](docs/glossary.md) for what its words mean.
 
 ## Project layout
 

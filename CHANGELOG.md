@@ -101,6 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Answers are cached in `flowglyph.enrichment.json` by source hash and reapplied by `extract`
   before versioning, so reruns change nothing. IR 0.4.0 adds `Capability.generated`, the fields
   a model wrote; cards say so. Idempotency is never enriched.
+- `docs/guide.md`: how to use every feature, in the order you would use them, with samples to
+  follow from a clone. A test checks that every command and option it shows exists.
 - Every planner backend can now answer with any pydantic model (`StructuredModel.answer`), not
   only a plan, so new uses of a model need no new backend.
 - `flowglyph.extract(..., refine=...)` applies a step after overrides and before versioning.
