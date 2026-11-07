@@ -48,7 +48,16 @@ invocable: false
     "required": [
       "ContinueOnError",
       "Path"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:CreateDirectory ContinueOnError=\"{x:Null}\" DisplayName=\"Create directory\" Path=\"[path]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/TakeScreenshot.xaml"
+    }
   },
   "output": {
     "type": "object",

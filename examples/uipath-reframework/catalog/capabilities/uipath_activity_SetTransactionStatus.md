@@ -100,7 +100,17 @@ invocable: false
       "Status",
       "TimeoutMS",
       "TransactionItem"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:SetTransactionStatus ContinueOnError=\"{x:Null}\" Reason=\"{x:Null}\" ServiceBaseAddress=\"{x:Null}\" TimeoutMS=\"{x:Null}\" DisplayName=\"Set transaction status (Successful)\" ErrorType=\"Application\" Status=\"Successful\" TransactionItem=\"[transactionItem]\">\n  <ui:SetTransactionStatus.Output>\n    <scg:Dictionary x:TypeArguments=\"x:String, InArgument\" />\n  </ui:SetTransactionStatus.Output>\n</ui:SetTransactionStatus>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "scg": "clr-namespace:System.Collections.Generic;assembly=mscorlib",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/SetTransactionStatus.xaml"
+    }
   },
   "output": {
     "type": "object",

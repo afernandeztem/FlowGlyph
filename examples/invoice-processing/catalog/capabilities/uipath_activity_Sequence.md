@@ -34,7 +34,14 @@ None.
   "input": {
     "type": "object",
     "properties": {},
-    "required": []
+    "required": [],
+    "x-xaml-template": {
+      "xml": "<Sequence DisplayName=\"Process invoice\">\n  <!-- activities -->\n</Sequence>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities"
+      },
+      "from": "Main.xaml"
+    }
   },
   "output": {
     "type": "object",

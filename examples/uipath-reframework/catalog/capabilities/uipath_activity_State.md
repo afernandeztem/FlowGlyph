@@ -60,7 +60,14 @@ Read configuration file and initialize applications used in the process.
     },
     "required": [
       "Entry"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<State DisplayName=\"Initialization\">\n  <State.Entry>\n    <!-- activities -->\n  </State.Entry>\n  <State.Transitions>\n    <!-- activities -->\n  </State.Transitions>\n</State>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities"
+      },
+      "from": "Main.xaml"
+    }
   },
   "output": {
     "type": "object",

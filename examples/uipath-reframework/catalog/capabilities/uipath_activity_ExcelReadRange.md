@@ -64,7 +64,16 @@ invocable: false
       "DataTable",
       "Range",
       "SheetName"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:ExcelReadRange AddHeaders=\"True\" DataTable=\"[dataTable]\" DisplayName=\"Read Range (Defined tests)\" SheetName=\"Tests\">\n  <ui:ExcelReadRange.Range>\n    <InArgument x:TypeArguments=\"x:String\">\n      <Literal x:TypeArguments=\"x:String\" Value=\"[value]\" />\n    </InArgument>\n  </ui:ExcelReadRange.Range>\n</ui:ExcelReadRange>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Tests/RunAllTests.xaml"
+    }
   },
   "output": {
     "type": "object",

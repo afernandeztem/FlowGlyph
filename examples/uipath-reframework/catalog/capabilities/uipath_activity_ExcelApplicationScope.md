@@ -56,7 +56,16 @@ invocable: false
       "Body",
       "Password",
       "WorkbookPath"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:ExcelApplicationScope Password=\"{x:Null}\" DisplayName=\"Excel application scope\" WorkbookPath=\"[workbookPath]\">\n  <ui:ExcelApplicationScope.Body>\n    <ActivityAction x:TypeArguments=\"ui:WorkbookApplication\">\n      <ActivityAction.Argument>\n        <DelegateInArgument x:TypeArguments=\"ui:WorkbookApplication\" Name=\"ExcelWorkbookScope\" />\n      </ActivityAction.Argument>\n      <!-- activities -->\n    </ActivityAction>\n  </ui:ExcelApplicationScope.Body>\n</ui:ExcelApplicationScope>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Tests/RunAllTests.xaml"
+    }
   },
   "output": {
     "type": "object",

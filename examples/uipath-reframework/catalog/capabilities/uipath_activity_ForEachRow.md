@@ -51,7 +51,17 @@ invocable: false
     "required": [
       "Body",
       "DataTable"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:ForEachRow DataTable=\"[dataTable]\" DisplayName=\"For each configuration row\">\n  <ui:ForEachRow.Body>\n    <ActivityAction x:TypeArguments=\"sd:DataRow\">\n      <ActivityAction.Argument>\n        <DelegateInArgument x:TypeArguments=\"sd:DataRow\" Name=\"Row\" />\n      </ActivityAction.Argument>\n      <!-- activities -->\n    </ActivityAction>\n  </ui:ForEachRow.Body>\n</ui:ForEachRow>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "sd": "clr-namespace:System.Data;assembly=System.Data",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/InitAllSettings.xaml"
+    }
   },
   "output": {
     "type": "object",

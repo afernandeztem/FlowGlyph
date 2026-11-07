@@ -55,7 +55,16 @@ The whole screen is captured.
       "Screenshot",
       "Target",
       "WaitBefore"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:TakeScreenshot WaitBefore=\"{x:Null}\" DisplayName=\"Take screenshot\" Screenshot=\"[screenshot]\">\n  <ui:TakeScreenshot.Target>\n    <ui:Target ClippingRegion=\"{x:Null}\" Element=\"{x:Null}\" Selector=\"{x:Null}\" TimeoutMS=\"{x:Null}\" WaitForReady=\"INTERACTIVE\" />\n  </ui:TakeScreenshot.Target>\n</ui:TakeScreenshot>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/TakeScreenshot.xaml"
+    }
   },
   "output": {
     "type": "object",

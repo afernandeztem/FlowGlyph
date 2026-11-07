@@ -56,7 +56,16 @@ invocable: false
       "AssetName",
       "TimeoutMS",
       "Value"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:GetRobotAsset TimeoutMS=\"{x:Null}\" AssetName=\"[assetName]\" DisplayName=\"Get Asset\">\n  <ui:GetRobotAsset.Value>\n    <OutArgument x:TypeArguments=\"ui:GenericValue\">[value]</OutArgument>\n  </ui:GetRobotAsset.Value>\n</ui:GetRobotAsset>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/InitAllSettings.xaml"
+    }
   },
   "output": {
     "type": "object",

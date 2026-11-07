@@ -48,7 +48,15 @@ invocable: false
     "required": [
       "To",
       "Value"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<Assign>\n  <Assign.To>\n    <OutArgument x:TypeArguments=\"x:Boolean\">[to]</OutArgument>\n  </Assign.To>\n  <Assign.Value>\n    <InArgument x:TypeArguments=\"x:Boolean\">[value]</InArgument>\n  </Assign.Value>\n</Assign>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Steps/ValidateVendor.xaml"
+    }
   },
   "output": {
     "type": "object",

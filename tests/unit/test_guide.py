@@ -1,4 +1,4 @@
-"""Every command and option docs/guide.md shows exists in the command line."""
+"""Every command and option the guide and the Agent Skill show exists in the command line."""
 
 import re
 from pathlib import Path
@@ -9,7 +9,8 @@ import typer
 
 from flowglyph.cli.main import app
 
-GUIDE = Path(__file__).parents[2] / "docs" / "guide.md"
+ROOT = Path(__file__).parents[2]
+DOCUMENTS = (ROOT / "docs" / "guide.md", ROOT / "src" / "flowglyph" / "skill" / "SKILL.md")
 _COMMAND = re.compile(r"(?<!import )(?<!from )flowglyph ((?:wiki )?[a-z]+)((?: [^\s`|]+)*)")
 
 
@@ -27,9 +28,11 @@ def _commands() -> dict[str, Any]:
 
 def _uses() -> list[tuple[str, list[str]]]:
     uses: list[tuple[str, list[str]]] = []
-    for match in _COMMAND.finditer(GUIDE.read_text(encoding="utf-8")):
-        options = [word.split("=")[0] for word in match.group(2).split() if word.startswith("--")]
-        uses.append((match.group(1), options))
+    for document in DOCUMENTS:
+        for match in _COMMAND.finditer(document.read_text(encoding="utf-8")):
+            words = match.group(2).split()
+            options = [word.split("=")[0] for word in words if word.startswith("--")]
+            uses.append((match.group(1), options))
     return uses
 
 

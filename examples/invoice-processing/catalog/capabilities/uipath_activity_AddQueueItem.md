@@ -40,7 +40,15 @@ invocable: false
     },
     "required": [
       "QueueType"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:AddQueueItem DisplayName=\"Queue booking\" QueueType=\"Invoices\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Steps/BookInvoice.xaml"
+    }
   },
   "output": {
     "type": "object",

@@ -8,8 +8,9 @@ from typing import ClassVar
 from flowglyph._internal.hashing import digest
 from flowglyph.adapters import Diagnostic, Extraction
 from flowglyph.adapters.uipath.parser import ActivityStats, ParsedWorkflow, WorkflowParser
+from flowglyph.adapters.uipath.project import read_project
 from flowglyph.adapters.uipath.taxonomy import Taxonomy, default_taxonomy
-from flowglyph.adapters.uipath.xaml import load, split_tag
+from flowglyph.adapters.uipath.xaml import load, namespace_prefixes, split_tag
 from flowglyph.errors import AdapterError
 from flowglyph.ir import Capability, Effects, Idempotency, JsonSchema, Source, Trigger, Workflow
 
@@ -60,7 +61,7 @@ class UiPathAdapter:
         root = path if path.is_dir() else path.parent
         files = [path] if path.is_file() else _workflow_files(root)
         manifest = _manifest(root)
-        project = _slug(str(manifest.get("name") or root.resolve().name))
+        project = read_project(root).slug
         main = str(manifest.get("main", "Main.xaml"))
 
         artifacts = {_relative(file, root): digest(file.read_bytes()) for file in files}
@@ -85,7 +86,8 @@ class UiPathAdapter:
                 diagnostics.append(Diagnostic("info", artifact, "not a workflow, skipped"))
                 continue
             capability_id = capability_ids[artifact]
-            result = parser.parse(document, artifact, capability_id, capability_id)
+            prefixes = namespace_prefixes(file)
+            result = parser.parse(document, artifact, capability_id, capability_id, prefixes)
             parsed.append(result)
             diagnostics.extend(Diagnostic("warning", artifact, note) for note in result.notes)
             diagnostics.extend(
@@ -149,13 +151,20 @@ class UiPathAdapter:
             properties[parameter] = spec
         required = sorted(name for name, uses in stats.parameter_uses.items() if uses == stats.uses)
         files = sorted(stats.files)
+        schema: JsonSchema = {"type": "object", "properties": properties, "required": required}
+        if stats.template is not None:
+            schema["x-xaml-template"] = {
+                "xml": stats.template.xml,
+                "namespaces": stats.template.namespaces,
+                "from": stats.template_file,
+            }
         return Capability(
             id=stats.capability_id,
             kind="activity",
             title=stats.name,
             description=stats.notes[0] if stats.notes else "",
             category=stats.category.name,
-            input_schema={"type": "object", "properties": properties, "required": required},
+            input_schema=schema,
             effects=stats.category.effects,
             idempotency=_inferred_idempotency(stats.category.effects),
             used_in=tuple(files),

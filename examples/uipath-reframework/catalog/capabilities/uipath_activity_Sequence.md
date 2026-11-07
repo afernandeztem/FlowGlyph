@@ -57,7 +57,18 @@ Do necessary procedures for ending the process (e.g., logout) and close the appl
         ]
       }
     },
-    "required": []
+    "required": [],
+    "x-xaml-template": {
+      "xml": "<Sequence DisplayName=\"Take and Save Screenshot\">\n  <Sequence.Variables>\n    <Variable x:TypeArguments=\"ui:Image\" Name=\"Screenshot\" />\n    <Variable x:TypeArguments=\"si:FileInfo\" Name=\"ScreenshotFileInfo\" />\n  </Sequence.Variables>\n  <!-- activities -->\n  <sads:DebugSymbol.Symbol>[symbol]</sads:DebugSymbol.Symbol>\n</Sequence>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "sads": "http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger",
+        "si": "clr-namespace:System.IO;assembly=mscorlib",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/TakeScreenshot.xaml"
+    }
   },
   "output": {
     "type": "object",

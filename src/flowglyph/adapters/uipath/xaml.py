@@ -48,12 +48,21 @@ _CLR_TO_JSON = {
 _VALUE_TYPES = frozenset(_CLR_TO_JSON) - {"String"}
 _NULLABLE = re.compile(r"Nullable\((?P<inner>.*)\)$")
 _ARRAY_TYPES = frozenset({"List", "IEnumerable", "Collection"})
+_DECLARATION = re.compile(r'xmlns(?::([\w.-]+))?="([^"]*)"')
 _ARGUMENT_TYPE = re.compile(r"\s*(?P<direction>In|Out|InOut)Argument\((?P<inner>.*)\)\s*$")
 
 
 def load(path: Path) -> ET.Element:
     """Parse a XAML file, refusing documents that declare a DTD."""
     return load_xml(path)
+
+
+def namespace_prefixes(path: Path) -> dict[str, str]:
+    """The namespace prefixes a XAML file declares on its root element, as Studio wrote them."""
+    head = path.read_bytes()[:16384].decode("utf-8", errors="replace")
+    start = head.find("<Activity")
+    root = head[start : head.find(">", start)] if start != -1 else ""
+    return dict(_DECLARATION.findall(root))
 
 
 def split_tag(tag: str) -> tuple[str, str]:

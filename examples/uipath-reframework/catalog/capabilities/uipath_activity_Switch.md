@@ -40,7 +40,15 @@ invocable: false
     },
     "required": [
       "Expression"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<Switch x:TypeArguments=\"x:String\" DisplayName=\"Switch to choose test comment\" Expression=\"[expression]\">\n  <!-- activities -->\n</Switch>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Tests/RunAllTests_Logging.xaml"
+    }
   },
   "output": {
     "type": "object",

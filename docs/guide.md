@@ -285,6 +285,28 @@ flowglyph compile catalog uipath/ReFrameWork/Main --to bpmn --engine camunda8 -o
 The compiler lists what it could not carry over exactly, such as conditions written for another
 tool's expression language.
 
+## 8. Give coding agents the context to work on a project
+
+Before an agent changes a UiPath project, it should know what each workflow does. Write it down
+for it, from the sources:
+
+```bash
+flowglyph context robots        # into every UiPath project under the folder
+flowglyph skill                 # teach your coding agent when and how to use FlowGlyph
+```
+
+Each project gets an `AGENTS.md` (read by Claude Code, Codex, Cursor and Gemini CLI) and the
+same text in `.claude/rules/project-context.md` (read by UiPath's own skills), with its entry
+points, arguments and their types, call tree, and what every workflow changes and whether it is
+safe to retry. For every activity the project uses there is a card in
+`.flowglyph/activities/` with a XAML template from the project's own workflows: an agent adding
+a Send Email copies how this project already sends email, and fills in the `[placeholders]`.
+
+Run it again after changing the project. What you write under **Notes** at the end of these
+files is kept; a file you wrote yourself is never replaced unless you add `--force`. With
+`--catalog catalog` it uses a saved catalog, so your overrides and enriched descriptions carry
+through.
+
 ## From Python
 
 Everything above is also a library:
@@ -317,6 +339,8 @@ catalog = flowglyph.load_catalog("catalog")
 | `flowglyph validate CATALOG` | check a catalog for broken references |
 | `flowglyph diff OLD NEW` | what changed, and how much |
 | `flowglyph enrich CATALOG` | descriptions for what sources left undescribed |
+| `flowglyph context SOURCE` | context files for coding agents, per UiPath project |
+| `flowglyph skill` | install the FlowGlyph skill for coding agents |
 | `flowglyph wiki build SOURCE` / `wiki lint DIR` | a wiki for people and LLMs |
 | `flowglyph serve CATALOG` | the MCP gateway for agents |
 | `flowglyph approvals CATALOG` / `approve CATALOG KEY` | runs waiting for a person |

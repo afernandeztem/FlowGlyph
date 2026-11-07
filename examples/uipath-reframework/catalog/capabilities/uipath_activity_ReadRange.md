@@ -74,7 +74,16 @@ invocable: false
       "Range",
       "SheetName",
       "WorkbookPath"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:ReadRange Range=\"{x:Null}\" AddHeaders=\"True\" DataTable=\"[dataTable]\" DisplayName=\"Read range (Settings and Constants sheets)\" SheetName=\"[sheetName]\" WorkbookPath=\"[workbookPath]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/InitAllSettings.xaml"
+    }
   },
   "output": {
     "type": "object",

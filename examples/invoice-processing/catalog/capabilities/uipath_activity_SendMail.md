@@ -48,7 +48,15 @@ invocable: false
     "required": [
       "Subject",
       "To"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<um:SendMail DisplayName=\"Mail approver\" To=\"[to]\" Subject=\"[subject]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "um": "clr-namespace:UiPath.Mail.SMTP.Activities;assembly=UiPath.Mail.Activities"
+      },
+      "from": "Steps/RequestApproval.xaml"
+    }
   },
   "output": {
     "type": "object",

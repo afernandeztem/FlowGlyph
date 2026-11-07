@@ -48,7 +48,16 @@ invocable: false
     "required": [
       "MethodName",
       "TargetObject"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<InvokeMethod DisplayName=\"Invoke method (AppendChar)\" MethodName=\"AppendChar\">\n  <InvokeMethod.TargetObject>\n    <InArgument x:TypeArguments=\"ss:SecureString\">[targetObject]</InArgument>\n  </InvokeMethod.TargetObject>\n  <InArgument x:TypeArguments=\"x:Char\">[invokeMethod]</InArgument>\n</InvokeMethod>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ss": "clr-namespace:System.Security;assembly=mscorlib",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

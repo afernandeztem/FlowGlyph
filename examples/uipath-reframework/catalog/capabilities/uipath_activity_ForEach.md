@@ -51,7 +51,16 @@ invocable: false
     "required": [
       "Body",
       "Values"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:ForEach x:TypeArguments=\"x:Char\" DisplayName=\"For each character in password\" Values=\"[values]\">\n  <ui:ForEach.Body>\n    <ActivityAction x:TypeArguments=\"x:Char\">\n      <ActivityAction.Argument>\n        <DelegateInArgument x:TypeArguments=\"x:Char\" Name=\"PasswordCharacter\" />\n      </ActivityAction.Argument>\n      <!-- activities -->\n    </ActivityAction>\n  </ui:ForEach.Body>\n</ui:ForEach>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

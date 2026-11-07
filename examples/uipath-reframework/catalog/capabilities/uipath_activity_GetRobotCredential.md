@@ -66,7 +66,16 @@ Attempt to retrieve credentials from Orchestrator.
       "Password",
       "TimeoutMS",
       "Username"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:GetRobotCredential TimeoutMS=\"{x:Null}\" AssetName=\"[assetName]\" DisplayName=\"Get credentials\" Password=\"[password]\" Username=\"[username]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

@@ -19,6 +19,7 @@ what follows from it. Records are not edited once accepted; a later record super
 | [0012](0012-process-engine-adapters.md) | BPMN, n8n and SAP Build Process Automation adapters | accepted |
 | [0013](0013-compilers.md) | Compiling workflow IR back into BPMN and UiPath XAML | accepted |
 | [0014](0014-llm-enrichment.md) | Enrichment by a language model, cached by source hash | accepted |
+| [0015](0015-context-for-coding-agents.md) | Context files for coding agents, written from the sources | accepted |
 
 To propose a new decision, copy the shape of the most recent record, number it next, and open a
 pull request with status `proposed`.

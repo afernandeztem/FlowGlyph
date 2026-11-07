@@ -68,7 +68,16 @@ For example, if transactions are rows from a DataTable, the row corresponding to
       "QueueType",
       "TimeoutMS",
       "TransactionItem"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:GetQueueItem ContinueOnError=\"{x:Null}\" TimeoutMS=\"{x:Null}\" DisplayName=\"Get transaction item\" QueueType=\"[queueType]\" TransactionItem=\"[transactionItem]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/GetTransactionData.xaml"
+    }
   },
   "output": {
     "type": "object",

@@ -74,7 +74,15 @@ Add provided credentials to the Windows Credential Manager to avoid requesting t
       "PersistanceType",
       "Target",
       "Username"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:AddCredential CredentialType=\"Generic\" DisplayName=\"Add Credential\" Password=\"[password]\" PersistanceType=\"Enterprise\" Target=\"[target]\" Username=\"[username]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

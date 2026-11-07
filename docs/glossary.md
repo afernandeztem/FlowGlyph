@@ -167,6 +167,16 @@ and this page disagree, the code is wrong or this page is out of date: please op
   says nothing about them. The fields it wrote are listed in `generated`, and the answers are
   cached by source hash so a model is asked once per source change.
 
+**Context files, activity card, template**
+: What `flowglyph context` writes into a UiPath project for coding agents: `AGENTS.md` and
+  `.claude/rules/project-context.md`, and one *activity card* per activity type the project
+  uses. A card holds a *template*: the XAML of the project's richest use of that activity, with
+  its settings kept and its values replaced by `[placeholders]`.
+
+**Agent Skill**
+: `SKILL.md`, the instructions a coding agent loads to know when and how to run FlowGlyph.
+  `flowglyph skill` installs it; the repository is also a plugin for several agents.
+
 **Compiler**
 : Turns a workflow graph back into a tool's own format: BPMN 2.0, for any modeler or a Camunda
   engine, or a UiPath workflow. It reports what it could not carry over exactly instead of

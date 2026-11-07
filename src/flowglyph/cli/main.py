@@ -6,7 +6,17 @@ import typer
 
 import flowglyph
 from flowglyph.cli._shared import console
-from flowglyph.cli.commands import catalog, compile, enrich, explore, gateway, plan, wiki
+from flowglyph.cli.commands import (
+    catalog,
+    compile,
+    context,
+    enrich,
+    explore,
+    gateway,
+    plan,
+    skill,
+    wiki,
+)
 
 app = typer.Typer(
     name="flowglyph",
@@ -27,6 +37,8 @@ for command in (
     plan.plan,
     compile.compile,
     enrich.enrich,
+    context.context,
+    skill.skill,
     catalog.adapters,
     explore.idempotency,
 ):

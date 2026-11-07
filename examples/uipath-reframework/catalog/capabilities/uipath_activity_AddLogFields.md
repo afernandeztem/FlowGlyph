@@ -44,7 +44,16 @@ This log field can be used to create reports and visualizations about the proces
     },
     "required": [
       "Fields"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:AddLogFields DisplayName=\"Add transaction log fields (Successful)\">\n  <ui:AddLogFields.Fields>\n    <InArgument x:TypeArguments=\"x:String\" x:Key=\"logF_TransactionStatus\">[fields]</InArgument>\n    <InArgument x:TypeArguments=\"x:String\" x:Key=\"logF_TransactionNumber\">[fields]</InArgument>\n    <InArgument x:TypeArguments=\"x:String\" x:Key=\"logF_TransactionID\">[fields]</InArgument>\n    <InArgument x:TypeArguments=\"x:String\" x:Key=\"logF_TransactionField1\">[fields]</InArgument>\n    <InArgument x:TypeArguments=\"x:String\" x:Key=\"logF_TransactionField2\">[fields]</InArgument>\n  </ui:AddLogFields.Fields>\n</ui:AddLogFields>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/SetTransactionStatus.xaml"
+    }
   },
   "output": {
     "type": "object",

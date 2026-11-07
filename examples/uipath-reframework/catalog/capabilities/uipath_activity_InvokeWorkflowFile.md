@@ -76,7 +76,16 @@ Since the applications are assumed to be already closed, CloseAllApplications is
       "ContinueOnError",
       "UnSafe",
       "WorkflowFileName"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:InvokeWorkflowFile ContinueOnError=\"{x:Null}\" DisplayName=\"Take Screenshot\" UnSafe=\"False\" WorkflowFileName=\"[workflowFileName]\">\n  <ui:InvokeWorkflowFile.Arguments>\n    <InArgument x:TypeArguments=\"x:String\" x:Key=\"in_Folder\">[arguments]</InArgument>\n    <InOutArgument x:TypeArguments=\"x:String\" x:Key=\"io_FilePath\" />\n  </ui:InvokeWorkflowFile.Arguments>\n</ui:InvokeWorkflowFile>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/SetTransactionStatus.xaml"
+    }
   },
   "output": {
     "type": "object",

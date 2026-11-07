@@ -40,7 +40,15 @@ invocable: false
     },
     "required": [
       "Result"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:ShouldStop DisplayName=\"Check Stop Signal\" Result=\"[result]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Main.xaml"
+    }
   },
   "output": {
     "type": "object",

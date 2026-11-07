@@ -48,7 +48,15 @@ invocable: false
     "required": [
       "Level",
       "Message"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:LogMessage Level=\"Info\" Message=\"[message]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Main.xaml"
+    }
   },
   "output": {
     "type": "object",
