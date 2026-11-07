@@ -40,7 +40,17 @@ invocable: false
     },
     "required": [
       "Fields"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:RemoveLogFields DisplayName=\"Remove transaction log fields (Successful)\">\n  <ui:RemoveLogFields.Fields>\n    <scg:List x:TypeArguments=\"InArgument(x:String)\" Capacity=\"8\">\n      <InArgument x:TypeArguments=\"x:String\">[fields]</InArgument>\n      <InArgument x:TypeArguments=\"x:String\">[fields]</InArgument>\n      <InArgument x:TypeArguments=\"x:String\">[fields]</InArgument>\n      <InArgument x:TypeArguments=\"x:String\">[fields]</InArgument>\n      <InArgument x:TypeArguments=\"x:String\">[fields]</InArgument>\n    </scg:List>\n  </ui:RemoveLogFields.Fields>\n</ui:RemoveLogFields>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "scg": "clr-namespace:System.Collections.Generic;assembly=mscorlib",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/SetTransactionStatus.xaml"
+    }
   },
   "output": {
     "type": "object",

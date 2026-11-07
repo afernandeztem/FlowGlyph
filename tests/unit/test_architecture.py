@@ -21,6 +21,7 @@ ALLOWED: dict[str, set[str]] = {
     "planner": {"ir", "views", "errors", "_internal", "catalog"},
     "compilers": {"ir", "errors", "catalog"},
     "enrichment": {"ir", "views", "catalog", "planner"},
+    "context": {"ir", "views", "catalog", "report", "adapters"},
 }
 
 

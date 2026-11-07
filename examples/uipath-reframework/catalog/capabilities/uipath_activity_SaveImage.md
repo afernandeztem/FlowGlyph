@@ -48,7 +48,15 @@ invocable: false
     "required": [
       "FileName",
       "Image"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:SaveImage DisplayName=\"Save screenshot\" FileName=\"[fileName]\" Image=\"[image]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Framework/TakeScreenshot.xaml"
+    }
   },
   "output": {
     "type": "object",

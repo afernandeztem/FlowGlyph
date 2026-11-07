@@ -55,7 +55,15 @@ At the end, io_TransactionNumber is incremented, which makes the framework get t
     },
     "required": [
       "StartNode"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<Flowchart DisplayName=\"Set Transaction Status\">\n  <Flowchart.StartNode>\n    <!-- activities -->\n  </Flowchart.StartNode>\n  <sads:DebugSymbol.Symbol>[symbol]</sads:DebugSymbol.Symbol>\n</Flowchart>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "sads": "http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+      },
+      "from": "Framework/SetTransactionStatus.xaml"
+    }
   },
   "output": {
     "type": "object",

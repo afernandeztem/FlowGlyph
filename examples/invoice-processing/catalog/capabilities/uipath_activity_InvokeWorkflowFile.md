@@ -42,7 +42,15 @@ invocable: false
     },
     "required": [
       "WorkflowFileName"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:InvokeWorkflowFile DisplayName=\"Validate vendor\" WorkflowFileName=\"[workflowFileName]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Main.xaml"
+    }
   },
   "output": {
     "type": "object",

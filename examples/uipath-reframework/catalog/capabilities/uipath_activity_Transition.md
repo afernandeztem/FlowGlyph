@@ -63,7 +63,14 @@ Business Rule Exception
     "required": [
       "Condition",
       "To"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<Transition DisplayName=\"Successful initialization\">\n  <Transition.To>\n    <!-- activities -->\n  </Transition.To>\n  <Transition.Action>\n    <!-- activities -->\n  </Transition.Action>\n  <Transition.Condition>[condition]</Transition.Condition>\n</Transition>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities"
+      },
+      "from": "Main.xaml"
+    }
   },
   "output": {
     "type": "object",

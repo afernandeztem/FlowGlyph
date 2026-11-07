@@ -59,7 +59,15 @@ invocable: false
     "required": [
       "Level",
       "Message"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:LogMessage DisplayName=\"Log message (close applications)\" Level=\"Trace\" Message=\"[message]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Framework/CloseAllApplications.xaml"
+    }
   },
   "output": {
     "type": "object",

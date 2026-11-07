@@ -90,6 +90,7 @@ Every piece works on its own. Start with the first row and stop wherever you hav
 | Design a new workflow from a description | `flowglyph plan requirements.md catalog` | a checked workflow, with the missing pieces named |
 | Turn a workflow into BPMN or UiPath | `flowglyph compile plan/workflow.ir.yaml --to bpmn` | a `.bpmn` or `.xaml` its tool opens |
 | Describe what sources leave undescribed | `flowglyph enrich catalog --via claude-code` | descriptions and business meaning, marked as generated, cached |
+| Give coding agents context on a UiPath project | `flowglyph context ./robots` | `AGENTS.md`, project context and activity cards, from the sources |
 | Fail CI when a contract breaks | `flowglyph diff old.lock catalog --fail-on major` | a non-zero exit on breaking changes |
 | Build my own tooling | `import flowglyph` | the same features as a typed Python API |
 
@@ -400,7 +401,30 @@ Every field a model wrote is marked as generated, and cards say so. Answers are 
 directory reapplies them without calling a model, and only capabilities whose source changed are
 asked again. Idempotency is never enriched; retry safety stays with the sources and with people.
 
-### 8. Use it from Python
+### 8. Give coding agents the context to work on a project
+
+Coding agents (Claude Code, Codex, Cursor, Gemini CLI) read a project's `AGENTS.md` before
+working on it, and UiPath's own agent skills read `.claude/rules/project-context.md`, writing it
+with a language model when it is missing. `flowglyph context` writes both from the sources
+instead, in the same sections, so nothing in them is guessed:
+
+```bash
+flowglyph context ./robots          # into every UiPath project under the folder
+flowglyph skill                     # teach your coding agent to use FlowGlyph
+```
+
+| You get | In it |
+|---|---|
+| `AGENTS.md` and `.claude/rules/project-context.md` | overview, dependencies, structure, entry points with typed arguments, key workflows, architecture, conventions, and what no model can tell by reading: what every workflow changes, whether it is safe to retry, and the call tree |
+| `.flowglyph/activities/<Activity>.md` | for every activity the project uses, a XAML template taken from its own workflows: settings kept, values turned into `[placeholders]`, with the namespaces to declare |
+| `.claude/skills/flowglyph/SKILL.md` | when and how a coding agent should run FlowGlyph, and the rules it follows: read before changing, never retry what is marked `review` |
+
+Because UiPath's skills reuse an existing `project-context.md`, they then work from FlowGlyph's
+computed facts. Notes written at the end of a generated file are kept on every run, and a file
+FlowGlyph did not write is never replaced without `--force`. The repository is also a plugin
+for Claude Code, Codex, Cursor and Gemini CLI.
+
+### 9. Use it from Python
 
 ```python
 import flowglyph
@@ -485,6 +509,8 @@ them), [docs/glossary.md](docs/glossary.md) (every term FlowGlyph uses) and the
 | `flowglyph plan REQUIREMENTS SOURCE` | design a workflow | `--via`, `--model`, `--effort`, `-o` |
 | `flowglyph compile WORKFLOW [CAPABILITY]` | compile into BPMN or XAML | `--to bpmn/xaml`, `--engine`, `--catalog`, `-o` |
 | `flowglyph enrich CATALOG` | describe what sources leave undescribed | `--via`, `--model`, `--limit` |
+| `flowglyph context SOURCE` | context files for coding agents | `--catalog`, `-o`, `--force` |
+| `flowglyph skill` | install the Agent Skill | `--to` |
 
 Every command has `--help`.
 

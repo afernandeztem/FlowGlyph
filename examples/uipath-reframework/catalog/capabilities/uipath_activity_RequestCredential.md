@@ -74,7 +74,15 @@ Request credentials from user.
       "Result",
       "Title",
       "Username"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:RequestCredential DisplayName=\"Request credentials\" Message=\"[message]\" Password=\"[password]\" Result=\"[result]\" Title=\"[title]\" Username=\"[username]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

@@ -51,7 +51,15 @@ invocable: false
     "required": [
       "FileName",
       "Text"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:AppendLine DisplayName=\"Append line (Header top) \" FileName=\"[fileName]\" Text=\"[text]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Tests/RunAllTests.xaml"
+    }
   },
   "output": {
     "type": "object",

@@ -97,7 +97,16 @@ invocable: false
       "DefaultValue",
       "MaxLength",
       "Unique"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:AddDataColumn x:TypeArguments=\"x:String\" Column=\"{x:Null}\" DefaultValue=\"{x:Null}\" AllowDBNull=\"True\" AutoIncrement=\"False\" ColumnName=\"Status\" DataTable=\"[dataTable]\" DisplayName=\"Add Status column\" MaxLength=\"-1\" Unique=\"False\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Tests/RunAllTests.xaml"
+    }
   },
   "output": {
     "type": "object",

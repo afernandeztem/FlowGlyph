@@ -56,7 +56,16 @@ invocable: false
       "ContinueOnError",
       "Name",
       "Path"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:CreateFile Name=\"{x:Null}\" ContinueOnError=\"True\" DisplayName=\"Create Log file\" Path=\"[path]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Tests/RunAllTests.xaml"
+    }
   },
   "output": {
     "type": "object",

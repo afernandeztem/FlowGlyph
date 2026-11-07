@@ -1,0 +1,5 @@
+{
+  "name": "flowglyph",
+  "version": "0.1.0",
+  "description": "Know what an automation does before touching or running it: effects, retry safety and call trees for UiPath, SAP, BPMN, n8n and OpenAPI, computed from the sources."
+}

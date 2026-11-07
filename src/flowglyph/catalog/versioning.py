@@ -8,7 +8,9 @@ from flowglyph._internal.hashing import fingerprint
 from flowglyph.catalog.lock import Bump, Lock, LockEntry, Signature
 from flowglyph.ir import Capability, JsonSchema
 
-_DOCUMENTATION_KEYS = frozenset({"description", "examples", "x-seen", "x-default-expression"})
+_DOCUMENTATION_KEYS = frozenset(
+    {"description", "examples", "x-seen", "x-default-expression", "x-xaml-template"}
+)
 _METADATA_FIELDS = frozenset({"effects", "idempotency", "security", "errors", "kind", "invocable"})
 
 

@@ -45,7 +45,14 @@ invocable: false
     "required": [
       "Condition",
       "Then"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<If Condition=\"[condition]\" DisplayName=\"Above threshold?\">\n  <If.Then>\n    <!-- activities -->\n  </If.Then>\n</If>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities"
+      },
+      "from": "Main.xaml"
+    }
   },
   "output": {
     "type": "object",

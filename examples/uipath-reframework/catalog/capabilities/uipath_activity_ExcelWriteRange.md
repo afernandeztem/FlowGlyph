@@ -64,7 +64,15 @@ invocable: false
       "DataTable",
       "SheetName",
       "StartingCell"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:ExcelWriteRange AddHeaders=\"True\" DataTable=\"[dataTable]\" DisplayName=\"Write Range (Tests results)\" SheetName=\"Result\" StartingCell=\"A1\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Tests/RunAllTests.xaml"
+    }
   },
   "output": {
     "type": "object",

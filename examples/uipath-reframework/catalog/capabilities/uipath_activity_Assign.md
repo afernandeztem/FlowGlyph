@@ -75,7 +75,15 @@ Increment the TransactionNumber to get the next transaction to be processed.
     "required": [
       "To",
       "Value"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<Assign x:Key=\"BRE\" DisplayName=\"Assign out_Comment (BRE)\">\n  <Assign.To>\n    <OutArgument x:TypeArguments=\"x:String\">[to]</OutArgument>\n  </Assign.To>\n  <Assign.Value>\n    <InArgument x:TypeArguments=\"x:String\">[value]</InArgument>\n  </Assign.Value>\n</Assign>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Tests/RunAllTests_Logging.xaml"
+    }
   },
   "output": {
     "type": "object",

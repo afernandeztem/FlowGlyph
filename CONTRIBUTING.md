@@ -38,6 +38,8 @@ user's side, [docs/architecture.md](docs/architecture.md) for how the code is di
 | `src/flowglyph/gateway/` | MCP server, policy engine, idempotency ledger, audit log, executors. |
 | `src/flowglyph/planner/` | Requirements to workflow IR, and the backends that propose plans. |
 | `src/flowglyph/compilers/` | Workflow IR back to BPMN and UiPath XAML. |
+| `src/flowglyph/context.py` | Context files and activity cards for coding agents. |
+| `src/flowglyph/skill/SKILL.md` | The Agent Skill; `skills/flowglyph/SKILL.md` is a copy a test keeps identical. |
 | `src/flowglyph/cli/` | The `flowglyph` command: one module per context in `commands/`. |
 | `src/flowglyph/_internal/` | Private helpers. Not part of the public API. |
 | `tests/unit/` | Fast tests per module. `test_architecture.py` enforces the dependency rules. |

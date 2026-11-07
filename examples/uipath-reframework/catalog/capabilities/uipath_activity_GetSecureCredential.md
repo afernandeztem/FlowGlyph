@@ -82,7 +82,15 @@ Attempt to retrieve credentials from the Windows Credential Manager.
       "Result",
       "Target",
       "Username"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:GetSecureCredential CredentialType=\"Generic\" DisplayName=\"Get secure credential\" Password=\"[password]\" PersistanceType=\"Enterprise\" Result=\"[result]\" Target=\"[target]\" Username=\"[username]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

@@ -101,6 +101,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Answers are cached in `flowglyph.enrichment.json` by source hash and reapplied by `extract`
   before versioning, so reruns change nothing. IR 0.4.0 adds `Capability.generated`, the fields
   a model wrote; cards say so. Idempotency is never enriched.
+- Context for coding agents (`flowglyph context`, ADR-0015): per UiPath project, an `AGENTS.md`
+  and `.claude/rules/project-context.md` in the sections UiPath's own discovery agent uses, but
+  read from the sources rather than written by a model, plus what no model can tell by reading:
+  effects, retry safety and the call tree. One activity card per activity type, with a XAML
+  template from the project's richest use of it: settings kept, values as `[placeholders]`, the
+  namespaces to declare. Notes are kept on every run, and files FlowGlyph did not write are not
+  replaced without `--force`.
+- The UiPath adapter records that template on each activity type (`x-xaml-template`); it is
+  documentation, so it never moves a version.
+- An Agent Skill (`flowglyph skill`) teaches coding agents when and how to use FlowGlyph, and
+  the repository is a plugin for Claude Code, Codex, Cursor and Gemini CLI.
 - `docs/guide.md`: how to use every feature, in the order you would use them, with samples to
   follow from a clone. A test checks that every command and option it shows exists.
 - Every planner backend can now answer with any pydantic model (`StructuredModel.answer`), not

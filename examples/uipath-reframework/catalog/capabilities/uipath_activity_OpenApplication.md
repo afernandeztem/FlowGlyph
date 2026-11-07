@@ -98,7 +98,16 @@ Open log file in a Notepad window.
       "Selector",
       "TimeoutMS",
       "WorkingDirectory"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<ui:OpenApplication ApplicationWindow=\"{x:Null}\" WorkingDirectory=\"{x:Null}\" Arguments=\"[arguments]\" ContinueOnError=\"True\" DisplayName=\"Open application (Notepad)\" FileName=\"[fileName]\" Selector=\"[selector]\" TimeoutMS=\"5000\">\n  <ui:OpenApplication.Body>\n    <ActivityAction x:TypeArguments=\"x:Object\">\n      <ActivityAction.Argument>\n        <DelegateInArgument x:TypeArguments=\"x:Object\" Name=\"ContextTarget\" />\n      </ActivityAction.Argument>\n    </ActivityAction>\n  </ui:OpenApplication.Body>\n</ui:OpenApplication>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "ui": "http://schemas.uipath.com/workflow/activities",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Tests/RunAllTests.xaml"
+    }
   },
   "output": {
     "type": "object",

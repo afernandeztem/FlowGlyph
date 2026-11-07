@@ -83,7 +83,17 @@ The Private property is used to prevent the generation of logs that might contai
     "required": [
       "Catches",
       "Try"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<TryCatch DisplayName=\"Private: Get Application Credentials\">\n  <TryCatch.Variables>\n    <Variable x:TypeArguments=\"x:String\" Name=\"StringPassword\" />\n  </TryCatch.Variables>\n  <TryCatch.Try>\n    <!-- activities -->\n  </TryCatch.Try>\n  <TryCatch.Catches>\n    <Catch x:TypeArguments=\"s:Exception\">\n      <ActivityAction x:TypeArguments=\"s:Exception\">\n        <ActivityAction.Argument>\n          <DelegateInArgument x:TypeArguments=\"s:Exception\" Name=\"Exception\" />\n        </ActivityAction.Argument>\n        <!-- activities -->\n      </ActivityAction>\n    </Catch>\n  </TryCatch.Catches>\n  <sads:DebugSymbol.Symbol>[symbol]</sads:DebugSymbol.Symbol>\n</TryCatch>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities",
+        "s": "clr-namespace:System;assembly=mscorlib",
+        "sads": "http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger",
+        "x": "http://schemas.microsoft.com/winfx/2006/xaml"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

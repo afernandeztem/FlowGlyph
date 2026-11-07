@@ -73,7 +73,14 @@ The Private property is used to prevent the generation of logs that might contai
     "required": [
       "Condition",
       "Then"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<If Condition=\"[condition]\" DisplayName=\"If credential request is cancelled\">\n  <If.Then>\n    <!-- activities -->\n  </If.Then>\n  <If.Else>\n    <!-- activities -->\n  </If.Else>\n</If>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

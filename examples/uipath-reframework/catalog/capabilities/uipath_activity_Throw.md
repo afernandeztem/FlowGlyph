@@ -40,7 +40,14 @@ invocable: false
     },
     "required": [
       "Exception"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<Throw DisplayName=\"Throw (no credentials)\" Exception=\"[exception]\" />",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities"
+      },
+      "from": "Framework/GetAppCredentials.xaml"
+    }
   },
   "output": {
     "type": "object",

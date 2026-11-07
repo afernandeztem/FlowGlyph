@@ -61,7 +61,14 @@ invocable: false
       "Condition",
       "False",
       "True"
-    ]
+    ],
+    "x-xaml-template": {
+      "xml": "<FlowDecision Condition=\"[condition]\" DisplayName=\"Success\">\n  <FlowDecision.True>\n    <FlowStep>\n      <!-- activities -->\n      <FlowStep.Next>\n        <FlowStep>\n          <!-- activities -->\n        </FlowStep>\n      </FlowStep.Next>\n    </FlowStep>\n  </FlowDecision.True>\n  <FlowDecision.False>\n    <!-- activities -->\n  </FlowDecision.False>\n</FlowDecision>",
+      "namespaces": {
+        "": "http://schemas.microsoft.com/netfx/2009/xaml/activities"
+      },
+      "from": "Framework/SetTransactionStatus.xaml"
+    }
   },
   "output": {
     "type": "object",

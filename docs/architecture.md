@@ -43,6 +43,7 @@ contexts below it in this table, never those above.
 | **Planning** | `flowglyph.planner` | Turning requirements into a workflow over existing capabilities. | Catalog, Views |
 | **Compilation** | `flowglyph.compilers` | Turning a workflow back into a document a tool runs: BPMN 2.0, UiPath XAML. | Catalog, Model |
 | **Enrichment** | `flowglyph.enrichment` | Descriptions and business semantics a model writes where sources say nothing, cached by source hash. | Planning (its backends), Catalog |
+| **Agent context** | `flowglyph.context` | `AGENTS.md`, project context and activity cards for coding agents working on a UiPath project. | Catalog, Reporting, Ingestion (UiPath) |
 | **Interface** | `flowglyph.cli` | The `flowglyph` command. Thin: it parses options and prints. | everything above |
 
 `flowglyph._internal` is a shared kernel of small helpers (hashing, XML, BM25, Markdown cards)
