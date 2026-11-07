@@ -73,6 +73,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Orchestrator job and waits for its output arguments. Authentication: none, bearer, basic, a
   header, or OAuth client credentials, with every secret read from a named environment variable.
   Redirects are never followed and only `http(s)` URLs are called.
+- BPMN adapter (`--adapter bpmn`, ADR-0012): BPMN 2.0 processes with Camunda 7 (forms, external
+  task topics, classes, expressions, decision references) and Camunda 8 (job types, called
+  processes) extensions. Start forms become typed inputs, gateways keep their conditions and
+  default flows, boundary events become labelled edges, call activities link processes across
+  files, and missing implementations and default flows are reported.
+- n8n adapter (`--adapter n8n`): workflows exported one per file or as a list. Webhooks become
+  callable `POST /webhook/...` capabilities, sub-workflows keep their declared inputs, schedules
+  their cron expression, `Execute Workflow` nodes link workflows by id, name or file, effects come
+  from each node's method or operation, and credentials are recorded by name.
+- SAP Build Process Automation adapter (`--adapter sbpa`): `.mtar` exports and unpacked projects.
+  Processes take their inputs from the start form's schema and invoke their automations and
+  decisions in the graph, with SAP's own branch conditions; automations and decisions are
+  capabilities of their own. Archives are read in memory with size and compression limits,
+  shared with the SAP Cloud Integration adapter.
 - `examples/uipath-reframework`: UiPath's ReFrameWork template through the call tree, the
   idempotency report, overrides, a change made in Studio and its versions, the wiki and the
   gateway, with real output.

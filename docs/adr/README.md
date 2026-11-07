@@ -16,6 +16,7 @@ what follows from it. Records are not edited once accepted; a later record super
 | [0009](0009-llm-wiki.md) | The catalog as an LLM wiki | accepted |
 | [0010](0010-provider-neutral-planner.md) | Planner backends are pluggable and provider-neutral | accepted |
 | [0011](0011-executors-and-connections.md) | Executors run through declared connections | accepted |
+| [0012](0012-process-engine-adapters.md) | BPMN, n8n and SAP Build Process Automation adapters | accepted |
 
 To propose a new decision, copy the shape of the most recent record, number it next, and open a
 pull request with status `proposed`.

@@ -1,0 +1,25 @@
+{
+  "id": "wf-notify",
+  "name": "Notify customer",
+  "nodes": [
+    {
+      "id": "1", "name": "When called", "type": "n8n-nodes-base.executeWorkflowTrigger", "typeVersion": 1.1,
+      "position": [0, 0],
+      "parameters": {"workflowInputs": {"values": [{"name": "email"}, {"name": "invoiceNumber", "type": "string"}, {"name": "amount", "type": "number"}]}}
+    },
+    {
+      "id": "2", "name": "Send email", "type": "n8n-nodes-base.gmail", "typeVersion": 2.1,
+      "position": [200, 0],
+      "parameters": {"resource": "message", "operation": "send", "sendTo": "={{ $json.email }}", "subject": "=Invoice {{ $json.invoiceNumber }} received"},
+      "credentials": {"gmailOAuth2": {"id": "c3", "name": "Finance mailbox"}}
+    },
+    {
+      "id": "3", "name": "Log", "type": "n8n-nodes-base.code", "typeVersion": 2,
+      "position": [400, 0], "parameters": {"jsCode": "return $input.all();"}
+    }
+  ],
+  "connections": {
+    "When called": {"main": [[{"node": "Send email", "type": "main", "index": 0}]]},
+    "Send email": {"main": [[{"node": "Log", "type": "main", "index": 0}]]}
+  }
+}

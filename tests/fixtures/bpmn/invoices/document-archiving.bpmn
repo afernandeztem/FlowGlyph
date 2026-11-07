@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic Camunda 8 process written for FlowGlyph's tests. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_archive" targetNamespace="http://example.com/invoices">
+  <bpmn:message id="archive_request" name="ArchiveRequested" />
+  <bpmn:process id="document_archiving" name="Document archiving" isExecutable="true">
+    <bpmn:startEvent id="start" name="Archive requested">
+      <bpmn:outgoing>to_store</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="archive_request" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="store" name="Store in DMS">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="dms-store" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=documentId" target="id" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>to_store</bpmn:incoming>
+      <bpmn:outgoing>to_mail</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="confirm" name="Send confirmation">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="send-email" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>to_mail</bpmn:incoming>
+      <bpmn:outgoing>to_end</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="end">
+      <bpmn:incoming>to_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="to_store" sourceRef="start" targetRef="store" />
+    <bpmn:sequenceFlow id="to_mail" sourceRef="store" targetRef="confirm" />
+    <bpmn:sequenceFlow id="to_end" sourceRef="confirm" targetRef="end" />
+  </bpmn:process>
+</bpmn:definitions>

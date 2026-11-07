@@ -28,7 +28,8 @@ def extract(
     Args:
         path: A folder, a file, or a git URL such as a GitHub link to a repository or folder.
         adapter: `"auto"` to use every adapter that finds something, or one adapter by name
-            (`"uipath"`, `"openapi"`, `"sap"`, `"sap-cpi"`, a plugin) or instance.
+            (`"uipath"`, `"sap"`, `"sap-cpi"`, `"sbpa"`, `"openapi"`, `"bpmn"`, `"n8n"`, a
+            plugin) or instance.
         previous: The lock of an earlier extraction, used to version capabilities. When
             omitted, capabilities start at 1.0.0.
         ref: Branch, tag or commit to read when `path` is a repository URL.

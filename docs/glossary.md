@@ -87,7 +87,8 @@ and this page disagree, the code is wrong or this page is out of date: please op
 
 **Adapter**
 : The translator from one source format to the IR. Deterministic and offline: the same bytes
-  always give the same result. Built in: `uipath`, `sap` (OData), `sap-cpi`, `openapi`.
+  always give the same result. Built in: `uipath`, `sap` (OData), `sap-cpi`, `sbpa` (SAP Build
+  Process Automation), `openapi`, `bpmn` and `n8n`.
 
 **Artifact**
 : One file an adapter read, such as a `.xaml` workflow, an EDMX document or an `.iflw` inside

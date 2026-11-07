@@ -44,6 +44,9 @@ uipath = "flowglyph.adapters.uipath:UiPathAdapter"
 openapi = "flowglyph.adapters.openapi:OpenAPIAdapter"
 sap = "flowglyph.adapters.sap:SapODataAdapter"
 "sap-cpi" = "flowglyph.adapters.sap_cpi:SapCpiAdapter"
+bpmn = "flowglyph.adapters.bpmn:BpmnAdapter"
+n8n = "flowglyph.adapters.n8n:N8nAdapter"
+sbpa = "flowglyph.adapters.sbpa:SapBuildProcessAutomationAdapter"
 
 [project.urls]
 Homepage = "https://github.com/afernandeztem/FlowGlyph"

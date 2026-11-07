@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic Camunda 7 process written for FlowGlyph's tests. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_invoice" targetNamespace="http://example.com/invoices">
+  <bpmn:process id="invoice_approval" name="Invoice approval" isExecutable="true">
+    <bpmn:documentation>Approve a supplier invoice and post it to the ERP.</bpmn:documentation>
+    <bpmn:startEvent id="start" name="Invoice received">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="invoiceNumber" label="Invoice number" type="string" />
+          <camunda:formField id="amount" label="Gross amount" type="long" />
+          <camunda:formField id="urgent" label="Urgent" type="boolean" defaultValue="false" />
+          <camunda:formField id="dueDate" label="Due date" type="date" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>to_rules</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:businessRuleTask id="determine_approver" name="Determine approver" camunda:decisionRef="approver">
+      <bpmn:incoming>to_rules</bpmn:incoming>
+      <bpmn:outgoing>to_gateway</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:exclusiveGateway id="needs_approval" name="Above threshold?" default="no_approval">
+      <bpmn:incoming>to_gateway</bpmn:incoming>
+      <bpmn:outgoing>approval</bpmn:outgoing>
+      <bpmn:outgoing>no_approval</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="approve" name="Approve invoice" camunda:candidateGroups="accounting">
+      <bpmn:incoming>approval</bpmn:incoming>
+      <bpmn:outgoing>approved</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="post_invoice" name="Post invoice to ERP" camunda:type="external" camunda:topic="erp-post-invoice">
+      <bpmn:incoming>approved</bpmn:incoming>
+      <bpmn:incoming>no_approval</bpmn:incoming>
+      <bpmn:outgoing>to_archive</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="archive" name="Archive documents" calledElement="document_archiving">
+      <bpmn:incoming>to_archive</bpmn:incoming>
+      <bpmn:outgoing>to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="notify_requester" name="Notify requester">
+      <bpmn:incoming>to_notify</bpmn:incoming>
+      <bpmn:outgoing>to_end_rejected</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="posting_failed" name="Posting failed" attachedToRef="post_invoice">
+      <bpmn:outgoing>to_notify</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="erp_error" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="end" name="Invoice posted">
+      <bpmn:incoming>to_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="end_rejected" name="Posting failed">
+      <bpmn:incoming>to_end_rejected</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="to_rules" sourceRef="start" targetRef="determine_approver" />
+    <bpmn:sequenceFlow id="to_gateway" sourceRef="determine_approver" targetRef="needs_approval" />
+    <bpmn:sequenceFlow id="approval" name="yes" sourceRef="needs_approval" targetRef="approve">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${amount &gt; 10000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="no_approval" name="no" sourceRef="needs_approval" targetRef="post_invoice" />
+    <bpmn:sequenceFlow id="approved" sourceRef="approve" targetRef="post_invoice" />
+    <bpmn:sequenceFlow id="to_archive" sourceRef="post_invoice" targetRef="archive" />
+    <bpmn:sequenceFlow id="to_end" sourceRef="archive" targetRef="end" />
+    <bpmn:sequenceFlow id="to_notify" sourceRef="posting_failed" targetRef="notify_requester" />
+    <bpmn:sequenceFlow id="to_end_rejected" sourceRef="notify_requester" targetRef="end_rejected" />
+  </bpmn:process>
+  <bpmn:error id="erp_error" name="ERP error" errorCode="ERP_ERROR" />
+</bpmn:definitions>

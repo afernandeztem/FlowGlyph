@@ -1,0 +1,63 @@
+{
+  "id": "wf-intake",
+  "name": "Invoice intake",
+  "active": true,
+  "tags": [{"name": "finance"}],
+  "nodes": [
+    {
+      "id": "1", "name": "Sticky Note", "type": "n8n-nodes-base.stickyNote", "typeVersion": 1,
+      "position": [0, 0],
+      "parameters": {"content": "## Invoice intake\nReceives supplier invoices, asks for approval above 10,000 and books the rest in the ERP. Synthetic workflow written for FlowGlyph's tests."}
+    },
+    {
+      "id": "2", "name": "Invoice received", "type": "n8n-nodes-base.webhook", "typeVersion": 2,
+      "position": [200, 300],
+      "parameters": {"httpMethod": "POST", "path": "invoice-intake", "responseMode": "responseNode", "options": {}}
+    },
+    {
+      "id": "3", "name": "Normalize", "type": "n8n-nodes-base.set", "typeVersion": 3.4,
+      "position": [400, 300], "parameters": {"assignments": {"assignments": []}, "options": {}}
+    },
+    {
+      "id": "4", "name": "Above 10k?", "type": "n8n-nodes-base.if", "typeVersion": 2,
+      "position": [600, 300], "parameters": {"conditions": {"conditions": [{"leftValue": "={{ $json.amount }}", "rightValue": 10000, "operator": {"type": "number", "operation": "gt"}}]}}
+    },
+    {
+      "id": "5", "name": "Ask for approval", "type": "n8n-nodes-base.slack", "typeVersion": 2.2,
+      "position": [800, 200],
+      "parameters": {"resource": "message", "operation": "post", "channel": "#approvals", "text": "=Invoice {{ $json.number }} needs approval"},
+      "credentials": {"slackApi": {"id": "c1", "name": "Slack finance bot"}}
+    },
+    {
+      "id": "6", "name": "Book in ERP", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+      "position": [800, 400],
+      "parameters": {"method": "POST", "url": "https://erp.example.com/api/invoices", "sendBody": true, "options": {}},
+      "credentials": {"httpHeaderAuth": {"id": "c2", "name": "ERP API key"}}
+    },
+    {
+      "id": "7", "name": "Notify customer", "type": "n8n-nodes-base.executeWorkflow", "typeVersion": 1.2,
+      "position": [1000, 400],
+      "parameters": {
+        "workflowId": {"__rl": true, "mode": "list", "value": "wf-notify", "cachedResultName": "Notify customer"},
+        "workflowInputs": {"value": {"email": "={{ $json.email }}", "invoiceNumber": "={{ $json.number }}"}},
+        "options": {"waitForSubWorkflow": true}
+      }
+    },
+    {
+      "id": "8", "name": "Respond", "type": "n8n-nodes-base.respondToWebhook", "typeVersion": 1.1,
+      "position": [1200, 300], "parameters": {"respondWith": "json", "responseBody": "={\"ok\": true}"}
+    }
+  ],
+  "connections": {
+    "Invoice received": {"main": [[{"node": "Normalize", "type": "main", "index": 0}]]},
+    "Normalize": {"main": [[{"node": "Above 10k?", "type": "main", "index": 0}]]},
+    "Above 10k?": {"main": [
+      [{"node": "Ask for approval", "type": "main", "index": 0}],
+      [{"node": "Book in ERP", "type": "main", "index": 0}]
+    ]},
+    "Ask for approval": {"main": [[{"node": "Respond", "type": "main", "index": 0}]]},
+    "Book in ERP": {"main": [[{"node": "Notify customer", "type": "main", "index": 0}]]},
+    "Notify customer": {"main": [[{"node": "Respond", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"}
+}

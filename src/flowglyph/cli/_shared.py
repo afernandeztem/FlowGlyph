@@ -17,7 +17,7 @@ console = Console(soft_wrap=True)
 errors = Console(stderr=True, soft_wrap=True)
 
 SOURCE_HELP = "A saved catalog, or a folder, file or git URL to extract on the fly."
-ADAPTER_HELP = "uipath, openapi, sap, sap-cpi, a plugin, or auto to use them all."
+ADAPTER_HELP = "uipath, sap, sap-cpi, sbpa, openapi, bpmn, n8n, a plugin, or auto to use them all."
 REF_HELP = "Branch, tag or commit when SOURCE is a repository."
 
 _BUMP_STYLE = {Bump.MAJOR: "bold red", Bump.MINOR: "yellow", Bump.PATCH: "cyan"}

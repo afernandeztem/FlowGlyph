@@ -9,6 +9,17 @@ Copyright 2019 UiPath, licensed under the MIT License.
 See tests/fixtures/reframework/LICENSE. The same copy is in
 examples/uipath-reframework/sources/ReFrameWork, with its LICENSE.
 
+The test fixture tests/fixtures/bpmn/camunda-examples/order-handling.bpmn is taken from
+camunda/camunda-bpm-examples (https://github.com/camunda/camunda-bpm-examples),
+Copyright Camunda Services GmbH, licensed under the Apache License 2.0.
+See tests/fixtures/bpmn/camunda-examples/LICENSE.
+
+The test fixture tests/fixtures/sbpa/invoice-approval.mtar is the "Invoice Approval Process"
+sample project from SAP-samples/process-automation-enablement
+(https://github.com/SAP-samples/process-automation-enablement), Copyright 2022 SAP SE or an SAP
+affiliate company and process-automation-enablement contributors, licensed under the Apache
+License 2.0. See tests/fixtures/sbpa/LICENSE.
+
 Test fixtures under tests/fixtures/sap-cpi/btp-spend-analysis/ are integration flows
 taken from SAP-archive/btp-spend-analysis (https://github.com/SAP-archive/btp-spend-analysis),
 Copyright SAP SE or an SAP affiliate company, licensed under the Apache License 2.0.

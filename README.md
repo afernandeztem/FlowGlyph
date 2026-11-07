@@ -121,6 +121,9 @@ flowglyph adapters
 | `sap` | SAP OData `$metadata` documents (EDMX, OData V2 and V4) from SAP S/4HANA, SAP Gateway or SAP BTP | an entity operation (query, read, create, update, delete), a function import, a function or an action |
 | `sap-cpi` | SAP Cloud Integration (SAP Integration Suite) iFlows, exported as `.zip` or unpacked | an endpoint the iFlow exposes (HTTPS, SOAP, OData, IDoc, ProcessDirect...), with the iFlow's steps as its graph |
 | `openapi` | OpenAPI 3.0 and 3.1 documents, JSON or YAML | an API operation |
+| `bpmn` | BPMN 2.0 models (`.bpmn`), with Camunda 7 and Camunda 8 (Zeebe) extensions | a process, with its tasks, gateways and call activities as its graph |
+| `n8n` | n8n workflows exported as JSON, one per file or a list | a workflow, started by its webhook, form, schedule or a parent workflow |
+| `sbpa` | SAP Build Process Automation projects, exported as `.mtar` or unpacked | a process, and the automations and decisions it runs |
 
 By default every adapter is tried and everything found is extracted. Pick one with `--adapter`:
 
@@ -154,6 +157,9 @@ answer records whether it was inferred, or declared by the source itself or by a
 | SAP Cloud Integration | Receivers decide the effects: an HTTP `GET` reads, `POST` writes, `DELETE` destroys; mail, SFTP, IDoc and SOAP receivers send; Data Store writes change tenant state. ProcessDirect calls between iFlows become calls in the graph, so an iFlow inherits the effects of the iFlows it hands over to. Idempotency the iFlow declares itself (an idempotent process call, an exactly-once adapter) is taken as declared; a Data Store write without overwrite makes it conditional. |
 | SAP OData | Query and read are read-only and idempotent. Update and delete are idempotent; delete is destructive. Create and actions are not idempotent. Operations the service forbids (`sap:creatable="false"`, V4 `InsertRestrictions`...) are not generated at all. |
 | OpenAPI | HTTP semantics (RFC 9110): `GET` reads, `PUT` and `DELETE` are idempotent, `POST` is retry-safe only when the operation accepts an `Idempotency-Key` header. |
+| BPMN | Starting a process creates an instance, so a process always writes and is never naturally idempotent. Service and script tasks are unknown, send tasks write, receive tasks read, user tasks involve a person, business rule tasks only decide. Call activities link processes across files, and effects travel along them. A gateway without a default flow and a service task without an implementation are reported. |
+| n8n | Each node by its type and operation: HTTP requests by method, app nodes by the verb of their operation (`getAll` reads, `create` writes, `delete` destroys), code and command nodes are unknown, data and routing nodes are pure. `Execute Workflow` nodes link workflows, and credentials are recorded by name. |
+| SAP Build Process Automation | Starting a process creates an instance. Automations (desktop and API bots) are unknown, forms involve a person, decisions only compute. Processes invoke their automations and decisions in the graph, with SAP's own conditions on each branch. |
 
 ## Recipes
 
@@ -461,7 +467,8 @@ Every command has `--help`.
 - [x] MCP gateway with policy, idempotency ledger and audit log (dry-run execution)
 - [x] Planner with any model provider or coding assistant
 - [x] Executors that run against UiPath Orchestrator, SAP OData and HTTP APIs
-- [ ] LLM enrichment cached by source hash; more adapters (BPMN, SAP Build Process Automation, n8n)
+- [x] More adapters: BPMN (Camunda 7 and 8), SAP Build Process Automation, n8n
+- [ ] LLM enrichment cached by source hash
 - [ ] Compilers from workflow IR back to BPMN and XAML
 
 ## Contributing
