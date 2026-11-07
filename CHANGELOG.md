@@ -152,7 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   says what runs after an optional step. `Workflow.simulate` evaluates the rules. The UiPath
   adapter marks branch merges as `any`; the planner chooses a join per step and warns about
   steps that would be skipped with an optional predecessor.
-- Dependency floors are the oldest versions the code works with (`pydantic>=2.10`,
+- Dependency floors are the oldest versions the code works with (`pydantic>=2.12`,
   `pyyaml>=6.0.1`, `typer>=0.19`, `rich>=13`, `mcp>=2.1`, `jsonschema>=4.18`,
   `anthropic>=2.0`) instead of the versions locked for development.
 - Connections must use `https://`; a connection that sets `allow_insecure: true` may use
