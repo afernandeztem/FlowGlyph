@@ -9,7 +9,9 @@ OpenAI-compatible servers are in `flowglyph.planner.backends`; any object implem
 
 import re
 from collections.abc import Sequence
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
+
+from pydantic import BaseModel
 
 from flowglyph.catalog import Catalog
 from flowglyph.errors import FlowGlyphError
@@ -31,6 +33,18 @@ class PlanModel(Protocol):
 
     def propose(self, requirements: str, candidates: Sequence[dict[str, Any]]) -> Plan:
         """Return a plan that uses only the given candidates."""
+        ...
+
+
+@runtime_checkable
+class StructuredModel(Protocol):
+    """A model that answers a prompt with JSON matching a pydantic model.
+
+    Every built-in backend is one, so planning and enrichment share them.
+    """
+
+    def answer[T: BaseModel](self, system: str, prompt: str, shape: type[T]) -> T:
+        """Answer `prompt`, following `system`, with a value that validates as `shape`."""
         ...
 
 

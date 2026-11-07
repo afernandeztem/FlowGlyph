@@ -162,6 +162,11 @@ and this page disagree, the code is wrong or this page is out of date: please op
   UiPath Orchestrator folder), how to authenticate with it, and the capability id patterns it
   runs. Credentials are named environment variables, never values.
 
+**Enrichment, generated**
+: Descriptions and business semantics a language model writes for capabilities whose source
+  says nothing about them. The fields it wrote are listed in `generated`, and the answers are
+  cached by source hash so a model is asked once per source change.
+
 **Compiler**
 : Turns a workflow graph back into a tool's own format: BPMN 2.0, for any modeler or a Camunda
   engine, or a UiPath workflow. It reports what it could not carry over exactly instead of

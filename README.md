@@ -86,6 +86,7 @@ Every piece works on its own. Start with the first row and stop wherever you hav
 | Let an AI agent use the automations safely | `flowglyph serve catalog` | an MCP server with policy, idempotency and audit |
 | Design a new workflow from a description | `flowglyph plan requirements.md catalog` | a checked workflow, with the missing pieces named |
 | Turn a workflow into BPMN or UiPath | `flowglyph compile plan/workflow.ir.yaml --to bpmn` | a `.bpmn` or `.xaml` its tool opens |
+| Describe what sources leave undescribed | `flowglyph enrich catalog --via claude-code` | descriptions and business meaning, marked as generated, cached |
 | Fail CI when a contract breaks | `flowglyph diff old.lock catalog --fail-on major` | a non-zero exit on breaking changes |
 | Build my own tooling | `import flowglyph` | the same features as a typed Python API |
 
@@ -380,7 +381,23 @@ Any workflow graph, planned or extracted, compiles into a document its tool open
 The compiler says what it could not carry over exactly, such as conditions written in another
 expression language, instead of guessing.
 
-### 7. Use it from Python
+### 7. Describe what the sources leave undescribed
+
+```bash
+flowglyph enrich catalog --via claude-code
+```
+
+Templates leave placeholder descriptions, n8n workflows often have no notes, BPMN processes no
+documentation. `enrich` asks a model, once, to describe those capabilities and their business
+meaning (verb, entity, domain) from what the catalog already knows: title, inputs, outputs,
+effects and steps. Sources and configuration never leave your machine.
+
+Every field a model wrote is marked as generated, and cards say so. Answers are cached in
+`catalog/flowglyph.enrichment.json`, keyed by the source hash: the next `extract` into the same
+directory reapplies them without calling a model, and only capabilities whose source changed are
+asked again. Idempotency is never enriched; retry safety stays with the sources and with people.
+
+### 8. Use it from Python
 
 ```python
 import flowglyph
@@ -464,6 +481,7 @@ them), [docs/glossary.md](docs/glossary.md) (every term FlowGlyph uses) and the
 | `flowglyph approve CATALOG KEY` | approve one of them | |
 | `flowglyph plan REQUIREMENTS SOURCE` | design a workflow | `--via`, `--model`, `--effort`, `-o` |
 | `flowglyph compile WORKFLOW [CAPABILITY]` | compile into BPMN or XAML | `--to bpmn/xaml`, `--engine`, `--catalog`, `-o` |
+| `flowglyph enrich CATALOG` | describe what sources leave undescribed | `--via`, `--model`, `--limit` |
 
 Every command has `--help`.
 
@@ -488,7 +506,7 @@ Every command has `--help`.
 - [x] Planner with any model provider or coding assistant
 - [x] Executors that run against UiPath Orchestrator, SAP OData and HTTP APIs
 - [x] More adapters: BPMN (Camunda 7 and 8), SAP Build Process Automation, n8n
-- [ ] LLM enrichment cached by source hash
+- [x] LLM enrichment cached by source hash
 - [x] Compilers from workflow IR back to BPMN (plain, Camunda 7, Camunda 8) and UiPath XAML
 
 ## Contributing

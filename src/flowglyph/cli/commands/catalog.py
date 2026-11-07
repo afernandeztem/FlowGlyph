@@ -9,6 +9,7 @@ from rich.markup import escape
 from rich.table import Table
 
 import flowglyph
+from flowglyph import enrichment
 from flowglyph.adapters import available_adapters
 from flowglyph.catalog import LOCK_FILE, Bump, Lock, diff_locks
 from flowglyph.cli._shared import (
@@ -21,6 +22,7 @@ from flowglyph.cli._shared import (
     print_changes,
     print_diagnostics,
 )
+from flowglyph.enrichment import ENRICHMENT_FILE
 from flowglyph.errors import FlowGlyphError
 
 
@@ -43,12 +45,15 @@ def extract(
     Every project and document under SOURCE is read: point it at a whole repository.
     """
     previous_lock = out / LOCK_FILE
+    cache_file = out / ENRICHMENT_FILE
+    refine = enrichment.refiner(enrichment.Cache.load(cache_file)) if cache_file.is_file() else None
     try:
         catalog = flowglyph.extract(
             source,
             adapter=adapter,
             previous=previous_lock if previous_lock.is_file() else None,
             ref=ref,
+            refine=refine,
         )
     except FlowGlyphError as error:
         fail(error)

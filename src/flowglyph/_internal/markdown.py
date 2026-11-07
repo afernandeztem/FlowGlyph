@@ -116,6 +116,9 @@ def render_capability(
     lines += ["", f"# {capability.title}", ""]
     if capability.description:
         lines += [capability.description, ""]
+    if capability.generated:
+        written = " and ".join(capability.generated)
+        lines += [f"_The {written} were written by a language model: the source did not say._", ""]
     lines += [
         f"- **Source:** `{capability.source.location}` ({capability.source.provider})",
         f"- **Effects:** {_effects_line(capability)}",

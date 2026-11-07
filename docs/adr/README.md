@@ -18,6 +18,7 @@ what follows from it. Records are not edited once accepted; a later record super
 | [0011](0011-executors-and-connections.md) | Executors run through declared connections | accepted |
 | [0012](0012-process-engine-adapters.md) | BPMN, n8n and SAP Build Process Automation adapters | accepted |
 | [0013](0013-compilers.md) | Compiling workflow IR back into BPMN and UiPath XAML | accepted |
+| [0014](0014-llm-enrichment.md) | Enrichment by a language model, cached by source hash | accepted |
 
 To propose a new decision, copy the shape of the most recent record, number it next, and open a
 pull request with status `proposed`.

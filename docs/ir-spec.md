@@ -1,6 +1,6 @@
 # Automation IR specification
 
-Version 0.3.0. Machine-readable schemas: [`schemas/capability.schema.json`](../schemas/capability.schema.json)
+Version 0.4.0. Machine-readable schemas: [`schemas/capability.schema.json`](../schemas/capability.schema.json)
 and [`schemas/workflow.schema.json`](../schemas/workflow.schema.json).
 
 The IR describes *what an automation does* independently of *how it is implemented* and *how
@@ -56,6 +56,7 @@ invocable: true
 | `used_in` | For documentation-only capabilities such as activity types: the artifacts they appear in. |
 | `deprecated` | Whether the source marks the capability as deprecated. |
 | `tags` | Free labels copied from the source, such as OpenAPI tags. FlowGlyph attaches no meaning to them. |
+| `generated` | Fields a language model wrote because the source did not say: `description`, `semantics`. Empty for everything extracted. See [ADR-0014](adr/0014-llm-enrichment.md). |
 | `notes` | Problems found while extracting, such as an `out_` argument declared as input. |
 | `invocable` | Whether a gateway may run the capability directly. |
 

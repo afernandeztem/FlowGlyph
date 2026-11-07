@@ -13,7 +13,7 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-IR_VERSION = "0.3.0"
+IR_VERSION = "0.4.0"
 
 type JsonSchema = dict[str, Any]
 type CapabilityKind = Literal["workflow", "activity", "operation"]
@@ -164,6 +164,8 @@ class Capability(_Model):
     deprecated: bool = False
     tags: tuple[str, ...] = ()
     notes: tuple[str, ...] = ()
+    generated: tuple[Literal["description", "semantics"], ...] = ()
+    """Fields a language model wrote, because the source did not say. Empty for extracted facts."""
     source: Source
     invocable: bool = True
 
