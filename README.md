@@ -5,8 +5,9 @@
 **Turn enterprise automations into a catalog of functions that people and AI agents can
 understand, search and run safely.**
 
+[![PyPI](https://img.shields.io/pypi/v/flowglyph.svg)](https://pypi.org/project/flowglyph/)
 [![CI](https://github.com/afernandeztem/FlowGlyph/actions/workflows/ci.yml/badge.svg)](https://github.com/afernandeztem/FlowGlyph/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-3776ab)](pyproject.toml)
+[![Python](https://img.shields.io/pypi/pyversions/flowglyph.svg)](https://pypi.org/project/flowglyph/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Typed](https://img.shields.io/badge/typing-strict-success)](pyproject.toml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -15,8 +16,8 @@ understand, search and run safely.**
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata, SAP Cloud Integration and SAP Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, compilers, an LLM wiki, an idempotency report, context files for coding agents and the Python library." src="docs/assets/pipeline-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-dark.svg">
+  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata, SAP Cloud Integration and SAP Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, compilers, an LLM wiki, an idempotency report, context files for coding agents and the Python library." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-light.svg">
 </picture>
 
 ## Why
@@ -55,7 +56,7 @@ pip install "flowglyph[all]"             # everything: CLI, MCP gateway, Anthrop
 | `llm` | the Anthropic SDK | `flowglyph plan --via anthropic`; the other planner backends need nothing extra |
 | `documents` | pypdf, python-docx, openpyxl | `flowglyph plan` from a PDF, Word or Excel document |
 
-From a clone, before there is a release on PyPI:
+From a clone, to work on it:
 
 ```bash
 git clone https://github.com/afernandeztem/FlowGlyph && cd FlowGlyph
@@ -123,7 +124,7 @@ the payments API and the process definition in Word. Every output is real; the s
 is also a page of its own in [docs/use-cases](docs/use-cases/README.md), with who it is for
 and how to tell it.
 
-<img alt="Six things FlowGlyph does, animated on one folder: read everything into a catalog, audit retry safety and declare the rest, a wiki for LLMs and context for coding agents, a workflow planned from the client's Word document, compiled to XAML, and served to an agent behind a policy." src="docs/assets/walkthrough.gif" width="100%">
+<img alt="Six things FlowGlyph does, animated on one folder: read everything into a catalog, audit retry safety and declare the rest, a wiki for LLMs and context for coding agents, a workflow planned from the client's Word document, compiled to XAML, and served to an agent behind a policy." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/walkthrough.gif" width="100%">
 
 *Eighty-five seconds, also as a [video](docs/assets/walkthrough.mp4); rendered from the real output
 by `make walkthrough`.*
@@ -302,13 +303,35 @@ More in [docs/architecture.md](docs/architecture.md) (the parts and the rules be
 [docs/glossary.md](docs/glossary.md) (every term FlowGlyph uses) and the
 [decision records](docs/adr/README.md).
 
-## Status
+## How it compares
+
+| | What it gives you | What it does not |
+|---|---|---|
+| **Each vendor's own agent integration** (UiPath, SAP, n8n...) | the deepest access to that one platform | one platform at a time; effects and retry safety as hints, not facts; the vendor's hosted service, not yours |
+| **OpenAPI-to-MCP converters** | every operation of an API as a tool in minutes | nothing for UiPath, SAP CPI, BPMN or n8n; no effects, no idempotency, no policy, no ledger, no audit |
+| **Parsers for one format** (XAML, BPMN, iFlow readers) | the structure of a file | no common model, no catalog, no versioning, nothing an agent can call |
+| **Asking an LLM to read the sources** | a plausible description, fast | not deterministic, not auditable, and it will invent a workflow that does not exist |
+
+FlowGlyph is the common model over all of them: one catalog for every platform, effects and
+retry safety as facts with a provenance, a gateway you host that enforces them, and nothing
+that leaves your machine unless you say so.
+
+## Status and roadmap
 
 Alpha. The IR is at version 0.4 and may still change before 1.0, as may the library API; the
-command line and the file formats are what the guide and the reference describe. What makes
-FlowGlyph different from the tooling each vendor ships: one model for every platform, effects and
-retry safety as facts with a provenance rather than hints, a gateway you host that enforces
-them, and nothing that leaves your machine.
+command line and the file formats are what the guide and the reference describe. The adapters
+have been run on vendor templates and synthetic projects; real client estates will find cases
+they do not cover yet, and an issue with the file that broke is the most useful thing you can
+send.
+
+What comes next, in order:
+
+1. The gateway running UiPath jobs and OData calls for real in more setups (Orchestrator
+   folders, OData V4 actions with complex bodies), with the dry run as the default it is now.
+2. An HTTP transport with OAuth for `flowglyph serve`, so one gateway can serve several agents.
+3. More sources through the adapter entry point: Power Automate and Zapier exports first.
+4. A Temporal compiler, next to BPMN and XAML.
+5. 1.0 when the IR stops changing.
 
 ## Contributing
 
