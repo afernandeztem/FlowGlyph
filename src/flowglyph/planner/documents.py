@@ -91,12 +91,16 @@ def _text(path: Path) -> str:
 
 
 def _decode(data: bytes) -> str:
+    """Text from `data`, UTF-8 or Windows-1252, with Unix line endings."""
     for encoding in _ENCODINGS[:-1]:
         try:
-            return data.decode(encoding)
+            text = data.decode(encoding)
+            break
         except UnicodeDecodeError:
             continue
-    return data.decode(_ENCODINGS[-1])
+    else:
+        text = data.decode(_ENCODINGS[-1])
+    return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def _separated(path: Path) -> str:

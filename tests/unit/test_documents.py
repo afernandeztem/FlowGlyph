@@ -44,8 +44,8 @@ def test_text_and_markdown_are_read_as_they_are(tmp_path: Path):
 
 def test_windows_encoded_text_is_still_read(tmp_path: Path):
     requirements = tmp_path / "steps.txt"
-    requirements.write_bytes("Approve above 10.000 €".encode("cp1252"))
-    assert "€" in read_requirements(requirements)
+    requirements.write_bytes("Approve above 10.000 €\r\nThen book it.".encode("cp1252"))
+    assert read_requirements(requirements) == "Approve above 10.000 €\nThen book it."
 
 
 def test_pdf_pages_give_their_text(tmp_path: Path):
