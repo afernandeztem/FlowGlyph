@@ -42,6 +42,17 @@ def test_every_manifest_names_the_same_plugin():
     assert [plugin["name"] for plugin in marketplace["plugins"]] == ["flowglyph"]
 
 
+def test_the_registry_entry_names_the_package_and_the_version_of_the_manifests():
+    server = json.loads((ROOT / "server.json").read_text(encoding="utf-8"))
+    version = json.loads((ROOT / MANIFESTS[0]).read_text(encoding="utf-8"))["version"]
+    assert server["version"] == version
+    assert [(package["identifier"], package["version"]) for package in server["packages"]] == [
+        ("flowglyph", version)
+    ]
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert f"<!-- mcp-name: {server['name']} -->" in readme
+
+
 def test_the_command_installs_the_skill(tmp_path: Path):
     target = tmp_path / ".claude" / "skills" / "flowglyph"
     result = CliRunner().invoke(app, ["skill", "--to", str(target)])
