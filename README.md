@@ -233,6 +233,8 @@ flowglyph serve catalog --policy policy.yaml
 Every call goes through the contract, your policy, the idempotency ledger and the audit log,
 and `executePayment` waits for a person.
 
+<!-- mcp-name: io.github.afernandeztem/flowglyph -->
+
 ## What it reads
 
 | Adapter | Reads | Each capability is |

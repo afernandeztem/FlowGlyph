@@ -1,0 +1,55 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.afernandeztem/flowglyph",
+  "title": "FlowGlyph",
+  "description": "UiPath, SAP, BPMN, n8n and OpenAPI automations as governed MCP tools: policy, one run per key, audit",
+  "repository": {
+    "url": "https://github.com/afernandeztem/FlowGlyph",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/afernandeztem/FlowGlyph#readme",
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "flowglyph",
+      "version": "0.1.1",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--with",
+          "value": "flowglyph[mcp]",
+          "description": "The MCP SDK and jsonschema, which the gateway needs"
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "serve",
+          "valueHint": "serve",
+          "description": "The subcommand that starts the MCP server"
+        },
+        {
+          "type": "positional",
+          "valueHint": "catalog_dir",
+          "description": "A catalog directory written by `flowglyph extract`",
+          "format": "filepath",
+          "isRequired": true
+        },
+        {
+          "type": "named",
+          "name": "--policy",
+          "valueHint": "policy.yaml",
+          "description": "Policy YAML: what the agent may run. Without it, destructive steps wait for approval",
+          "format": "filepath",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

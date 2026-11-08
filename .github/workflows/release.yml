@@ -46,6 +46,12 @@ jobs:
             echo "::error file=.claude-plugin/marketplace.json::version is $found, the tag says $expected"
             status=1
           fi
+          for found in $(jq -r '.version, .packages[].version' server.json); do
+            if [ "$found" != "$expected" ]; then
+              echo "::error file=server.json::version is $found, the tag says $expected"
+              status=1
+            fi
+          done
           exit "$status"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       - run: uv build
@@ -84,3 +90,38 @@ jobs:
       - run: gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
+
+  # After PyPI: the registry checks the package by reading `mcp-name` in its README there.
+  mcp-registry:
+    needs: publish
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+      - name: Download mcp-publisher and verify its signature
+        run: |
+          set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
+          base="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+      - run: ./mcp-publisher login github-oidc
+      - name: Publish server.json, waiting for PyPI to serve the new release
+        run: |
+          for _ in 1 2 3 4 5; do
+            ./mcp-publisher publish && exit 0
+            sleep 30
+          done
+          exit 1

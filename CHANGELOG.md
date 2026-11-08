@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Nothing yet.
 
+## [0.1.1] - 2026-11-08
+
+### Added
+
+- `server.json`, so the gateway is listed in the MCP Registry as
+  `io.github.afernandeztem/flowglyph`, and the `mcp-name` line in the README the registry
+  reads on PyPI to check who owns the package.
+- The release workflow publishes `server.json` to the MCP Registry after PyPI, and refuses a
+  tag that `server.json` does not match.
+
 ## [0.1.0] - 2026-11-07
 
 The first release.
@@ -248,5 +258,6 @@ The first release.
 - Capability titles, descriptions and cards lose control characters before they reach an MCP
   client, and the server instructions say they are data from the sources, not instructions.
 
-[Unreleased]: https://github.com/afernandeztem/FlowGlyph/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/afernandeztem/FlowGlyph/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/afernandeztem/FlowGlyph/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/afernandeztem/FlowGlyph/releases/tag/v0.1.0
