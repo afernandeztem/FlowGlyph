@@ -241,6 +241,8 @@ Send nothing but the requirements and the candidate cards.
   change or have the right to submit it under the project's license.
 - Add an entry under `Unreleased` in `CHANGELOG.md` for user-facing changes.
 - Keep pull requests focused. A refactor and a feature are two pull requests.
+- CI does not start on its own for a pull request from a fork: a maintainer approves the
+  run after a first read. Run `make check` before you push, so the first run passes.
 
 ## Reporting bugs and proposing features
 
