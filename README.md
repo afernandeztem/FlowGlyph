@@ -19,10 +19,9 @@ humans and AI agents.
 
 </div>
 
-<img alt="Six things FlowGlyph does, animated on one folder: read everything into a catalog, audit retry safety and declare the rest, a wiki for LLMs and context for coding agents, a workflow planned from the client's Word document, compiled to XAML, and served to an agent behind a policy." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/walkthrough.gif" width="100%">
+[![FlowGlyph in 44 seconds: a client asks for a new automation. What can you reuse, what's missing, and is it safe to run twice? FlowGlyph answers all three. Watch on YouTube.](https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/video-thumbnail.png)](https://www.youtube.com/watch?v=UfGquyfKb2g)
 
-*Eighty-five seconds, also as a [video](docs/assets/walkthrough.mp4); rendered from the real output
-by `make walkthrough`.*
+*Forty-four seconds on [YouTube](https://www.youtube.com/watch?v=UfGquyfKb2g), with subtitles.*
 
 ## Why
 
@@ -43,6 +42,13 @@ the capabilities you already have, or context files for the coding agent working
 **New here?** The [guide](docs/guide.md) walks through every feature in order, with samples
 you can run from a clone. [HOWTO.md](HOWTO.md) is the reference: every tool, what it does and
 how to use it.
+
+## See it run
+
+<img alt="Six things FlowGlyph does, animated on one folder: read everything into a catalog, audit retry safety and declare the rest, a wiki for LLMs and context for coding agents, a workflow planned from the client's Word document, compiled to XAML, and served to an agent behind a policy." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/walkthrough.gif" width="100%">
+
+*Eighty-five seconds, also as a [video](docs/assets/walkthrough.mp4); rendered from the real output
+by `make walkthrough`.*
 
 ## Install
 
