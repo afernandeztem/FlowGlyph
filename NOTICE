@@ -1,7 +1,8 @@
 FlowGlyph
-Copyright 2026 The FlowGlyph Authors
+Copyright 2026 Angel Fernandez
 
-This product includes software developed by the FlowGlyph contributors.
+FlowGlyph was created by Angel Fernandez (https://github.com/afernandeztem).
+This product includes software developed by Angel Fernandez and the FlowGlyph contributors.
 
 Test fixtures under tests/fixtures/reframework/ are taken from
 UiPath ReFrameWork (https://github.com/UiPath/ReFrameWork),
