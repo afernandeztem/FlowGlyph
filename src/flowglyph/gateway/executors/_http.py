@@ -12,10 +12,11 @@ from http import HTTPStatus
 from http.cookiejar import CookieJar
 from typing import Any
 
-from flowglyph.errors import ExecutionError
+from flowglyph.errors import ExecutionError, OutcomeUnknownError
 
 MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 _SNIPPET = 300
+_READS = frozenset({"GET", "HEAD", "OPTIONS"})
 
 
 @dataclass(frozen=True)
@@ -89,6 +90,9 @@ class HttpClient:
 
         Raises:
             ExecutionError: If the server cannot be reached or redirects elsewhere.
+            OutcomeUnknownError: If a request that changes something was sent and no answer
+                says what became of it: the connection dropped, the wait ran out, or a proxy
+                gave up on the server (504).
         """
         scheme = urllib.parse.urlsplit(url).scheme
         if scheme not in {"http", "https"}:
@@ -117,13 +121,25 @@ class HttpClient:
                     f"{method} {url} redirected to {target}; use the final address in the "
                     "connection, since credentials are never sent on through a redirect"
                 ) from error
+            if response.status == HTTPStatus.GATEWAY_TIMEOUT and method not in _READS:
+                raise OutcomeUnknownError(
+                    f"{method} {url} answered 504: a proxy stopped waiting for the server, "
+                    "which may still have carried out the request"
+                ) from error
             return response
-        except (urllib.error.URLError, TimeoutError, OSError) as error:
-            reason = getattr(error, "reason", error)
-            raise ExecutionError(f"could not reach {url}: {reason}") from error
-        except (ValueError, http.client.HTTPException) as error:
+        except urllib.error.URLError as error:
+            # urllib wraps what goes wrong while connecting and sending: nothing was received.
+            raise ExecutionError(f"could not reach {url}: {error.reason}") from error
+        except (ValueError, http.client.InvalidURL) as error:
             # A header value or URL that the protocol cannot carry, such as a line break.
             raise ExecutionError(f"{method} {url} could not be sent: {error}") from error
+        except (OSError, http.client.HTTPException) as error:
+            # The request left and the answer never arrived whole.
+            if method in _READS:
+                raise ExecutionError(f"could not reach {url}: {error}") from error
+            raise OutcomeUnknownError(
+                f"{method} {url} was sent and no answer came back: {error or type(error).__name__}"
+            ) from error
 
 
 def _read(answer: Any) -> bytes:

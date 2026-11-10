@@ -13,7 +13,7 @@ from jsonschema.exceptions import ValidationError as SchemaError
 from flowglyph._internal import markdown
 from flowglyph._internal.hashing import fingerprint
 from flowglyph.catalog import Catalog, load_catalog
-from flowglyph.errors import CatalogError, FlowGlyphError
+from flowglyph.errors import CatalogError, FlowGlyphError, OutcomeUnknownError
 from flowglyph.gateway.audit import AuditLog
 from flowglyph.gateway.executors import DryRunExecutor, Executor
 from flowglyph.gateway.ledger import Ledger, Run, Ticket
@@ -22,12 +22,17 @@ from flowglyph.ir import Capability
 from flowglyph.views import l0_card
 
 DEFAULT_TTL_SECONDS = 24 * 60 * 60
+_CHECK_FIRST = (
+    "the call may have gone through: check the system before running it again, and pass a new "
+    "idempotency_key if it must run again"
+)
 
 type Status = Literal[
     "done",
     "replayed",
     "in_progress",
     "failed",
+    "unknown",
     "denied",
     "approval_required",
     "invalid",
@@ -126,7 +131,9 @@ class Gateway:
         """Run a capability, or explain why it was not run.
 
         Whatever the executor raises becomes a `failed` result; an exception never escapes
-        with the ledger row still running. Every call leaves a line in the audit log.
+        with the ledger row still running. When the executor cannot tell whether a call with
+        side effects went through, the result is `unknown` and the same key is not run again.
+        Every call leaves a line in the audit log.
         """
         try:
             capability = self.catalog.get(reference)
@@ -151,6 +158,9 @@ class Gateway:
                 result = self._run_once(capability, arguments, ticket, decision)
             else:
                 result = self._execute(capability, arguments)
+                if result.status == "unknown":
+                    # Nothing changes when a read is lost, so it can simply be asked again.
+                    result = replace(result, status="failed", reason=None)
         finally:
             self._record("run", capability, arguments, **_outcome(result))
         return result
@@ -206,8 +216,11 @@ class Gateway:
         if not claim.claimed:
             return self._existing(capability, claim.existing, ticket)
         result = self._execute(capability, arguments, idempotency_key=ticket.key)
-        if result.status == "failed":
-            self.ledger.finish(ticket.key, "failed", {"error": result.errors[0]})
+        if result.status == "unknown" and capability.idempotency.mode == "natural":
+            # Repeating the call has no further effect, so not knowing is no reason to stop.
+            result = replace(result, status="failed", reason=None)
+        if result.status == "failed" or result.status == "unknown":  # noqa: PLR1714
+            self.ledger.finish(ticket.key, result.status, {"error": result.errors[0]})
         else:
             self.ledger.finish(ticket.key, "done", result.result)
         return replace(result, **ledger)
@@ -218,6 +231,8 @@ class Gateway:
         self._record("start", capability, arguments, idempotency_key=idempotency_key)
         try:
             output = self.executor.execute(capability, arguments)
+        except OutcomeUnknownError as error:
+            return _result(capability, "unknown", errors=[str(error)], reason=_CHECK_FIRST)
         except Exception as error:  # noqa: BLE001
             # Executors are plug-ins that talk to remote systems; whatever they raise is a
             # failed run, never a crash of the gateway with the ledger row left running.
@@ -252,6 +267,11 @@ class Gateway:
             return _result(capability, "conflict", errors=errors, **ledger)
         if run.status == "done":
             return _result(capability, "replayed", result=run.result, **ledger)
+        if run.status == "unknown":
+            stored: object = run.result
+            found = cast("dict[str, Any]", stored) if isinstance(stored, dict) else {}
+            errors = [str(found.get("error", "the outcome of the earlier run is not known"))]
+            return _result(capability, "unknown", errors=errors, reason=_CHECK_FIRST, **ledger)
         if run.status == "awaiting_approval":
             reason = f"waiting for approval; a person must run {self.approval_command(ticket.key)}"
             return _result(capability, "approval_required", reason=reason, **ledger)

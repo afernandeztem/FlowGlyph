@@ -221,7 +221,9 @@ reads their cards and asks to run them. The gateway, not the agent, decides:
    first result, marked `replayed`, instead of running again. When the agent passes no key
    and the function has no key fields, the key is a hash of the arguments, so the same call
    with the same arguments within 24 hours counts as a retry. To run it again on purpose,
-   pass a new `idempotency_key`;
+   pass a new `idempotency_key`. A run that failed can be retried with the same key. One
+   whose outcome is not known (the call was sent and the answer never came) is marked
+   `unknown` and is not run again under that key, since the first call may have gone through;
 4. it writes every decision to an audit log.
 
 A **policy** says what an agent may do:

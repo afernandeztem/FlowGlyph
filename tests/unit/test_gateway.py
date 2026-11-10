@@ -8,7 +8,7 @@ from typing import ClassVar
 import pytest
 
 import flowglyph
-from flowglyph.errors import ExecutionError, FlowGlyphError
+from flowglyph.errors import ExecutionError, FlowGlyphError, OutcomeUnknownError
 from flowglyph.gateway import Gateway, Policy, Rule
 from flowglyph.gateway.service import validate_arguments
 from flowglyph.ir import Capability
@@ -273,3 +273,55 @@ def test_an_approval_given_to_a_dry_run_does_not_approve_the_real_run(catalog_di
     live = Gateway(catalog_dir, executor=executor)
     assert live.run(DELETE, {"invoiceId": "INV-118"}).status == "approval_required"
     assert executor.runs == 0
+
+
+def test_a_run_with_an_unknown_outcome_is_not_run_again(catalog_dir: Path):
+    lost = OutcomeUnknownError("POST /invoices was sent and no answer came back: timed out")
+    executor = Broken(lost)
+    gateway = Gateway(catalog_dir, executor=executor)
+    arguments = {"Idempotency-Key": "inv-31", "body": INVOICE}
+    first = gateway.run(CREATE, arguments)
+    assert (first.status, first.errors) == ("unknown", [str(lost)])
+    assert first.reason is not None
+    assert "new idempotency_key" in first.reason
+    assert not first.ok
+    assert first.idempotency_key is not None
+    stored = gateway.ledger.get(first.idempotency_key)
+    assert stored is not None
+    assert stored.status == "unknown"
+
+    working = Real()
+    again = Gateway(catalog_dir, executor=working).run(CREATE, arguments)
+    assert (again.status, again.errors, again.reason) == ("unknown", first.errors, first.reason)
+    assert working.runs == 0
+    on_purpose = Gateway(catalog_dir, executor=working).run(
+        CREATE, arguments, idempotency_key="inv-31-checked"
+    )
+    assert on_purpose.status == "done"
+    assert working.runs == 1
+    statuses = [entry.get("status") for entry in audit(gateway) if entry["event"] == "run"]
+    assert statuses == ["unknown", "unknown", "done"]
+
+
+def test_a_lost_read_is_a_plain_failure(catalog_dir: Path):
+    gateway = Gateway(catalog_dir, executor=Broken(OutcomeUnknownError("no answer came back")))
+    result = gateway.run(LIST, {"limit": 10})
+    assert (result.status, result.errors, result.reason) == (
+        "failed",
+        ["no answer came back"],
+        None,
+    )
+
+
+def test_an_unknown_outcome_of_a_repeatable_call_can_be_retried(catalog_dir: Path):
+    allowed = Policy(default="allow")
+    lost = Broken(OutcomeUnknownError("no answer came back"))
+    gateway = Gateway(catalog_dir, executor=lost, policy=allowed)
+    assert gateway.catalog.get(DELETE).idempotency.mode == "natural"
+    arguments = {"invoiceId": "inv-5"}
+    first = gateway.run(DELETE, arguments)
+    assert (first.status, first.reason) == ("failed", None)
+    working = Real()
+    retried = Gateway(catalog_dir, executor=working, policy=allowed).run(DELETE, arguments)
+    assert retried.status == "done"
+    assert working.runs == 1

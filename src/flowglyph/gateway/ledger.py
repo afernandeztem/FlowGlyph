@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
-type RunStatus = Literal["running", "done", "failed", "awaiting_approval", "approved"]
+type RunStatus = Literal["running", "done", "failed", "unknown", "awaiting_approval", "approved"]
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS runs (
@@ -152,8 +152,12 @@ class Ledger:
                 return Claim(claimed=True)
         return Claim(claimed=False, existing=self.get(ticket.key))
 
-    def finish(self, key: str, status: Literal["done", "failed"], result: Any) -> None:
-        """Record the outcome of a claimed run."""
+    def finish(self, key: str, status: Literal["done", "failed", "unknown"], result: Any) -> None:
+        """Record the outcome of a claimed run.
+
+        A `failed` run can be claimed again. An `unknown` one cannot: the call may have gone
+        through, so the key stays taken until it expires.
+        """
         with self._connect() as connection:
             connection.execute(
                 "UPDATE runs SET status = ?, result = ?, updated = ? WHERE key = ?",

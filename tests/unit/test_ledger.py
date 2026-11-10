@@ -138,3 +138,16 @@ def test_dry_runs_recorded_before_the_ledger_marked_them_are_recognised(tmp_path
         )
     connection.close()
     assert Ledger(path).claim(Ticket("k", "cap", "1.0.0", "hash", 60)).claimed
+
+
+def test_runs_with_an_unknown_outcome_keep_the_key(ledger: Ledger):
+    ledger.claim(TICKET)
+    ledger.finish(TICKET.key, "unknown", {"error": "no answer came back"})
+    again = ledger.claim(TICKET)
+    assert not again.claimed
+    assert again.existing is not None
+    assert (again.existing.status, again.existing.result) == (
+        "unknown",
+        {"error": "no answer came back"},
+    )
+    assert not ledger.claim(TICKET, status="awaiting_approval").claimed

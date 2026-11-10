@@ -13,7 +13,7 @@ from urllib.parse import parse_qsl, urlsplit
 import pytest
 
 import flowglyph
-from flowglyph.errors import ExecutionError
+from flowglyph.errors import ExecutionError, OutcomeUnknownError
 from flowglyph.gateway import Gateway
 from flowglyph.gateway.executors import (
     ConnectedExecutor,
@@ -468,8 +468,66 @@ def test_orchestrator_gives_up_after_the_timeout(system: FakeSystem, robots: flo
     executor = OrchestratorExecutor(
         system.url, NoAuth(), folder="Finance", timeout_seconds=0.05, poll_seconds=0.01
     )
-    with pytest.raises(ExecutionError, match="still Running after 0s"):
+    with pytest.raises(OutcomeUnknownError, match="still Running after 0s"):
         executor.execute(robots.get(MAIN), {"in_OrchestratorQueueName": "Q"})
+
+
+def _suspended(polls: int) -> dict[str, Any]:
+    del polls
+    return {"State": "Suspended"}
+
+
+def _vanishing(polls: int) -> dict[str, Any]:
+    del polls
+    raise ConnectionError("the fake Orchestrator hangs up")
+
+
+def test_a_started_job_that_cannot_be_followed_has_an_unknown_outcome(
+    system: FakeSystem, robots: flowglyph.Catalog
+):
+    arguments = {"in_OrchestratorQueueName": "Q"}
+    system.script = _signed_in(_orchestrator_script({"job": _suspended}))
+    executor = OrchestratorExecutor(system.url, NoAuth(), folder="Finance", poll_seconds=0.01)
+    with pytest.raises(OutcomeUnknownError, match="is Suspended, not finished"):
+        executor.execute(robots.get(MAIN), arguments)
+
+    system.script = _signed_in(_orchestrator_script({"job": _vanishing}))
+    with pytest.raises(OutcomeUnknownError, match=r"job 4242 .* can no longer be followed"):
+        executor.execute(robots.get(MAIN), arguments)
+
+
+def test_a_change_with_no_answer_has_an_unknown_outcome(
+    system: FakeSystem, payments: flowglyph.Catalog
+):
+    def hang_up(call: Call) -> Reply:
+        raise ConnectionError(f"dropped {call.path}")
+
+    arguments = {"Idempotency-Key": "inv-1", "body": {"amount": 5}}
+    executor = HttpExecutor(system.url, NoAuth())
+    system.script = hang_up
+    with pytest.raises(OutcomeUnknownError, match="was sent and no answer came back"):
+        executor.execute(payments.get("createInvoice"), arguments)
+    system.script = answer(504, {"message": "upstream timed out"})
+    with pytest.raises(OutcomeUnknownError, match="answered 504"):
+        executor.execute(payments.get("createInvoice"), arguments)
+
+
+def test_a_read_with_no_answer_and_a_server_never_reached_are_plain_failures(
+    system: FakeSystem, payments: flowglyph.Catalog
+):
+    def hang_up(call: Call) -> Reply:
+        raise ConnectionError(f"dropped {call.path}")
+
+    system.script = hang_up
+    with pytest.raises(ExecutionError, match="could not reach") as lost:
+        HttpExecutor(system.url, NoAuth()).execute(payments.get("listInvoices"), {})
+    assert not isinstance(lost.value, OutcomeUnknownError)
+
+    nowhere = HttpExecutor("http://127.0.0.1:9", NoAuth())
+    arguments = {"Idempotency-Key": "inv-1", "body": {"amount": 5}}
+    with pytest.raises(ExecutionError, match="could not reach") as refused:
+        nowhere.execute(payments.get("createInvoice"), arguments)
+    assert not isinstance(refused.value, OutcomeUnknownError)
 
 
 CONNECTIONS = """

@@ -27,3 +27,7 @@ class ValidationError(FlowGlyphError):
 
 class ExecutionError(FlowGlyphError):
     """A capability could not be run against the system it belongs to."""
+
+
+class OutcomeUnknownError(ExecutionError):
+    """A call was sent, and nothing says whether the system carried it out."""

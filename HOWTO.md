@@ -406,6 +406,7 @@ Every run answers with one of these statuses:
 | `invalid` | the arguments do not match the contract, or the function cannot run on its own |
 | `conflict` | the key was already used with different arguments |
 | `failed` | the system answered with an error; the run can be retried |
+| `unknown` | the call was sent and no answer came back (a timeout, a dropped connection, a job still running), so it may have gone through. The same key will not run again: check the system, then pass a new `idempotency_key` if it must run again |
 
 ## Files you write
 

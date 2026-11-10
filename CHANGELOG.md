@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Gateway: a run whose outcome is not known is no longer retried as if it had failed. When a
+  call with side effects is sent and no answer comes back (a timeout, a dropped connection, a
+  504 from a proxy, an Orchestrator job that is still running or can no longer be followed),
+  the result is the new status `unknown` and the same key does not run again; before, a retry
+  could run the automation twice. Functions that are safe to repeat, and reads, stay
+  retryable. Executors signal this with the new `OutcomeUnknownError`.
 - Gateway: what a dry run left in the ledger, a result or an approval, no longer stands in for
   the real run once the gateway starts with `--connections`.
 - Gateway: Orchestrator process and folder names with a quote stay one value in the filter.

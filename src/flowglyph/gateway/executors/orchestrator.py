@@ -10,12 +10,14 @@ import time
 from http import HTTPStatus
 from typing import Any, ClassVar, cast
 
-from flowglyph.errors import ExecutionError
+from flowglyph.errors import ExecutionError, OutcomeUnknownError
 from flowglyph.gateway.executors._http import HttpClient
 from flowglyph.gateway.executors.auth import Auth
 from flowglyph.ir import Capability
 
 _FINISHED = frozenset({"Successful", "Faulted", "Stopped", "Terminating", "Suspended"})
+# States a job can still leave, or in which part of the work may yet be done.
+_UNSETTLED = frozenset({"Terminating", "Suspended"})
 _START_JOBS = "odata/Jobs/UiPath.Server.Configuration.OData.StartJobs"
 
 
@@ -49,7 +51,9 @@ class OrchestratorExecutor:
 
         Raises:
             ExecutionError: If the capability is not a published process, Orchestrator refuses
-                the job, the job faults, or it does not finish in time.
+                the job, or the job faults.
+            OutcomeUnknownError: If the job was started and is not known to have ended: it
+                did not finish in time, or Orchestrator stopped answering.
         """
         process = self._process_name(capability)
         release_key = self._release_key(process)
@@ -92,16 +96,23 @@ class OrchestratorExecutor:
     def _wait(self, job_id: str, process: str) -> dict[str, Any]:
         deadline = time.monotonic() + self.timeout_seconds
         while True:
-            job = self._get(f"odata/Jobs({job_id})")
+            try:
+                job = self._get(f"odata/Jobs({job_id})")
+            except ExecutionError as error:
+                raise OutcomeUnknownError(
+                    f"job {job_id} of {process} was started and can no longer be followed: {error}"
+                ) from error
             state = str(job.get("State", ""))
             if state in _FINISHED:
                 break
             if time.monotonic() >= deadline:
-                raise ExecutionError(
+                raise OutcomeUnknownError(
                     f"job {job_id} of {process} is still {state or 'pending'} after "
                     f"{self.timeout_seconds:.0f}s"
                 )
             time.sleep(self.poll_seconds)
+        if state in _UNSETTLED:
+            raise OutcomeUnknownError(f"job {job_id} of {process} is {state}, not finished")
         if state != "Successful":
             detail = str(job.get("Info") or "no details")
             raise ExecutionError(f"job {job_id} of {process} ended {state}: {detail}")
