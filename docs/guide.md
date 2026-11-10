@@ -218,7 +218,10 @@ reads their cards and asks to run them. The gateway, not the agent, decides:
 1. it checks the arguments against the function's contract;
 2. it applies your policy: allow, deny, or wait for a person;
 3. it runs anything with side effects at most once per idempotency key, so a retry gets the
-   first result instead of running again;
+   first result, marked `replayed`, instead of running again. When the agent passes no key
+   and the function has no key fields, the key is a hash of the arguments, so the same call
+   with the same arguments within 24 hours counts as a retry. To run it again on purpose,
+   pass a new `idempotency_key`;
 4. it writes every decision to an audit log.
 
 A **policy** says what an agent may do:

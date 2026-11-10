@@ -62,9 +62,17 @@ flowchart BT
     wiki[Knowledge: wiki] --> report
     gateway[Execution: gateway] --> catalog
     planner[Planning: planner] --> catalog
+    compilers[Compilation: compilers] --> catalog
+    enrichment[Enrichment] --> planner
+    enrichment --> catalog
+    context[Agent context] --> report
+    context --> catalog
     cli[Interface: cli] --> wiki
     cli --> gateway
     cli --> planner
+    cli --> compilers
+    cli --> enrichment
+    cli --> context
 ```
 
 These rules are not only documentation: `tests/unit/test_architecture.py` reads every import in
@@ -117,7 +125,9 @@ commit.
 
 **Structure is parsed, never guessed.** Everything a source states (types, defaults, call
 graphs, HTTP and OData semantics, what an iFlow declares about itself) is read by an adapter.
-An LLM never fills the catalog. The planner only chooses between capabilities that already
+A model never decides structure, effects or retry safety. Enrichment, when you run it, only
+adds a description and business semantics where a source says nothing, and lists those fields
+as generated. The planner only chooses between capabilities that already
 exist, and a resolver that does not trust it checks every choice.
 
 **Unknown is an answer.** Effects are `yes`, `no` or `unknown`. Every consumer treats unknown as
