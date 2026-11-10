@@ -102,3 +102,25 @@ def test_every_generated_link_resolves(project: Path, reframework: Path, tmp_pat
     root = tmp_path / "wiki"
     build(project, root)
     assert not [issue for issue in wiki.lint_wiki(root) if issue.level == "error"]
+
+
+def test_pages_people_wrote_themselves_are_left_alone(project: Path, tmp_path: Path):
+    root = tmp_path / "wiki"
+    build(project, root)
+    runbook = root / "capabilities" / "my-runbook.md"
+    runbook.write_text("# Month-end runbook\n\nWritten by hand.\n")
+    result = build(project, root)
+    assert runbook.read_text() == "# Month-end runbook\n\nWritten by hand.\n"
+    assert result.removed == ()
+
+
+def test_a_page_kept_for_its_notes_is_retired_once(project: Path, tmp_path: Path):
+    root = tmp_path / "wiki"
+    build(project, root)
+    noted = root / BOOK
+    noted.write_text(noted.read_text() + "\nReplaced by the ERP integration in 2027.\n")
+    (project / "invoices" / "Steps" / "BookInvoice.xaml").unlink()
+    assert BOOK in build(project, root).removed
+    kept = noted.read_text()
+    assert BOOK not in build(project, root).removed
+    assert noted.read_text() == kept

@@ -80,7 +80,7 @@ class OrchestratorExecutor:
         return self.processes.get(project, project)
 
     def _release_key(self, process: str) -> str:
-        releases = self._get("odata/Releases", [("$filter", f"ProcessKey eq '{process}'")])
+        releases = self._get("odata/Releases", [("$filter", f"ProcessKey eq {_quoted(process)}")])
         found = cast("list[dict[str, Any]]", releases.get("value", []))
         if not found:
             raise ExecutionError(
@@ -126,7 +126,7 @@ class OrchestratorExecutor:
             "GET",
             f"{self.url}/odata/Folders",
             headers=self.auth.headers(self.client),
-            query=[("$filter", f"FullyQualifiedName eq '{self.folder}'")],
+            query=[("$filter", f"FullyQualifiedName eq {_quoted(self.folder)}")],
         )
         found = cast(
             "list[dict[str, Any]]", _payload(response.json(), response.status).get("value", [])
@@ -146,6 +146,11 @@ class OrchestratorExecutor:
             "POST", f"{self.url}/{path}", headers=self._headers(), json_body=body
         )
         return _payload(response.json(), response.status)
+
+
+def _quoted(text: str) -> str:
+    """`text` as an OData string literal; a quote inside it is doubled, so it stays one value."""
+    return "'" + text.replace("'", "''") + "'"
 
 
 def _payload(answer: Any, status: int) -> dict[str, Any]:

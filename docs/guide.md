@@ -242,7 +242,8 @@ flowglyph approve catalog '<key>'      # let it run; the agent's next attempt go
 ```
 
 **Dry run or real.** Without anything else, every run is a dry run that shows what would be
-sent. To run for real, describe each system once in `flowglyph.connections.yaml` and add
+sent. What a dry run leaves in the ledger, a result or an approval, never counts for the real
+run: the first real call with the same key runs, and asks for its own approval. To run for real, describe each system once in `flowglyph.connections.yaml` and add
 `--connections flowglyph.connections.yaml`:
 
 ```yaml

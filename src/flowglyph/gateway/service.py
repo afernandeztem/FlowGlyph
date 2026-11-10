@@ -146,6 +146,7 @@ class Gateway:
                     arguments_hash=fingerprint(arguments),
                     ttl_seconds=capability.idempotency.ttl_seconds or DEFAULT_TTL_SECONDS,
                     arguments=arguments,
+                    dry_run=isinstance(self.executor, DryRunExecutor),
                 )
                 result = self._run_once(capability, arguments, ticket, decision)
             else:

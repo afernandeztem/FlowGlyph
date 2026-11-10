@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- Gateway: what a dry run left in the ledger, a result or an approval, no longer stands in for
+  the real run once the gateway starts with `--connections`.
+- Gateway: Orchestrator process and folder names with a quote stay one value in the filter.
+- Wiki: a build no longer deletes pages written by hand, and a page kept for its notes is
+  reported as retired once, not on every build.
+- Enrichment: short descriptions, descriptions in Chinese or Japanese and descriptions that
+  start with `[` are kept as the source wrote them.
+- OpenAPI: status codes written as numbers in YAML are read, and deep schemas that do not
+  repeat are no longer cut as if they were recursive.
+- SAP OData V4: a bound action goes to the set of its own entity type, and one bound to a
+  collection is called on the set.
+- SAP Integration Suite: only an idempotent process call counts as declared idempotency, not
+  any property that mentions the word.
+- n8n: an HTTP Request whose method is an expression has unknown effects.
+- Versioning: naming the items of an array that accepted anything is a major change.
+- BPMN compiler: repeated step ids and edges to a missing step fail with a clear error, and
+  steps named like generated ids no longer clash with them.
+- A half-written `flowglyph.overrides.yaml` fails with the file and capability named.
+- A repository link whose folder climbs out with `..` is refused.
 
 ## [0.1.1] - 2026-11-08
 

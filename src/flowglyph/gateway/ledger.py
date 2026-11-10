@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS runs (
     created REAL NOT NULL,
     updated REAL NOT NULL,
     expires_at REAL NOT NULL,
-    arguments TEXT
+    arguments TEXT,
+    dry_run INTEGER NOT NULL DEFAULT 0
 )
 """
 _SELECT = (
@@ -52,7 +53,11 @@ class Run:
 
 @dataclass(frozen=True)
 class Ticket:
-    """A request to run one capability under one idempotency key."""
+    """A request to run one capability under one idempotency key.
+
+    `dry_run` says the run only reports what it would send. Such a run never holds the key
+    against a real one.
+    """
 
     key: str
     capability: str
@@ -60,6 +65,7 @@ class Ticket:
     arguments_hash: str
     ttl_seconds: int
     arguments: dict[str, Any] = field(default_factory=dict[str, Any])
+    dry_run: bool = False
 
 
 @dataclass(frozen=True)
@@ -79,7 +85,8 @@ class Ledger:
 
     Claiming a key is a single `INSERT ... ON CONFLICT DO NOTHING`, so two concurrent calls
     with the same key can never both execute, even from different processes. The row keeps
-    the arguments of the call, so a person can see what they approve.
+    the arguments of the call, so a person can see what they approve. A row left by a dry
+    run, its result or its approval, is dropped when a real run asks for the same key.
     """
 
     def __init__(self, path: str | Path) -> None:
@@ -92,6 +99,12 @@ class Ledger:
             columns = {row[1] for row in connection.execute("PRAGMA table_info(runs)")}
             if "arguments" not in columns:
                 connection.execute("ALTER TABLE runs ADD COLUMN arguments TEXT")
+            if "dry_run" not in columns:
+                connection.execute("ALTER TABLE runs ADD COLUMN dry_run INTEGER NOT NULL DEFAULT 0")
+                # Rows from before the column: a dry run's result starts with its marker.
+                connection.execute(
+                    "UPDATE runs SET dry_run = 1 WHERE result LIKE '{\"dry_run\": true%'"
+                )
 
     @contextmanager
     def _connect(self) -> Generator[sqlite3.Connection]:
@@ -106,12 +119,13 @@ class Ledger:
         now = time.time()
         with self._connect() as connection:
             connection.execute(
-                "DELETE FROM runs WHERE key = ? AND expires_at < ?", (ticket.key, now)
+                "DELETE FROM runs WHERE key = ? AND (expires_at < ? OR dry_run > ?)",
+                (ticket.key, now, int(ticket.dry_run)),
             )
             inserted = connection.execute(
                 "INSERT INTO runs (key, capability, version, arguments_hash, status, result, "
-                "created, updated, expires_at, arguments) "
-                "VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?) ON CONFLICT(key) DO NOTHING",
+                "created, updated, expires_at, arguments, dry_run) "
+                "VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(key) DO NOTHING",
                 (
                     ticket.key,
                     ticket.capability,
@@ -122,6 +136,7 @@ class Ledger:
                     now,
                     now + ticket.ttl_seconds,
                     json.dumps(ticket.arguments, sort_keys=True, default=str),
+                    int(ticket.dry_run),
                 ),
             ).rowcount
             if inserted:
@@ -129,9 +144,9 @@ class Ledger:
             # An approval may only be consumed by the run it approved, never reset to waiting.
             resumable = ("failed", "approved") if status == "running" else ("failed", "failed")
             retried = connection.execute(
-                "UPDATE runs SET status = ?, updated = ? "
+                "UPDATE runs SET status = ?, updated = ?, dry_run = ? "
                 "WHERE key = ? AND arguments_hash = ? AND status IN (?, ?)",
-                (status, now, ticket.key, ticket.arguments_hash, *resumable),
+                (status, now, int(ticket.dry_run), ticket.key, ticket.arguments_hash, *resumable),
             ).rowcount
             if retried:
                 return Claim(claimed=True)

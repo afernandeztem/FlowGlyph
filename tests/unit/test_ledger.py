@@ -1,5 +1,7 @@
+import json
 import sqlite3
 import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -104,3 +106,35 @@ def test_ledgers_written_before_arguments_were_kept_still_open(tmp_path: Path):
     new = ledger.get("k")
     assert new is not None
     assert new.arguments == {"invoice": "INV-1"}
+
+
+def test_a_real_run_takes_the_key_from_a_dry_run(tmp_path: Path):
+    ledger = Ledger(tmp_path / "ledger.sqlite")
+    rehearsal = Ticket("k", "cap", "1.0.0", "hash", 60, dry_run=True)
+    real = Ticket("k", "cap", "1.0.0", "hash", 60)
+    assert ledger.claim(rehearsal).claimed
+    ledger.finish("k", "done", {"dry_run": True})
+    assert not ledger.claim(rehearsal).claimed
+    assert ledger.claim(real).claimed
+    ledger.finish("k", "done", {"ok": True})
+    assert not ledger.claim(real).claimed
+    replayed = ledger.claim(rehearsal)
+    assert replayed.existing is not None
+    assert replayed.existing.result == {"ok": True}
+
+
+def test_dry_runs_recorded_before_the_ledger_marked_them_are_recognised(tmp_path: Path):
+    path = tmp_path / "ledger.sqlite"
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "CREATE TABLE runs (key TEXT PRIMARY KEY, capability TEXT NOT NULL, "
+            "version TEXT NOT NULL, arguments_hash TEXT NOT NULL, status TEXT NOT NULL, "
+            "result TEXT, created REAL NOT NULL, updated REAL NOT NULL, "
+            "expires_at REAL NOT NULL, arguments TEXT)"
+        )
+        connection.execute(
+            "INSERT INTO runs VALUES ('k', 'cap', '1.0.0', 'hash', 'done', ?, 0, 0, ?, NULL)",
+            (json.dumps({"dry_run": True, "would_run": "x"}), time.time() + 60),
+        )
+    connection.close()
+    assert Ledger(path).claim(Ticket("k", "cap", "1.0.0", "hash", 60)).claimed

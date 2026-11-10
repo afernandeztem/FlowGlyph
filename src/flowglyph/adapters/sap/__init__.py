@@ -216,13 +216,17 @@ class _ServiceReader:
         method = "GET" if safe else "POST"
         request = f"{method} {operation.name}()"
         if operation.bound_to:
-            entity = self.service.entity_type(operation.bound_to)
-            entity_set = self.service.set_for(operation.bound_to)
+            # Bound to `Collection(Type)`, it is called on the set, not on one entity.
+            on_set = operation.bound_to.startswith("Collection(")
+            bound = operation.bound_to.removeprefix("Collection(").removesuffix(")")
+            entity = self.service.entity_type(bound)
+            entity_set = self.service.set_for(bound)
             prefix = f"{entity_set.name}/" if entity_set else ""
             if entity_set:
                 qualified = f"{operation.namespace}.{operation.name}".lstrip(".")
-                request = f"{method} {entity_set.name}(key)/{qualified}()"
-            if entity is not None:
+                one = "" if on_set else "(key)"
+                request = f"{method} {entity_set.name}{one}/{qualified}()"
+            if entity is not None and not on_set:
                 inputs.update(self._keys(entity))
                 required.extend(entity.keys)
         for parameter in operation.parameters:

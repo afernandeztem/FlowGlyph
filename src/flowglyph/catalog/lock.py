@@ -101,7 +101,8 @@ def _rejects(new: Shape, old: Shape) -> bool:
         name not in new.properties or _rejects(new.properties[name], shape)
         for name, shape in old.properties.items()
     )
-    items = old.items is not None and new.items is not None and _rejects(new.items, old.items)
+    # An array that took anything and now names its items refuses what it used to take.
+    items = new.items is not None and (old.items is None or _rejects(new.items, old.items))
     return newly_required or narrowed or items
 
 
@@ -115,7 +116,7 @@ def _surprises(new: Shape, old: Shape) -> bool:
         or _surprises(new.properties[name], shape)
         for name, shape in old.properties.items()
     )
-    items = old.items is not None and new.items is not None and _surprises(new.items, old.items)
+    items = old.items is not None and (new.items is None or _surprises(new.items, old.items))
     return changed or items
 
 

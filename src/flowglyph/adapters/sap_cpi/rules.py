@@ -164,7 +164,9 @@ def _odata_operation(operation: str) -> Effects:
 
 
 def _mentions_idempotency(step: Step) -> bool:
-    return any(_IDEMPOTENT.search(text) for text in (step.activity_type, *step.properties.values()))
+    """The step is an idempotent process call: its type says so, not a text that mentions it."""
+    kinds = (step.activity_type, step.properties.get("subActivityType", ""))
+    return any(_IDEMPOTENT.search(kind) for kind in kinds)
 
 
 def _message_id(properties: dict[str, str]) -> str | None:

@@ -108,7 +108,9 @@ class Service:
     def set_for(self, entity_type: str) -> EntitySet | None:
         """The first entity set holding entities of `entity_type`."""
         short = entity_type.rsplit(".", 1)[-1]
-        return next((s for s in self.entity_sets if s.entity_type.endswith(short)), None)
+        return next(
+            (s for s in self.entity_sets if s.entity_type.rsplit(".", 1)[-1] == short), None
+        )
 
 
 def is_edmx(root: ET.Element) -> bool:

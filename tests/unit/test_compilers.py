@@ -9,7 +9,8 @@ import pytest
 import flowglyph
 from flowglyph._internal.xml import parse_xml
 from flowglyph.compilers import compile_workflow, load_planned
-from flowglyph.ir import Edge, Workflow
+from flowglyph.errors import CatalogError
+from flowglyph.ir import Edge, Node, Workflow
 
 FIXTURES = Path(__file__).parents[1] / "fixtures"
 EXAMPLES = Path(__file__).parents[2] / "examples"
@@ -206,3 +207,42 @@ def test_compiling_is_deterministic(processes: flowglyph.Catalog):
     capability = processes.get("bpmn/invoice_approval")
     first = compile_workflow(graph, capability, to="bpmn", catalog=processes)
     assert compile_workflow(graph, capability, to="bpmn", catalog=processes) == first
+
+
+def test_bpmn_refuses_graphs_it_cannot_write_as_valid_xml(processes: flowglyph.Catalog):
+    capability = next(iter(processes))
+    twice = Workflow(
+        id="w", capability=capability.id, nodes=(Node(id="a", kind="activity", label="a"),) * 2
+    )
+    with pytest.raises(CatalogError, match="unique"):
+        compile_workflow(twice, capability, to="bpmn")
+    loose = Workflow(
+        id="w",
+        capability=capability.id,
+        nodes=(Node(id="a", kind="activity", label="a"),),
+        edges=(Edge(source="a", target="ghost"),),
+    )
+    with pytest.raises(CatalogError, match="ghost"):
+        compile_workflow(loose, capability, to="bpmn")
+
+
+def test_steps_named_like_generated_ids_do_not_clash(processes: flowglyph.Catalog):
+    capability = next(iter(processes))
+    workflow = Workflow(
+        id="w",
+        capability=capability.id,
+        nodes=(
+            Node(id="flow_1", kind="activity", label="flow_1"),
+            Node(id="b", kind="activity", label="b"),
+            Node(id="c", kind="activity", label="c", join="all"),
+            Node(id="join_c", kind="activity", label="join_c"),
+        ),
+        edges=(
+            Edge(source="flow_1", target="c"),
+            Edge(source="b", target="c"),
+            Edge(source="c", target="join_c"),
+        ),
+    )
+    text = compile_workflow(workflow, capability, to="bpmn").text
+    ids = [element.get("id") for element in _parse(text).iter() if element.get("id")]
+    assert len(ids) == len(set(ids))

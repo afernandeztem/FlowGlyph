@@ -443,6 +443,26 @@ def test_orchestrator_reports_faulted_jobs_and_missing_processes(
         executor.execute(robots.get("Framework/InitAllSettings"), {})
 
 
+def test_orchestrator_names_with_a_quote_stay_one_value(
+    system: FakeSystem, robots: flowglyph.Catalog
+):
+    filters: list[str] = []
+    script = _signed_in(_orchestrator_script({"job": _faulted}))
+
+    def recording(call: Call) -> Reply:
+        if "$filter" in call.query:
+            filters.append(call.query["$filter"])
+        return script(call)
+
+    system.script = recording
+    executor = OrchestratorExecutor(
+        system.url, NoAuth(), folder="Finance", processes={"reframework": "O'Brien"}
+    )
+    with pytest.raises(ExecutionError, match="no process named"):
+        executor.execute(robots.get(MAIN), {"in_OrchestratorQueueName": "Q"})
+    assert filters[-1] == "ProcessKey eq 'O''Brien'"
+
+
 def test_orchestrator_gives_up_after_the_timeout(system: FakeSystem, robots: flowglyph.Catalog):
     system.script = _signed_in(_orchestrator_script({"job": _forever}))
     executor = OrchestratorExecutor(

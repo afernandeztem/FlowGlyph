@@ -139,3 +139,11 @@ def test_shapes_read_what_matters_from_a_schema():
 def test_declared_idempotency_was_inferred_by_nobody():
     assert Idempotency(provenance="declared").inferred_by is None
     assert Idempotency(provenance="inferred").inferred_by == "heuristic"
+
+
+def test_naming_the_items_of_an_open_array_is_breaking():
+    anything = {"type": "array"}
+    numbers = {"type": "array", "items": INTEGER}
+    assert bump(capability({"tags": anything}), capability({"tags": numbers})) is Bump.MAJOR
+    assert bump(capability({"tags": numbers}), capability({"tags": anything})) is Bump.MINOR
+    assert bump(capability({}, {"tags": numbers}), capability({}, {"tags": anything})) is Bump.MAJOR

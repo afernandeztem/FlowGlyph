@@ -5,7 +5,7 @@ from typing import Any, cast
 
 from flowglyph.ir import JsonSchema
 
-_MAX_DEPTH = 12
+_MAX_DEPTH = 200
 
 
 class RefResolver:
@@ -47,7 +47,7 @@ class RefResolver:
         mapping = cast("Mapping[str, Any]", node)
         if "$ref" in mapping:
             ref = str(mapping["$ref"])
-            if ref in stack or depth > _MAX_DEPTH:
+            if ref in stack or len(stack) > _MAX_DEPTH:
                 return {"type": "object", "x-recursive-ref": ref}
             target = self._lookup(ref)
             if target is None:

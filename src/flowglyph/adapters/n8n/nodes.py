@@ -88,7 +88,8 @@ def node_effects(node: dict[str, Any]) -> Effects | None:
         effects = UNKNOWN
     elif kind == "httpRequest":
         method = str(parameters.get("method") or parameters.get("requestMethod") or "GET")
-        effects = _METHODS.get(method.upper(), WRITE)
+        # An expression (`={{ ... }}`) picks the method at run time: it can be a DELETE.
+        effects = UNKNOWN_EXTERNAL if "{{" in method else _METHODS.get(method.upper(), WRITE)
     elif str(node.get("type", "")).startswith("@n8n/"):
         effects = UNKNOWN_EXTERNAL
     else:

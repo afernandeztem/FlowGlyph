@@ -231,3 +231,45 @@ def test_importing_the_gateway_without_its_extra_says_what_to_install():
     assert completed.returncode == 1
     assert "FlowGlyphError: the gateway needs extra packages" in completed.stderr
     assert "pip install 'flowglyph[mcp]'" in completed.stderr
+
+
+class Real:
+    """An executor that counts the runs it really makes."""
+
+    name: ClassVar[str] = "real"
+
+    def __init__(self) -> None:
+        self.runs = 0
+
+    def execute(self, capability: Capability, arguments: dict[str, object]) -> dict[str, object]:
+        self.runs += 1
+        return {"ran": capability.id}
+
+
+def test_a_dry_run_never_stands_in_for_the_real_run(catalog_dir: Path):
+    arguments = {"Idempotency-Key": "inv-118", "body": INVOICE}
+    rehearsal = Gateway(catalog_dir).run(CREATE, arguments)
+    assert rehearsal.result["dry_run"] is True
+
+    executor = Real()
+    live = Gateway(catalog_dir, executor=executor)
+    first = live.run(CREATE, arguments)
+    second = live.run(CREATE, arguments)
+    assert (first.status, second.status) == ("done", "replayed")
+    assert first.result == {"ran": CREATE}
+    assert executor.runs == 1
+
+    # The other way round is harmless: a dry run after the real one replays what really ran.
+    assert Gateway(catalog_dir).run(CREATE, arguments).result == {"ran": CREATE}
+
+
+def test_an_approval_given_to_a_dry_run_does_not_approve_the_real_run(catalog_dir: Path):
+    dry = Gateway(catalog_dir)
+    held = dry.run(DELETE, {"invoiceId": "INV-118"})
+    assert held.idempotency_key is not None
+    dry.approve(held.idempotency_key, actor="ana")
+
+    executor = Real()
+    live = Gateway(catalog_dir, executor=executor)
+    assert live.run(DELETE, {"invoiceId": "INV-118"}).status == "approval_required"
+    assert executor.runs == 0

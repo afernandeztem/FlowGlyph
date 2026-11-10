@@ -12,6 +12,7 @@ by sources and people.
 """
 
 import json
+import re
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,6 +30,8 @@ ENRICHMENT_FILE = "flowglyph.enrichment.json"
 PROMPT_VERSION = 1
 BATCH_SIZE = 20
 _MIN_WORDS = 3
+_MIN_CHARACTERS = 12
+_PLACEHOLDER = re.compile(r"(\[[^\]]*\]\s*)+")  # `[Process title]`, as templates ship it
 
 SYSTEM_PROMPT = """\
 You document enterprise automations for the people and agents who use them.
@@ -230,10 +233,12 @@ def _needs_description(capability: Capability) -> bool:
     if "description" in capability.generated:
         return False
     text = capability.description.strip()
-    if not text or text.startswith("["):
+    if not text or _PLACEHOLDER.fullmatch(text):
         return True
     remainder = text.replace(capability.title, " ")
-    return len([word for word in remainder.split() if word.isalnum()]) < _MIN_WORDS
+    words = re.findall(r"\w+", remainder)
+    # Chinese or Japanese write a sentence without spaces: count its length instead.
+    return len(words) < _MIN_WORDS and sum(map(len, words)) < _MIN_CHARACTERS
 
 
 def _needs_semantics(capability: Capability) -> bool:

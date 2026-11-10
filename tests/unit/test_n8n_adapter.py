@@ -131,3 +131,13 @@ def test_only_n8n_exports_are_claimed(tmp_path: Path):
     (tmp_path / "package.json").write_text(json.dumps({"name": "x", "dependencies": {}}))
     (tmp_path / "openapi.json").write_text(json.dumps({"openapi": "3.1.0", "paths": {}}))
     assert N8nAdapter().discover(tmp_path) == []
+
+
+def test_a_method_chosen_at_run_time_is_not_assumed_harmless():
+    node = {
+        "type": "n8n-nodes-base.httpRequest",
+        "parameters": {"method": "={{ $json.method }}"},
+    }
+    effects = node_effects(node)
+    assert effects is not None
+    assert effects.destructive.value == "unknown"
