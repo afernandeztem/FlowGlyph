@@ -11,7 +11,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
-from flowglyph.errors import ExecutionError
+from flowglyph.errors import ExecutionError, OutcomeUnknownError
 from flowglyph.gateway.executors._http import HttpClient
 
 _TOKEN_MARGIN_SECONDS = 60
@@ -120,7 +120,11 @@ class ClientCredentialsAuth(_Auth):
         }
         if self.scope:
             form["scope"] = self.scope
-        response = client.request("POST", self.token_url, form=form)
+        try:
+            response = client.request("POST", self.token_url, form=form)
+        except OutcomeUnknownError as error:
+            # Asking for a token changes nothing, so the capability itself was never called.
+            raise ExecutionError(str(error)) from error
         answer = response.json()
         if not response.ok or not isinstance(answer, dict) or "access_token" not in answer:
             raise ExecutionError(

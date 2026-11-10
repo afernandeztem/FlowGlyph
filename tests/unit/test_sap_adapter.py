@@ -147,3 +147,28 @@ def test_sap_sits_next_to_other_sources(sap: Path, synthetic: Path, tmp_path: Pa
         only_sap.search("supplier invoice duplicates", limit=1)[0].id
         == f"{V2}/GetDuplicateCandidates"
     )
+
+
+def test_actions_bind_to_their_own_set_and_to_whole_sets(sap: Path, tmp_path: Path):
+    metadata = (sap / "zbusinesspartner_v4.xml").read_text()
+    extra = """
+      <EntityType Name="PreferredBusinessPartnerType">
+        <Key><PropertyRef Name="Rank"/></Key>
+        <Property Name="Rank" Type="Edm.Int32" Nullable="false"/>
+      </EntityType>
+      <Action Name="recount" IsBound="true">
+        <Parameter Name="it" Type="Collection(zbusinesspartner.BusinessPartnerType)"/>
+      </Action>
+"""
+    metadata = metadata.replace("<EntityContainer", extra + "<EntityContainer", 1)
+    metadata = metadata.replace(
+        "<EntitySet ",
+        '<EntitySet Name="Preferred" EntityType="zbusinesspartner.PreferredBusinessPartnerType"/>'
+        "\n<EntitySet ",
+        1,
+    )
+    (tmp_path / "service.xml").write_text(metadata)
+    found = {c.id.split("/", 2)[-1]: c for c in SapODataAdapter().extract(tmp_path).capabilities}
+    assert "BusinessPartner/block" in found
+    assert "Preferred/block" not in found
+    assert [p.name for p in found["BusinessPartner/recount"].inputs] == []

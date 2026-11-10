@@ -63,7 +63,9 @@ def resolve(spec: str | Path, *, ref: str | None = None) -> Source:
     if tree:
         url = f"https://{tree['host']}/{tree['owner']}/{tree['repo']}.git"
         ref = ref or tree["ref"]
-        subdir = tree["subdir"] or ""
+        subdir = (tree["subdir"] or "").strip("/")
+        if ".." in subdir.split("/"):
+            raise SourceError(f"{subdir!r} points outside the repository")
     if ref is not None and ref.startswith("-"):
         # git would read it as an option: `--upload-pack=<command>` runs that command.
         raise SourceError(f"{ref!r} is not a branch, tag or commit")

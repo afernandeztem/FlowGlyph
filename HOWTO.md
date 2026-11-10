@@ -386,6 +386,11 @@ When an agent connects to [`serve`](#serve), it gets these MCP tools:
 | `run_status` | the outcome of an earlier run, by its key |
 | one tool per function | with `--expose all` (or `auto` and up to 40 functions), each function is its own tool; the optional `_idempotency_key` argument plays the same role |
 
+Without an `idempotency_key`, the gateway uses the function's key fields, or else a hash of the
+arguments. So a second call to a function with side effects, with the same arguments, returns
+the first result with status `replayed` (for 24 hours unless the function sets its own time).
+To run it again on purpose, pass a new `idempotency_key`.
+
 It can also read the catalog index and every card as MCP resources (`flowglyph://index`,
 `flowglyph://cards/...`).
 
@@ -401,6 +406,7 @@ Every run answers with one of these statuses:
 | `invalid` | the arguments do not match the contract, or the function cannot run on its own |
 | `conflict` | the key was already used with different arguments |
 | `failed` | the system answered with an error; the run can be retried |
+| `unknown` | the call was sent and no answer came back (a timeout, a dropped connection, a job still running), so it may have gone through. The same key will not run again: check the system, then pass a new `idempotency_key` if it must run again |
 
 ## Files you write
 

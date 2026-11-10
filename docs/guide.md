@@ -218,7 +218,12 @@ reads their cards and asks to run them. The gateway, not the agent, decides:
 1. it checks the arguments against the function's contract;
 2. it applies your policy: allow, deny, or wait for a person;
 3. it runs anything with side effects at most once per idempotency key, so a retry gets the
-   first result instead of running again;
+   first result, marked `replayed`, instead of running again. When the agent passes no key
+   and the function has no key fields, the key is a hash of the arguments, so the same call
+   with the same arguments within 24 hours counts as a retry. To run it again on purpose,
+   pass a new `idempotency_key`. A run that failed can be retried with the same key. One
+   whose outcome is not known (the call was sent and the answer never came) is marked
+   `unknown` and is not run again under that key, since the first call may have gone through;
 4. it writes every decision to an audit log.
 
 A **policy** says what an agent may do:
@@ -239,7 +244,8 @@ flowglyph approve catalog '<key>'      # let it run; the agent's next attempt go
 ```
 
 **Dry run or real.** Without anything else, every run is a dry run that shows what would be
-sent. To run for real, describe each system once in `flowglyph.connections.yaml` and add
+sent. What a dry run leaves in the ledger, a result or an approval, never counts for the real
+run: the first real call with the same key runs, and asks for its own approval. To run for real, describe each system once in `flowglyph.connections.yaml` and add
 `--connections flowglyph.connections.yaml`:
 
 ```yaml

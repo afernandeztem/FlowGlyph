@@ -203,8 +203,8 @@ class _DocumentReader:
         return resolved, bool(body.get("required"))
 
     def _output_schema(self, operation: dict[str, Any]) -> JsonSchema:
-        responses = cast("dict[str, Any]", operation.get("responses", {}))
-        for status in sorted(code for code in responses if str(code).startswith("2")):
+        responses = _by_status(operation)
+        for status in sorted(code for code in responses if code.startswith("2")):
             response = self.resolver.resolve(responses[status])
             schema = _json_content_schema(cast("dict[str, Any]", response.get("content", {})))
             if schema is not None:
@@ -225,9 +225,9 @@ class _DocumentReader:
         return tuple(sorted(scopes))
 
     def _errors(self, operation: dict[str, Any]) -> tuple[str, ...]:
-        responses = cast("dict[str, Any]", operation.get("responses", {}))
+        responses = _by_status(operation)
         errors: list[str] = []
-        for status in sorted(str(code) for code in responses):
+        for status in sorted(responses):
             if status[0] in "45":
                 response = self.resolver.resolve(responses[status])
                 description = str(response.get("description", "")).strip()
@@ -303,3 +303,9 @@ def _pointer(route: str) -> str:
 
 
 __all__ = ["OpenAPIAdapter"]
+
+
+def _by_status(operation: dict[str, Any]) -> dict[str, Any]:
+    """Responses keyed by status as text: YAML reads an unquoted `404` as a number."""
+    responses = cast("dict[object, Any]", operation.get("responses") or {})
+    return {str(status): response for status, response in responses.items()}

@@ -130,3 +130,38 @@ def test_documents_with_the_same_title_stay_apart(openapi: Path, tmp_path: Path)
         (tmp_path / name).write_text((openapi / "payments.yaml").read_text())
     ids = {c.id for c in OpenAPIAdapter().extract(tmp_path).capabilities}
     assert {"openapi/Payments_API.eu/createInvoice", "openapi/Payments_API.us/createInvoice"} <= ids
+
+
+def test_status_codes_written_as_numbers_are_read(tmp_path: Path):
+    document = tmp_path / "numbers.yaml"
+    document.write_text(
+        """
+openapi: 3.0.3
+info: {title: Numbers, version: "1"}
+paths:
+  /things/{id}:
+    get:
+      operationId: getThing
+      responses:
+        200:
+          description: The thing.
+          content: {application/json: {schema: {type: object}}}
+        404: {description: No such thing.}
+"""
+    )
+    extraction = OpenAPIAdapter().extract(document)
+    (thing,) = extraction.capabilities
+    assert thing.errors == ("404: No such thing.",)
+    assert "body" in thing.output_schema["properties"]
+
+
+def test_deep_schemas_that_do_not_repeat_are_kept_whole():
+    depth = 20
+    schemas: dict[str, object] = {
+        f"L{level}": {"type": "object", "properties": {"next": {"$ref": f"#/s/L{level + 1}"}}}
+        for level in range(depth)
+    }
+    schemas[f"L{depth}"] = {"type": "string"}
+    inlined = RefResolver({"s": schemas}).inline({"$ref": "#/s/L0"})
+    assert "x-recursive-ref" not in str(inlined)
+    assert str(inlined).count("properties") == depth

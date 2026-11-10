@@ -181,3 +181,24 @@ def test_missing_paths_fail_clearly(tmp_path: Path):
         flowglyph.extract(tmp_path / "nope")
     with pytest.raises(CatalogError, match=r"catalog\.jsonl"):
         flowglyph.load_catalog(tmp_path)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "- a list\n",
+        "capabilities: [a, b]\n",
+        f"capabilities:\n  {MAIN}: just text\n",
+        f"capabilities:\n  {MAIN}:\n    idempotency:\n",
+        f"capabilities:\n  {MAIN}:\n    idempotency: {{mode: sometimes}}\n",
+    ],
+)
+def test_a_half_written_overrides_file_fails_with_its_name(project: Path, text: str):
+    (project / "flowglyph.overrides.yaml").write_text(text, encoding="utf-8")
+    with pytest.raises(CatalogError, match=r"flowglyph\.overrides\.yaml"):
+        flowglyph.extract(project)
+
+
+def test_an_overrides_file_with_nothing_in_it_changes_nothing(project: Path):
+    (project / "flowglyph.overrides.yaml").write_text("capabilities:\n", encoding="utf-8")
+    assert flowglyph.extract(project).get(MAIN).idempotency.provenance == "inferred"

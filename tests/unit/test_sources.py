@@ -153,3 +153,16 @@ def test_git_is_told_where_its_options_end(monkeypatch: pytest.MonkeyPatch, tmp_
 )
 def test_checkouts_are_named_after_the_repository(url: str, name: str):
     assert sources.checkout_name(url) == name
+
+
+def test_folders_that_climb_out_of_the_repository_are_refused(monkeypatch: pytest.MonkeyPatch):
+    ran: list[tuple[str | Path, ...]] = []
+
+    def record(*arguments: str | Path, cwd: Path | None = None) -> str:
+        ran.append(arguments)
+        return ""
+
+    monkeypatch.setattr(sources, "_git", record)
+    with pytest.raises(SourceError, match="outside the repository"):
+        sources.resolve("https://github.com/acme/flows/tree/main/a/../../../../etc")
+    assert ran == []

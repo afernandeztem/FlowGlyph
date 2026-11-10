@@ -156,3 +156,22 @@ def test_extracting_again_reapplies_answers_without_new_versions(
         "description",
         "semantics",
     )
+
+
+@pytest.mark.parametrize(
+    ("description", "asked"),
+    [
+        ("Posts the invoice.", False),
+        ("Sends approval e-mail.", False),
+        ("请求审批并在SAP中过账发票。", False),
+        ("[SAP] Posts the vendor invoice and returns the document number.", False),
+        ("[Process title]\n[Process description]", True),
+        ("Main workflow", True),
+        ("", True),
+    ],
+)
+def test_a_description_the_source_wrote_is_never_replaced(
+    robots: flowglyph.Catalog, description: str, asked: bool
+):
+    stated = next(iter(robots)).model_copy(update={"title": "Main", "description": description})
+    assert enrichment._needs_description(stated) is asked  # pyright: ignore[reportPrivateUsage]

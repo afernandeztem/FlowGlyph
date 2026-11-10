@@ -346,19 +346,25 @@ def _write(page: Path, generated: str) -> None:
     )
 
 
+_RETIRED = "> **Removed from the sources.**"
+
+
 def _retire(root: Path, written: set[Path]) -> list[str]:
-    """Delete pages that left the sources, unless someone wrote notes on them."""
+    """Delete generated pages that left the sources, unless someone wrote notes on them."""
     removed: list[str] = []
     for folder in ("capabilities", "categories", "sources"):
         for page in (root / folder).glob("*.md"):
             if page in written:
                 continue
             text = page.read_text(encoding="utf-8")
-            notes = text[text.index(NOTES_MARKER) :] if NOTES_MARKER in text else ""
+            # Every page a build writes carries the marker: a file without it is someone's own.
+            if NOTES_MARKER not in text or _RETIRED in text:
+                continue
+            notes = text[text.index(NOTES_MARKER) :]
             relative = page.relative_to(root).as_posix()
-            if notes.strip() and notes.strip() != _NOTES_TEMPLATE.strip():
+            if notes.strip() != _NOTES_TEMPLATE.strip():
                 title = text.split("\n", 1)[0] if text.startswith("# ") else f"# {page.stem}"
-                banner = f"{title}\n\n> **Removed from the sources.** Kept because it has notes.\n"
+                banner = f"{title}\n\n{_RETIRED} Kept because it has notes.\n"
                 page.write_text(banner + "\n" + notes, encoding="utf-8", newline="\n")
             else:
                 page.unlink()

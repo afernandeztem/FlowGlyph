@@ -31,8 +31,8 @@ robots, SAP integration flows and OData services, SAP Build processes, BPMN proc
 workflows, internal APIs, and the answers are scattered across XML and JSON files nobody reads.
 
 FlowGlyph reads those files with deterministic parsers, never with a model, and turns every
-workflow, service operation and API call into a small, typed **capability**: its inputs and
-outputs, what it does to the world, and whether a retry is a repeat. Every answer says whether
+workflow, service operation and API call into a small, typed **capability** (in plain words, a
+function someone can call): its inputs and outputs, what it does to the world, and whether a retry is a repeat. Every answer says whether
 it was inferred or declared, and what the sources cannot settle, you declare once in a file
 next to them. From that catalog you take only what you need: a report of every function and
 its retry safety, a wiki an LLM can maintain, an MCP gateway that lets agents use the
@@ -97,7 +97,8 @@ Main RWdX none
 
 `R` reads, `W` writes, `D` destroys, `X` talks to another system; upper case means yes, lower
 case means it may, `pure` means none of them. `natural` means a repeat changes nothing more;
-`none` means every run has an effect.
+`key` means a repeat is safe when it carries the same key; `conditional` means it is safe under
+conditions the source documents; `none` means every run has an effect.
 
 Look at `GetTransactionData`: it **writes**. Its *Get Transaction Item* activity marks the queue
 item *In Progress*, so calling it twice takes two different items. A retry is not a repeat. That
@@ -237,7 +238,8 @@ flowglyph serve catalog --policy policy.yaml
 ```
 
 Every call goes through the contract, your policy, the idempotency ledger and the audit log,
-and `executePayment` waits for a person.
+and `executePayment` waits for a person. As written, every run is a dry run that shows what
+would be sent; add `--connections flowglyph.connections.yaml` to run for real.
 
 <!-- mcp-name: io.github.afernandeztem/flowglyph -->
 
@@ -281,7 +283,7 @@ full specification is in [docs/ir-spec.md](docs/ir-spec.md).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-dark.svg">
-  <img alt="FlowGlyph pipeline: UiPath projects, SAP OData metadata, SAP Cloud Integration and SAP Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL, go through deterministic adapters into the Automation IR. A versioned catalog feeds an MCP gateway, a planner, compilers, an LLM wiki, an idempotency report, context files for coding agents and the Python library." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-light.svg">
+  <img alt="FlowGlyph pipeline. Sources (UiPath projects, SAP OData, Cloud Integration and Build Process Automation, BPMN, n8n and OpenAPI, from a folder, a file or a git URL) go through deterministic adapters, with no LLM, into the Automation IR: capabilities and the workflows behind them. flowglyph extract writes the catalog as plain files plus flowglyph.lock; flowglyph enrich can add descriptions, marked as generated. From the catalog you get a retry-safety report and CI check (flowglyph idempotency, diff), the Python library, a wiki for people and LLMs, context files for coding agents, a planner for new workflows whose plans compile for UiPath Studio or a BPMN engine, and the MCP gateway (flowglyph serve), the only part that runs anything, which AI agents call through policy, ledger and audit." src="https://raw.githubusercontent.com/afernandeztem/FlowGlyph/main/docs/assets/pipeline-light.svg">
 </picture>
 
 ```yaml
@@ -319,13 +321,14 @@ More in [docs/architecture.md](docs/architecture.md) (the parts and the rules be
 
 | | What it gives you | What it does not |
 |---|---|---|
-| **Each vendor's own agent integration** (UiPath, SAP, n8n...) | the deepest access to that one platform | one platform at a time; effects and retry safety as hints, not facts; the vendor's hosted service, not yours |
+| **Each vendor's own agent integration** (UiPath, SAP, n8n...) | the deepest access to that one platform | one platform at a time; effects and retry safety as hints; the vendor's hosted service, not yours |
 | **OpenAPI-to-MCP converters** | every operation of an API as a tool in minutes | nothing for UiPath, SAP CPI, BPMN or n8n; no effects, no idempotency, no policy, no ledger, no audit |
 | **Parsers for one format** (XAML, BPMN, iFlow readers) | the structure of a file | no common model, no catalog, no versioning, nothing an agent can call |
 | **Asking an LLM to read the sources** | a plausible description, fast | not deterministic, not auditable, and it will invent a workflow that does not exist |
 
 FlowGlyph is the common model over all of them: one catalog for every platform, effects and
-retry safety as facts with a provenance, a gateway you host that enforces them, and nothing
+retry safety as answers that say whether they were declared or inferred, and how confident
+an inferred one is, a gateway you host that enforces them, and nothing
 that leaves your machine unless you say so.
 
 ## Status and roadmap

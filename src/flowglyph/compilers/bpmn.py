@@ -11,6 +11,7 @@ from typing import Literal
 from xml.etree import ElementTree as ET
 
 from flowglyph.compilers._layout import Box, place
+from flowglyph.errors import CatalogError
 from flowglyph.ir import Capability, Workflow
 
 type Engine = Literal["bpmn", "camunda7", "camunda8"]
@@ -82,7 +83,16 @@ class _Builder:
         self.workflow = workflow
         self.called = called
         self.engine = engine
-        self.ids = _unique_ids([node.id for node in workflow.nodes])
+        names = [node.id for node in workflow.nodes]
+        repeated = sorted({name for name in names if names.count(name) > 1})
+        if repeated:
+            raise CatalogError(f"step ids must be unique; repeated: {', '.join(repeated)}")
+        loose = sorted(
+            {end for edge in workflow.edges for end in (edge.source, edge.target)} - set(names)
+        )
+        if loose:
+            raise CatalogError(f"an edge points to a step that does not exist: {', '.join(loose)}")
+        self.ids = _unique_ids(names)
         self.kinds: dict[str, str] = {}
         self.flows: list[tuple[str, str, str]] = []
         self.warnings: list[str] = []
@@ -234,12 +244,17 @@ def _bounds(shape: ET.Element, box: Box) -> None:
     )
 
 
+_GENERATED = re.compile(r"flow_\d+|join_.+")
+
+
 def _unique_ids(node_ids: list[str]) -> dict[str, str]:
     """Node ids made valid XML ids: no spaces or symbols, never starting with a digit."""
     ids: dict[str, str] = {}
     taken = {"start", "end"}
     for node_id in node_ids:
         base = _xml_id(node_id)
+        if _GENERATED.fullmatch(base):  # the names this compiler gives to flows and joins
+            base = f"n_{base}"
         candidate, counter = base, 2
         while candidate in taken:
             candidate, counter = f"{base}_{counter}", counter + 1
