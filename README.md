@@ -241,6 +241,8 @@ Every call goes through the contract, your policy, the idempotency ledger and th
 and `executePayment` waits for a person. As written, every run is a dry run that shows what
 would be sent; add `--connections flowglyph.connections.yaml` to run for real.
 
+[![FlowGlyph MCP server](https://mcprush.com/badge/flowglyph-mcp/card.svg)](https://mcprush.com/to/flowglyph-mcp?ref=badge)
+
 <!-- mcp-name: io.github.afernandeztem/flowglyph -->
 
 ## What it reads
